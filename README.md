@@ -94,23 +94,62 @@ Zamioculca,Tolera poca luz y riegos espaciados. Ideal para empezar.,25.00,12,int
 ## Estructura del proyecto
 
 ```
-db/                  esquema SQL e inicialización
+api/index.js         función serverless de Vercel (reexporta src/app.js)
+db/                   esquema SQL e inicialización
 src/
-  server.js          servidor Express
-  db.js              conexión a PostgreSQL
+  app.js              app de Express (rutas, sesión, middlewares) — sin app.listen()
+  server.js           arranque local: valida conexión a DB y llama app.listen()
+  db.js               conexión a PostgreSQL (pool)
   middleware/auth.js  sesiones y protección de rutas (usuario/admin)
   config/whatsapp.js  envío de confirmaciones (Twilio o modo simulado)
   config/assistant.js lógica del asistente de compra por reglas
   config/careGuides.js contenido de las guías de cuidado (/guias)
-  routes/            rutas públicas, cliente, asistente y administrador
-  views/             plantillas EJS (tienda + panel admin)
-  public/css          Tailwind (input.css → output.css compilado)
+  routes/             rutas públicas, cliente, asistente y administrador
+  views/               plantillas EJS (tienda + panel admin)
+  public/css           Tailwind (input.css → output.css compilado)
+vercel.json           configuración de build/rutas para Vercel
 ```
+
+## Desplegar en Vercel
+
+El proyecto se despliega como **una función serverless** (`api/index.js`) que envuelve
+toda la app de Express; `vercel.json` enruta todo el tráfico hacia ella y compila el CSS
+de Tailwind en cada build (`buildCommand`).
+
+1. **Crea una base de datos PostgreSQL alcanzable desde internet** (Vercel Postgres, Neon,
+   Supabase o Railway). Una base en `localhost` **no funciona en Vercel** — esa fue la causa
+   del `FUNCTION_INVOCATION_FAILED`: no había `DATABASE_URL` de producción configurada y el
+   arranque anterior mataba el proceso si no lograba conectar.
+2. En **Vercel → Project Settings → Environment Variables**, agrega (entorno *Production*,
+   y *Preview* si usas ramas):
+   - `DATABASE_URL` — cadena de conexión de tu Postgres (usa la variante "pooled"/pgbouncer
+     que ofrecen Neon/Supabase si esperas tráfico concurrente; ver nota abajo).
+   - `SESSION_SECRET` — un valor largo y aleatorio, distinto al de desarrollo.
+   - `NODE_ENV=production`
+   - `ADMIN_EMAIL` / `ADMIN_PASSWORD` — solo se usan al correr `db:init`.
+   - `TWILIO_ACCOUNT_SID` / `TWILIO_AUTH_TOKEN` / `TWILIO_WHATSAPP_FROM` — opcional.
+3. Inicializa el esquema y el admin **contra esa misma base de datos**, en tu máquina:
+   ```bash
+   DATABASE_URL="postgres://...tu-base-de-produccion..." NODE_ENV=production npm run db:init
+   ```
+   (en PowerShell: `$env:DATABASE_URL="..."; $env:NODE_ENV="production"; npm run db:init`)
+4. Conecta el repo en Vercel (o hacer `git push` si ya está conectado) y despliega. Vercel
+   detecta `api/index.js` automáticamente gracias a `vercel.json`.
+
+**Sesiones**: las sesiones ahora se guardan en PostgreSQL vía `connect-pg-simple` (tabla
+`session`, se crea sola) en vez de memoria — imprescindible en serverless, donde cada
+invocación puede caer en una instancia distinta y la memoria no se comparte.
+
+**Conexiones a la base de datos**: cada instancia de la función abre su propio pool (ver
+`src/db.js`, limitado a 5 conexiones en producción). Si vas a tener tráfico real y
+concurrente, usa la connection string "pooled" de tu proveedor (por ejemplo, en Neon el
+host `...-pooler...`, en Supabase el puerto `6543`) para no agotar las conexiones de Postgres.
 
 ## Notas de seguridad para producción
 
 - Cambia `SESSION_SECRET` y las contraseñas de ejemplo antes de publicar el sitio.
 - Sirve el sitio detrás de HTTPS (así las cookies de sesión pueden ir con `secure: true`, ya
-  configurado automáticamente cuando `NODE_ENV=production`).
-- Considera usar `connect-pg-simple` (ya incluido como dependencia) para guardar las sesiones
-  en PostgreSQL en vez de memoria, si vas a tener varias instancias del servidor.
+  configurado automáticamente cuando `NODE_ENV=production`). `app.set('trust proxy', 1)` está
+  activado para que esto funcione correctamente detrás del proxy de Vercel.
+- Las sesiones se guardan en PostgreSQL (`connect-pg-simple`), no en memoria, así que
+  sobreviven a reinicios/escalado horizontal de la función.
