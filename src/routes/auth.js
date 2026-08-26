@@ -3,6 +3,7 @@ const bcrypt = require('bcryptjs');
 const router = express.Router();
 const { pool } = require('../db');
 const { loginLimiter, registerLimiter } = require('../middleware/rateLimit');
+const { regenerateSession } = require('../middleware/auth');
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -32,6 +33,7 @@ router.post('/registrarse', registerLimiter, async (req, res, next) => {
        VALUES ($1,$2,$3,$4,'user') RETURNING id, name, email, role`,
       [name, email, hash, phone || null]
     );
+    await regenerateSession(req);
     req.session.user = rows[0];
     res.redirect('/');
   } catch (err) {
@@ -54,9 +56,9 @@ router.post('/ingresar', loginLimiter, async (req, res, next) => {
     if (!user || !(await bcrypt.compare(password, user.password_hash))) {
       return res.render('login', { error: 'Correo o contraseña incorrectos.' });
     }
-    req.session.user = { id: user.id, name: user.name, email: user.email, role: user.role };
     const dest = req.session.returnTo || '/';
-    delete req.session.returnTo;
+    await regenerateSession(req);
+    req.session.user = { id: user.id, name: user.name, email: user.email, role: user.role };
     res.redirect(dest);
   } catch (err) {
     next(err);

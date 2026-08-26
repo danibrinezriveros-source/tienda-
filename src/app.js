@@ -71,7 +71,14 @@ app.use((req, res) => {
 
 app.use((err, req, res, next) => {
   console.error(err);
-  res.status(500).render('error', { message: err.message });
+  // En producción no se muestra err.message: puede filtrar detalles internos
+  // (por ejemplo, el texto exacto de un error de Postgres) a quien esté
+  // probando entradas raras a propósito. El detalle real solo queda en logs.
+  const message =
+    process.env.NODE_ENV === 'production'
+      ? 'Ocurrió un error inesperado. Ya quedó registrado, intenta de nuevo en un momento.'
+      : err.message;
+  res.status(500).render('error', { message });
 });
 
 module.exports = app;

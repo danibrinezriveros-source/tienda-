@@ -4,7 +4,7 @@ const multer = require('multer');
 const { parse } = require('csv-parse/sync');
 const router = express.Router();
 const { pool } = require('../db');
-const { requireAdmin } = require('../middleware/auth');
+const { requireAdmin, regenerateSession } = require('../middleware/auth');
 const { isTwilioConfigured } = require('../config/whatsapp');
 const { uploadProductImage } = require('../config/storage');
 const { loginLimiter } = require('../middleware/rateLimit');
@@ -35,6 +35,7 @@ router.post('/ingresar', loginLimiter, async (req, res, next) => {
     if (!admin || !(await bcrypt.compare(password, admin.password_hash))) {
       return res.render('admin/login', { error: 'Credenciales incorrectas.' });
     }
+    await regenerateSession(req);
     req.session.user = { id: admin.id, name: admin.name, email: admin.email, role: admin.role };
     res.redirect('/admin');
   } catch (err) {
