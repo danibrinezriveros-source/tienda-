@@ -4,17 +4,17 @@
 <body>
   <%- include('partials/header', { transparent: true }) %>
 
-  <section class="relative flex min-h-[92vh] items-center justify-center overflow-hidden bg-ink">
+  <section class="relative flex min-h-[92vh] items-center justify-center overflow-hidden bg-night">
     <img
       src="https://images.unsplash.com/photo-1585320806297-9794b3e4eeae?auto=format&fit=crop&w=1920&q=80"
       alt=""
       class="absolute inset-0 h-full w-full object-cover"
     />
-    <div class="absolute inset-0 bg-gradient-to-b from-ink/80 via-ink/45 to-ink/85"></div>
+    <div class="absolute inset-0 bg-gradient-to-b from-night/80 via-night/50 to-night/85"></div>
 
     <div class="relative z-10 mx-auto max-w-2xl px-6 text-center">
       <span class="label-eyebrow-hero">Vivero online · plantas con alma</span>
-      <h1 class="mt-6 font-display text-5xl font-semibold uppercase leading-[1.05] tracking-[0.04em] text-cream md:text-7xl">
+      <h1 class="mt-6 font-display text-5xl font-extrabold uppercase leading-[1.05] tracking-[0.04em] text-cream md:text-7xl">
         Arborea
       </h1>
       <p class="mx-auto mt-6 max-w-lg text-base leading-relaxed text-cream/85 md:text-lg">
@@ -23,8 +23,8 @@
         recomienda justo lo que tu espacio necesita.
       </p>
       <div class="mt-10 flex flex-wrap items-center justify-center gap-4">
-        <a href="#catalogo" class="btn-hero-primary">Explorar catálogo</a>
-        <a href="/asistente" class="btn-hero-secondary">Encuentra tu planta</a>
+        <a href="#catalogo" class="btn-primary">Explorar catálogo</a>
+        <a href="/asistente" class="btn-secondary !border-cream/30 !bg-cream/10 !text-cream hover:!border-cream/60 hover:!bg-cream/15">Encuentra tu planta</a>
       </div>
     </div>
 

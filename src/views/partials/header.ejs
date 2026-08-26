@@ -2,13 +2,13 @@
   var isTransparent = typeof transparent !== 'undefined' && transparent;
   var headerClass = isTransparent
     ? 'absolute inset-x-0 top-0 z-50 bg-transparent'
-    : 'sticky top-0 z-50 border-b border-line/70 bg-cream/90 backdrop-blur';
+    : 'sticky top-0 z-50 border-b border-line bg-night/90 backdrop-blur';
   var brandClass = isTransparent ? 'text-cream' : 'text-ink';
   var iconClass = isTransparent ? 'text-cream' : 'text-leaf';
   var navLinkClass = isTransparent ? 'text-cream/80 hover:text-cream' : 'text-moss hover:text-ink';
   var cartIconClass = isTransparent ? 'text-cream/90 hover:text-cream' : 'text-moss hover:text-ink';
   var secondaryBtnClass = isTransparent
-    ? '!border-cream/40 !bg-transparent !text-cream hover:!border-cream hover:!text-cream'
+    ? '!border-cream/30 !bg-cream/10 !text-cream hover:!border-cream/60 hover:!bg-cream/15'
     : '';
 %>
 <header class="<%= headerClass %>">
@@ -47,7 +47,7 @@
         </form>
       <% } else { %>
         <a href="/ingresar" class="btn-secondary !px-4 !py-2 text-xs <%= secondaryBtnClass %>">Ingresar</a>
-        <a href="/registrarse" class="btn-primary !px-4 !py-2 text-xs <%= isTransparent ? '!bg-cream !text-ink hover:!bg-cream/90' : '' %>">Crear cuenta</a>
+        <a href="/registrarse" class="btn-primary !px-4 !py-2 text-xs">Crear cuenta</a>
       <% } %>
     </div>
   </div>

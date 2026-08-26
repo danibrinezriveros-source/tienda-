@@ -4,29 +4,30 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        cream: '#faf6ec',      // fondo principal, blanco cálido
-        surface: '#ffffff',    // paneles / tarjetas
-        surface2: '#f1ead9',   // paneles elevados, hover, chips
-        line: '#e6ddc5',       // bordes sutiles
-        ink: '#20291d',        // texto principal (verde-negro cálido)
-        moss: '#66735a',       // texto secundario
-        leaf: '#2f5233',       // verde bosque (acento primario)
-        leaf2: '#4c7a4f',      // verde claro (hover / glow)
-        clay: '#b5652d',       // terracota (acento secundario, precios)
-        ok: '#3f7d4a',
-        warn: '#c98a2c',
-        danger: '#b3432f'
+        night: '#12160f',      // fondo principal, verde-negro elegante
+        cream: '#faf6ec',      // blanco cálido — texto/superficies claras sobre fondo oscuro
+        surface: '#1a1e15',    // paneles / tarjetas
+        surface2: '#232920',   // paneles elevados, hover, chips
+        line: 'rgba(244,241,230,0.12)', // bordes sutiles sobre fondo oscuro
+        ink: '#f5f2e8',        // texto principal (claro, sobre fondo oscuro)
+        moss: '#a3ab97',       // texto secundario
+        leaf: '#5c9161',       // verde bosque (acento primario, aclarado para contraste)
+        leaf2: '#7ec684',      // verde claro (hover / glow)
+        clay: '#e2894f',       // terracota (acento secundario, precios)
+        ok: '#5cbf6b',
+        warn: '#e0a542',
+        danger: '#e2685a'
       },
       fontFamily: {
-        display: ['"Fraunces"', 'serif'],
+        display: ['"Inter"', 'sans-serif'],
         body: ['"Inter"', 'sans-serif'],
         mono: ['"IBM Plex Mono"', 'monospace']
       },
       backgroundImage: {
-        canopy: 'radial-gradient(circle at 50% 0%, rgba(47,82,51,0.14), transparent 60%)'
+        canopy: 'radial-gradient(circle at 50% 0%, rgba(92,145,97,0.18), transparent 60%)'
       },
       boxShadow: {
-        glow: '0 0 0 1px rgba(47,82,51,0.35), 0 0 24px rgba(47,82,51,0.18)'
+        glow: '0 0 0 1px rgba(92,145,97,0.4), 0 0 24px rgba(92,145,97,0.22)'
       }
     }
   },
