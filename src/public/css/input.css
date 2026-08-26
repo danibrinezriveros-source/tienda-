@@ -43,4 +43,16 @@
   .section-heading {
     @apply text-2xl font-semibold text-ink sm:text-3xl;
   }
+  .label-eyebrow-hero {
+    @apply font-mono text-xs uppercase tracking-[0.3em] text-cream/80;
+  }
+  .btn-hero-primary {
+    @apply inline-flex items-center justify-center gap-2 rounded-full bg-cream px-7 py-3.5
+           text-sm font-semibold text-ink transition hover:bg-cream/90;
+  }
+  .btn-hero-secondary {
+    @apply inline-flex items-center justify-center gap-2 rounded-full border border-cream/50
+           bg-cream/5 px-7 py-3.5 text-sm font-semibold text-cream backdrop-blur-sm transition
+           hover:border-cream hover:bg-cream/10;
+  }
 }

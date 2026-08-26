@@ -2,45 +2,39 @@
 <html lang="es">
 <head><%- include('partials/head', { title: 'Inicio' }) %></head>
 <body>
-  <%- include('partials/header') %>
+  <%- include('partials/header', { transparent: true }) %>
 
-  <section class="relative overflow-hidden bg-canopy">
-    <div class="mx-auto grid max-w-6xl gap-10 px-6 pb-16 pt-16 md:grid-cols-2 md:items-center md:pt-24">
-      <div class="text-center md:text-left">
-        <span class="label-eyebrow">Vivero online</span>
-        <h1 class="mt-4 text-4xl font-semibold leading-[1.05] md:text-5xl lg:text-6xl">
-          Plantas con alma,<br /> cuidado con propósito.
-        </h1>
-        <p class="mx-auto mt-5 max-w-md text-moss md:mx-0">
-          Elegimos cada planta pensando en que sobreviva a tu ritmo de vida, no solo a la foto.
-          Llega con su guía de cuidado, y si no sabes por dónde empezar, nuestro asistente te
-          recomienda justo lo que tu espacio necesita.
-        </p>
-        <div class="mt-8 flex flex-wrap items-center justify-center gap-4 md:justify-start">
-          <a href="/asistente" class="btn-primary">Encuentra tu planta</a>
-          <a href="#catalogo" class="btn-secondary">Ver catálogo</a>
-        </div>
+  <section class="relative flex min-h-[92vh] items-center justify-center overflow-hidden bg-ink">
+    <img
+      src="https://images.unsplash.com/photo-1585320806297-9794b3e4eeae?auto=format&fit=crop&w=1920&q=80"
+      alt=""
+      class="absolute inset-0 h-full w-full object-cover"
+    />
+    <div class="absolute inset-0 bg-gradient-to-b from-ink/80 via-ink/45 to-ink/85"></div>
+
+    <div class="relative z-10 mx-auto max-w-2xl px-6 text-center">
+      <span class="label-eyebrow-hero">Vivero online · plantas con alma</span>
+      <h1 class="mt-6 font-display text-5xl font-semibold uppercase leading-[1.05] tracking-[0.04em] text-cream md:text-7xl">
+        Arborea
+      </h1>
+      <p class="mx-auto mt-6 max-w-lg text-base leading-relaxed text-cream/85 md:text-lg">
+        Elegimos cada planta pensando en que sobreviva a tu ritmo de vida, no solo a la foto.
+        Llega con su guía de cuidado, y si no sabes por dónde empezar, nuestro asistente te
+        recomienda justo lo que tu espacio necesita.
+      </p>
+      <div class="mt-10 flex flex-wrap items-center justify-center gap-4">
+        <a href="#catalogo" class="btn-hero-primary">Explorar catálogo</a>
+        <a href="/asistente" class="btn-hero-secondary">Encuentra tu planta</a>
       </div>
+    </div>
 
-      <div class="relative mx-auto hidden aspect-square w-full max-w-sm md:block">
-        <svg viewBox="0 0 400 400" class="h-full w-full">
-          <circle cx="200" cy="200" r="180" fill="#f1ead9" />
-          <g fill="none" stroke="#2f5233" stroke-width="6" stroke-linecap="round">
-            <path d="M200 320 C 200 220, 200 220, 200 90" />
-            <path d="M200 260 C 160 240, 130 210, 120 160" />
-            <path d="M200 260 C 240 240, 270 210, 280 160" />
-            <path d="M200 190 C 165 175, 140 150, 130 110" />
-            <path d="M200 190 C 235 175, 260 150, 270 110" />
-          </g>
-          <g fill="#4c7a4f">
-            <ellipse cx="118" cy="152" rx="26" ry="15" transform="rotate(-35 118 152)"/>
-            <ellipse cx="282" cy="152" rx="26" ry="15" transform="rotate(35 282 152)"/>
-            <ellipse cx="128" cy="102" rx="22" ry="13" transform="rotate(-40 128 102)"/>
-            <ellipse cx="272" cy="102" rx="22" ry="13" transform="rotate(40 272 102)"/>
-            <ellipse cx="200" cy="80" rx="16" ry="26"/>
-          </g>
+    <div class="absolute inset-x-0 bottom-8 z-10 hidden justify-center sm:flex">
+      <a href="#catalogo" class="flex flex-col items-center gap-2 text-cream/70 transition hover:text-cream">
+        <span class="font-mono text-[10px] uppercase tracking-[0.3em]">Descubre más</span>
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 animate-bounce" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
         </svg>
-      </div>
+      </a>
     </div>
   </section>
 

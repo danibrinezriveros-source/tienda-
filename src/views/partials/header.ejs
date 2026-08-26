@@ -1,24 +1,37 @@
-<header class="sticky top-0 z-50 border-b border-line/70 bg-cream/90 backdrop-blur">
-  <div class="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
+<%
+  var isTransparent = typeof transparent !== 'undefined' && transparent;
+  var headerClass = isTransparent
+    ? 'absolute inset-x-0 top-0 z-50 bg-transparent'
+    : 'sticky top-0 z-50 border-b border-line/70 bg-cream/90 backdrop-blur';
+  var brandClass = isTransparent ? 'text-cream' : 'text-ink';
+  var iconClass = isTransparent ? 'text-cream' : 'text-leaf';
+  var navLinkClass = isTransparent ? 'text-cream/80 hover:text-cream' : 'text-moss hover:text-ink';
+  var cartIconClass = isTransparent ? 'text-cream/90 hover:text-cream' : 'text-moss hover:text-ink';
+  var secondaryBtnClass = isTransparent
+    ? '!border-cream/40 !bg-transparent !text-cream hover:!border-cream hover:!text-cream'
+    : '';
+%>
+<header class="<%= headerClass %>">
+  <div class="mx-auto flex max-w-6xl items-center justify-between px-6 py-5">
     <a href="/" class="flex items-center gap-2">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="h-6 w-6 text-leaf" fill="currentColor">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="h-6 w-6 <%= iconClass %>" fill="currentColor">
         <path d="M12 2c-4.5 3-7 6.8-7 10.8C5 17.3 8.1 21 12 21s7-3.7 7-8.2C19 8.8 16.5 5 12 2zm0 3.4c2.9 2.4 4.5 5 4.5 7.4 0 3-2 5.4-4.5 5.4S7.5 15.8 7.5 12.8c0-2.4 1.6-5 4.5-7.4z"/>
       </svg>
-      <span class="font-display text-lg font-semibold tracking-tight">Arborea</span>
+      <span class="font-display text-lg font-semibold uppercase tracking-[0.15em] <%= brandClass %>">Arborea</span>
     </a>
 
-    <nav class="hidden items-center gap-8 text-sm text-moss md:flex">
-      <a href="/" class="hover:text-ink">Catálogo</a>
-      <a href="/guias" class="hover:text-ink">Guías de cuidado</a>
-      <a href="/sobre-arborea" class="hover:text-ink">Sobre Arborea</a>
-      <a href="/asistente" class="hover:text-ink">Encuentra tu planta</a>
+    <nav class="hidden items-center gap-8 text-sm <%= navLinkClass %> md:flex">
+      <a href="/" class="transition <%= navLinkClass %>">Catálogo</a>
+      <a href="/guias" class="transition <%= navLinkClass %>">Guías de cuidado</a>
+      <a href="/sobre-arborea" class="transition <%= navLinkClass %>">Sobre Arborea</a>
+      <a href="/asistente" class="transition <%= navLinkClass %>">Encuentra tu planta</a>
       <% if (currentUser && currentUser.role === 'user') { %>
-        <a href="/mis-pedidos" class="hover:text-ink">Mis pedidos</a>
+        <a href="/mis-pedidos" class="transition <%= navLinkClass %>">Mis pedidos</a>
       <% } %>
     </nav>
 
     <div class="flex items-center gap-4">
-      <a href="/carrito" class="relative flex items-center gap-2 text-sm text-moss hover:text-ink">
+      <a href="/carrito" class="relative flex items-center gap-2 text-sm transition <%= cartIconClass %>">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
           <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.836l.383 1.437M7.5 14.25a3 3 0 00-3 3h15.75m-12.75-3h11.218c1.121-2.3 1.87-4.9 2.13-7.65a1.125 1.125 0 00-1.11-1.235H5.104M7.5 14.25L5.106 5.272M6.75 20.25a.75.75 0 11-1.5 0 .75.75 0 011.5 0zm12 0a.75.75 0 11-1.5 0 .75.75 0 011.5 0z" />
         </svg>
@@ -28,13 +41,13 @@
       </a>
 
       <% if (currentUser && currentUser.role === 'user') { %>
-        <span class="hidden text-sm text-moss sm:inline">Hola, <%= currentUser.name.split(' ')[0] %></span>
+        <span class="hidden text-sm sm:inline <%= isTransparent ? 'text-cream/80' : 'text-moss' %>">Hola, <%= currentUser.name.split(' ')[0] %></span>
         <form action="/salir" method="POST">
-          <button class="btn-secondary !px-4 !py-2 text-xs">Salir</button>
+          <button class="btn-secondary !px-4 !py-2 text-xs <%= secondaryBtnClass %>">Salir</button>
         </form>
       <% } else { %>
-        <a href="/ingresar" class="btn-secondary !px-4 !py-2 text-xs">Ingresar</a>
-        <a href="/registrarse" class="btn-primary !px-4 !py-2 text-xs">Crear cuenta</a>
+        <a href="/ingresar" class="btn-secondary !px-4 !py-2 text-xs <%= secondaryBtnClass %>">Ingresar</a>
+        <a href="/registrarse" class="btn-primary !px-4 !py-2 text-xs <%= isTransparent ? '!bg-cream !text-ink hover:!bg-cream/90' : '' %>">Crear cuenta</a>
       <% } %>
     </div>
   </div>
