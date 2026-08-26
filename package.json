@@ -1,0 +1,31 @@
+{
+  "name": "arborea",
+  "version": "1.0.0",
+  "description": "Arborea — vivero online con panel de administrador, catálogo, pedidos, guías de cuidado, asistente de compra y confirmación por WhatsApp (Twilio, opcional).",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "nodemon src/server.js",
+    "build:css": "tailwindcss -i ./src/public/css/input.css -o ./src/public/css/output.css --minify",
+    "watch:css": "tailwindcss -i ./src/public/css/input.css -o ./src/public/css/output.css --watch",
+    "db:init": "node db/init.js"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "connect-pg-simple": "^9.0.1",
+    "csv-parse": "^5.5.6",
+    "dotenv": "^16.4.5",
+    "ejs": "^3.1.10",
+    "express": "^4.19.2",
+    "express-session": "^1.18.0",
+    "multer": "^1.4.5-lts.1",
+    "pg": "^8.12.0",
+    "twilio": "^5.2.2"
+  },
+  "devDependencies": {
+    "autoprefixer": "^10.4.20",
+    "nodemon": "^3.1.4",
+    "postcss": "^8.4.41",
+    "tailwindcss": "^3.4.10"
+  }
+}

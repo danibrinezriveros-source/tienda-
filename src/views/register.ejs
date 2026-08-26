@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="es">
+<head><%- include('partials/head', { title: 'Crear cuenta' }) %></head>
+<body>
+  <%- include('partials/header') %>
+
+  <section class="mx-auto max-w-md px-6 py-20">
+    <span class="label-eyebrow">Únete</span>
+    <h1 class="mt-2 text-3xl font-bold">Crea tu cuenta</h1>
+
+    <% if (error) { %>
+      <p class="mt-4 rounded-lg border border-danger/40 bg-danger/10 px-4 py-3 text-sm text-danger"><%= error %></p>
+    <% } %>
+
+    <form action="/registrarse" method="POST" class="mt-8 space-y-4">
+      <input type="text" name="name" required placeholder="Nombre completo" value="<%= form.name || '' %>" class="input-field" />
+      <input type="email" name="email" required placeholder="Correo electrónico" value="<%= form.email || '' %>" class="input-field" />
+      <input type="tel" name="phone" placeholder="Teléfono (opcional)" value="<%= form.phone || '' %>" class="input-field" />
+      <input type="password" name="password" required placeholder="Contraseña" class="input-field" />
+      <button type="submit" class="btn-primary w-full justify-center">Crear cuenta</button>
+    </form>
+
+    <p class="mt-6 text-center text-sm text-moss">
+      ¿Ya tienes cuenta? <a href="/ingresar" class="text-clay hover:underline">Ingresa aquí</a>
+    </p>
+  </section>
+
+  <%- include('partials/footer') %>
+</body>
+</html>

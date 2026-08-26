@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="es">
+<head><%- include('partials/head', { title: 'Pedido #' + order.id }) %></head>
+<body>
+  <%- include('partials/header') %>
+
+  <section class="mx-auto max-w-2xl px-6 py-14">
+    <a href="/mis-pedidos" class="text-sm text-moss hover:text-ink">&larr; Mis pedidos</a>
+
+    <div class="mt-6 flex items-center justify-between">
+      <h1 class="text-3xl font-bold">Pedido #<%= order.id %></h1>
+      <span class="status-pill bg-surface2 text-moss"><%= order.status %></span>
+    </div>
+    <p class="mt-1 text-sm text-moss">Realizado el <%= new Date(order.created_at).toLocaleString('es-CO') %></p>
+
+    <div class="mt-8 divide-y divide-line rounded-2xl border border-line bg-surface">
+      <% items.forEach(i => { %>
+        <div class="flex items-center justify-between p-5">
+          <div>
+            <p class="font-medium"><%= i.product_name %></p>
+            <p class="text-sm text-moss">Cantidad: <%= i.quantity %></p>
+          </div>
+          <span class="font-mono text-clay">$<%= (i.unit_price * i.quantity).toFixed(2) %></span>
+        </div>
+      <% }) %>
+    </div>
+
+    <div class="mt-6 flex items-center justify-between rounded-2xl border border-line bg-surface2 p-6">
+      <span class="text-moss">Total</span>
+      <span class="font-mono text-2xl font-semibold text-clay">$<%= Number(order.total).toFixed(2) %></span>
+    </div>
+
+    <div class="mt-6 rounded-2xl border border-line bg-surface p-6 text-sm text-moss">
+      <p><span class="text-ink">Dirección:</span> <%= order.address %></p>
+      <p class="mt-1"><span class="text-ink">Teléfono:</span> <%= order.customer_phone %></p>
+    </div>
+  </section>
+
+  <%- include('partials/footer') %>
+</body>
+</html>

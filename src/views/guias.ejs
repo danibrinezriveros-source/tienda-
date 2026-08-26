@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="es">
+<head><%- include('partials/head', { title: 'Guías de cuidado' }) %></head>
+<body>
+  <%- include('partials/header') %>
+
+  <section class="mx-auto max-w-4xl px-6 py-14 text-center">
+    <span class="label-eyebrow">Aprende</span>
+    <h1 class="mt-2 text-4xl font-semibold">Guías de cuidado</h1>
+    <p class="mx-auto mt-4 max-w-xl text-moss">
+      Lo esencial para que tus plantas prosperen, explicado sin tecnicismos. Si tienes dudas sobre
+      una especie en particular, cuéntanos en el <a href="/asistente" class="text-clay hover:underline">asistente</a>.
+    </p>
+  </section>
+
+  <section class="mx-auto max-w-4xl px-6 pb-20">
+    <div class="space-y-6">
+      <% guides.forEach(g => { %>
+        <div id="<%= g.slug %>" class="card scroll-mt-24 p-8">
+          <div class="flex items-start gap-4">
+            <span class="text-3xl"><%= g.icon %></span>
+            <div>
+              <h2 class="text-xl font-semibold"><%= g.title %></h2>
+              <p class="mt-1 text-sm text-moss"><%= g.summary %></p>
+            </div>
+          </div>
+          <ul class="mt-5 space-y-2 border-t border-line pt-5 text-sm text-ink">
+            <% g.tips.forEach(tip => { %>
+              <li class="flex gap-2">
+                <span class="mt-1 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-leaf"></span>
+                <span><%= tip %></span>
+              </li>
+            <% }) %>
+          </ul>
+        </div>
+      <% }) %>
+    </div>
+  </section>
+
+  <%- include('partials/footer') %>
+</body>
+</html>

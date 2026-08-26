@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="es">
+<head><%- include('partials/head', { title: 'Ingresar' }) %></head>
+<body>
+  <%- include('partials/header') %>
+
+  <section class="mx-auto max-w-md px-6 py-20">
+    <span class="label-eyebrow">Bienvenido</span>
+    <h1 class="mt-2 text-3xl font-bold">Ingresa a tu cuenta</h1>
+
+    <% if (error) { %>
+      <p class="mt-4 rounded-lg border border-danger/40 bg-danger/10 px-4 py-3 text-sm text-danger"><%= error %></p>
+    <% } %>
+
+    <form action="/ingresar" method="POST" class="mt-8 space-y-4">
+      <input type="email" name="email" required placeholder="Correo electrónico" class="input-field" />
+      <input type="password" name="password" required placeholder="Contraseña" class="input-field" />
+      <button type="submit" class="btn-primary w-full justify-center">Ingresar</button>
+    </form>
+
+    <p class="mt-6 text-center text-sm text-moss">
+      ¿No tienes cuenta? <a href="/registrarse" class="text-clay hover:underline">Crea una aquí</a>
+    </p>
+  </section>
+
+  <%- include('partials/footer') %>
+</body>
+</html>

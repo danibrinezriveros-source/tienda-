@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="es">
+<head><%- include('../partials/head', { title: 'Pedido #' + order.id }) %></head>
+<body>
+<%- include('../partials/admin-nav', { active: 'pedidos' }) %>
+
+  <a href="/admin/pedidos" class="text-sm text-moss hover:text-ink">&larr; Pedidos</a>
+
+  <div class="mt-3 flex items-center justify-between">
+    <h1 class="text-3xl font-bold">Pedido #<%= order.id %></h1>
+    <span class="status-pill bg-surface2 text-moss"><%= order.status %></span>
+  </div>
+
+  <div class="mt-8 grid grid-cols-1 gap-8 md:grid-cols-3">
+    <div class="md:col-span-2">
+      <div class="divide-y divide-line rounded-2xl border border-line bg-surface">
+        <% items.forEach(i => { %>
+          <div class="flex items-center justify-between p-5">
+            <div>
+              <p class="font-medium"><%= i.product_name %></p>
+              <p class="text-sm text-moss">Cantidad: <%= i.quantity %></p>
+            </div>
+            <span class="font-mono text-clay">$<%= (i.unit_price * i.quantity).toFixed(2) %></span>
+          </div>
+        <% }) %>
+      </div>
+      <div class="mt-4 flex items-center justify-between rounded-2xl border border-line bg-surface2 p-5">
+        <span class="text-moss">Total</span>
+        <span class="font-mono text-xl font-semibold text-clay">$<%= Number(order.total).toFixed(2) %></span>
+      </div>
+    </div>
+
+    <div class="space-y-5">
+      <div class="rounded-2xl border border-line bg-surface p-5 text-sm">
+        <p class="label-eyebrow">Cliente</p>
+        <p class="mt-2"><%= order.customer_name %></p>
+        <p class="mt-1 text-moss"><%= order.customer_phone %></p>
+        <p class="mt-1 text-moss"><%= order.customer_email %></p>
+        <p class="mt-3 label-eyebrow">Dirección</p>
+        <p class="mt-1 text-moss"><%= order.address %></p>
+        <% if (order.notes) { %>
+          <p class="mt-3 label-eyebrow">Notas</p>
+          <p class="mt-1 text-moss"><%= order.notes %></p>
+        <% } %>
+      </div>
+
+      <div class="rounded-2xl border border-line bg-surface p-5">
+        <p class="label-eyebrow">Cambiar estado</p>
+        <form action="/admin/pedidos/<%= order.id %>/estado" method="POST" class="mt-3 flex flex-col gap-3">
+          <select name="status" class="input-field">
+            <% ['pendiente','confirmado','en_preparacion','enviado','entregado','cancelado'].forEach(s => { %>
+              <option value="<%= s %>" <%= order.status === s ? 'selected' : '' %>><%= s %></option>
+            <% }) %>
+          </select>
+          <button type="submit" class="btn-primary">Actualizar</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+<%- include('../partials/admin-close') %>
+</body>
+</html>

@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="es">
+<head><%- include('partials/head', { title: 'Encuentra tu planta' }) %></head>
+<body>
+  <%- include('partials/header') %>
+
+  <section class="mx-auto max-w-3xl px-6 py-14">
+    <span class="label-eyebrow">Asistente</span>
+    <h1 class="mt-2 text-3xl font-bold">Encuentra tu planta ideal</h1>
+    <p class="mt-3 text-moss">Responde 3 preguntas rápidas y te recomendamos las plantas que mejor se ajustan a tu espacio.</p>
+
+    <form action="/asistente" method="POST" class="mt-10 space-y-8 rounded-2xl border border-line bg-surface p-8">
+      <div>
+        <label class="label-eyebrow">¿Cuál es tu presupuesto?</label>
+        <div class="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4">
+          <% budgetOptions.forEach(b => { %>
+            <label class="cursor-pointer">
+              <input type="radio" name="budget" value="<%= b.value %>" class="peer hidden" <%= answers.budget === b.value ? 'checked' : '' %> required />
+              <div class="rounded-lg border border-line bg-surface2 px-3 py-3 text-center text-sm text-moss peer-checked:border-leaf peer-checked:text-ink peer-checked:shadow-glow">
+                <%= b.label %>
+              </div>
+            </label>
+          <% }) %>
+        </div>
+      </div>
+
+      <div>
+        <label class="label-eyebrow">¿Qué tipo de planta buscas?</label>
+        <select name="category" class="input-field mt-3" required>
+          <option value="">Selecciona una categoría</option>
+          <% categories.forEach(c => { %>
+            <option value="<%= c.category %>" <%= answers.category === c.category ? 'selected' : '' %>><%= c.category %></option>
+          <% }) %>
+        </select>
+      </div>
+
+      <div>
+        <label class="label-eyebrow">¿Qué es lo más importante para ti?</label>
+        <div class="mt-3 grid grid-cols-2 gap-3">
+          <% priorityOptions.forEach(p => { %>
+            <label class="cursor-pointer">
+              <input type="radio" name="priority" value="<%= p.value %>" class="peer hidden" <%= answers.priority === p.value ? 'checked' : '' %> required />
+              <div class="rounded-lg border border-line bg-surface2 px-3 py-3 text-center text-sm text-moss peer-checked:border-leaf peer-checked:text-ink peer-checked:shadow-glow">
+                <%= p.label %>
+              </div>
+            </label>
+          <% }) %>
+        </div>
+      </div>
+
+      <button type="submit" class="btn-primary w-full justify-center">Recomiéndame plantas</button>
+    </form>
+
+    <% if (results) { %>
+      <div class="mt-14">
+        <span class="label-eyebrow">Resultado</span>
+        <h2 class="mt-2 text-2xl font-semibold">Esto es lo que más se ajusta a ti</h2>
+
+        <% if (results.length === 0) { %>
+          <p class="mt-6 text-moss">No encontramos coincidencias exactas. Prueba ajustando el presupuesto o la categoría.</p>
+        <% } else { %>
+          <div class="mt-8 space-y-5">
+            <% results.forEach(r => { %>
+              <a href="/producto/<%= r.id %>" class="card flex flex-col gap-4 p-5 sm:flex-row sm:items-center">
+                <div class="h-20 w-28 flex-shrink-0 overflow-hidden rounded-lg bg-surface2">
+                  <% if (r.image_url) { %><img src="<%= r.image_url %>" class="h-full w-full object-cover" alt="<%= r.name %>" /><% } %>
+                </div>
+                <div class="flex-1">
+                  <h3 class="font-semibold"><%= r.name %></h3>
+                  <p class="mt-1 text-sm text-clay"><%= r.why %></p>
+                </div>
+                <span class="font-mono text-lg text-clay">$<%= Number(r.price).toFixed(2) %></span>
+              </a>
+            <% }) %>
+          </div>
+        <% } %>
+      </div>
+    <% } %>
+  </section>
+
+  <%- include('partials/footer') %>
+</body>
+</html>

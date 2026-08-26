@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="es">
+<head><%- include('partials/head', { title: 'Sobre Arborea' }) %></head>
+<body>
+  <%- include('partials/header') %>
+
+  <section class="bg-canopy">
+    <div class="mx-auto max-w-3xl px-6 py-20 text-center">
+      <span class="label-eyebrow">Sobre nosotros</span>
+      <h1 class="mt-3 text-4xl font-semibold md:text-5xl">Un vivero pensado para que las plantas sí sobrevivan</h1>
+      <p class="mx-auto mt-5 max-w-xl text-moss">
+        Arborea nació de una idea simple: comprar una planta no debería sentirse como una apuesta.
+        Por eso cada producto en nuestro catálogo viene acompañado de la información que necesitas
+        para mantenerlo con vida — luz, riego y cuidados básicos — en vez de dejarte adivinar.
+      </p>
+    </div>
+  </section>
+
+  <section class="mx-auto max-w-5xl px-6 py-16">
+    <div class="grid grid-cols-1 gap-8 md:grid-cols-3">
+      <div class="card p-7">
+        <span class="text-2xl">🌱</span>
+        <h2 class="mt-4 text-lg font-semibold">Selección con criterio</h2>
+        <p class="mt-2 text-sm text-moss">
+          No listamos todo lo que existe: elegimos especies que se adaptan bien a hogares y climas
+          reales, no solo a condiciones ideales de invernadero.
+        </p>
+      </div>
+      <div class="card p-7">
+        <span class="text-2xl">📖</span>
+        <h2 class="mt-4 text-lg font-semibold">Educación antes que venta</h2>
+        <p class="mt-2 text-sm text-moss">
+          Nuestras <a href="/guias" class="text-clay hover:underline">guías de cuidado</a> y el
+          asistente de compra existen para que te lleves la planta correcta, no solo la más bonita.
+        </p>
+      </div>
+      <div class="card p-7">
+        <span class="text-2xl">🌎</span>
+        <h2 class="mt-4 text-lg font-semibold">Impacto consciente</h2>
+        <p class="mt-2 text-sm text-moss">
+          Buscamos trabajar con proveedores responsables y reducir el empaque de un solo uso en
+          cada envío que sale de nuestras manos.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <section class="border-t border-line bg-surface2/50">
+    <div class="mx-auto max-w-3xl px-6 py-16 text-center">
+      <span class="label-eyebrow">¿Tienes dudas?</span>
+      <h2 class="mt-2 text-2xl font-semibold">Te ayudamos a elegir</h2>
+      <p class="mx-auto mt-3 max-w-md text-moss">
+        Responde tres preguntas rápidas y te recomendamos plantas que se ajustan a tu espacio,
+        tu experiencia y tu presupuesto.
+      </p>
+      <a href="/asistente" class="btn-primary mt-6 inline-flex">Encuentra tu planta</a>
+    </div>
+  </section>
+
+  <%- include('partials/footer') %>
+</body>
+</html>

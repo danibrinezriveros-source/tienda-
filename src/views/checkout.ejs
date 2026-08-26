@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="es">
+<head><%- include('partials/head', { title: 'Finalizar compra' }) %></head>
+<body>
+  <%- include('partials/header') %>
+
+  <section class="mx-auto max-w-3xl px-6 py-14">
+    <span class="label-eyebrow">Paso final</span>
+    <h1 class="mt-2 text-3xl font-bold">Datos de entrega</h1>
+
+    <div class="mt-8 rounded-2xl border border-line bg-surface2 p-6">
+      <p class="text-sm text-moss">Total a pagar</p>
+      <p class="font-mono text-3xl font-semibold text-clay">$<%= total.toFixed(2) %></p>
+    </div>
+
+    <form action="/checkout" method="POST" class="mt-8 space-y-5">
+      <div>
+        <label class="mb-1 block text-sm text-moss">Teléfono de contacto (recibirás la confirmación aquí)</label>
+        <input type="tel" name="phone" required class="input-field" placeholder="Ej: 3001234567" />
+      </div>
+      <div>
+        <label class="mb-1 block text-sm text-moss">Dirección de entrega</label>
+        <textarea name="address" required rows="3" class="input-field"></textarea>
+      </div>
+      <div>
+        <label class="mb-1 block text-sm text-moss">Notas (opcional)</label>
+        <textarea name="notes" rows="2" class="input-field"></textarea>
+      </div>
+      <button type="submit" class="btn-primary w-full justify-center">Confirmar pedido</button>
+    </form>
+  </section>
+
+  <%- include('partials/footer') %>
+</body>
+</html>

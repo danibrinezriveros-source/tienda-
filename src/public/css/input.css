@@ -1,0 +1,46 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-cream text-ink font-body antialiased;
+  }
+  h1, h2, h3, h4 {
+    @apply font-display tracking-tight;
+  }
+  ::selection {
+    @apply bg-leaf/20 text-ink;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 rounded-full bg-leaf px-6 py-3
+           text-sm font-semibold text-cream transition hover:bg-leaf2 hover:shadow-glow;
+  }
+  .btn-secondary {
+    @apply inline-flex items-center justify-center gap-2 rounded-full border border-line
+           bg-surface px-6 py-3 text-sm font-semibold text-ink transition hover:border-leaf hover:text-leaf;
+  }
+  .card {
+    @apply rounded-2xl border border-line bg-surface transition hover:border-leaf/50 hover:shadow-glow;
+  }
+  .input-field {
+    @apply w-full rounded-lg border border-line bg-surface2 px-4 py-3 text-sm text-ink
+           placeholder:text-moss focus:border-leaf focus:outline-none focus:ring-1 focus:ring-leaf;
+  }
+  .label-eyebrow {
+    @apply font-mono text-xs uppercase tracking-[0.2em] text-clay;
+  }
+  .status-pill {
+    @apply inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium font-mono;
+  }
+  .tag-chip {
+    @apply inline-flex items-center gap-1 rounded-full border border-line bg-surface2 px-3 py-1
+           text-xs text-moss;
+  }
+  .section-heading {
+    @apply text-2xl font-semibold text-ink sm:text-3xl;
+  }
+}

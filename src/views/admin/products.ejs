@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="es">
+<head><%- include('../partials/head', { title: 'Catálogo' }) %></head>
+<body>
+<%- include('../partials/admin-nav', { active: 'productos' }) %>
+
+  <div class="flex flex-wrap items-center justify-between gap-4">
+    <div>
+      <span class="label-eyebrow">Catálogo</span>
+      <h1 class="mt-2 text-3xl font-bold">Productos</h1>
+    </div>
+    <a href="/admin/productos/nuevo" class="btn-primary">+ Nuevo producto</a>
+  </div>
+
+  <% if (ok) { %>
+    <p class="mt-5 rounded-lg border border-ok/40 bg-ok/10 px-4 py-3 text-sm text-ok">Cambios guardados correctamente.</p>
+  <% } %>
+
+  <div class="mt-8 rounded-2xl border border-line bg-surface p-6">
+    <p class="label-eyebrow">Carga masiva</p>
+    <p class="mt-1 text-sm text-moss">
+      Sube un archivo CSV con las columnas: <code class="text-clay">name,description,price,stock,category,tags,image_url</code>
+    </p>
+    <form action="/admin/productos/importar" method="POST" enctype="multipart/form-data" class="mt-4 flex flex-wrap items-center gap-3">
+      <input type="file" name="csv" accept=".csv" required class="text-sm text-moss file:mr-4 file:rounded-full file:border-0 file:bg-leaf file:px-4 file:py-2 file:text-sm file:font-semibold file:text-cream" />
+      <button type="submit" class="btn-secondary">Importar catálogo</button>
+    </form>
+  </div>
+
+  <div class="mt-8 overflow-x-auto rounded-2xl border border-line bg-surface">
+    <table class="w-full text-left text-sm">
+      <thead class="border-b border-line text-moss">
+        <tr>
+          <th class="px-5 py-3 font-medium">Producto</th>
+          <th class="px-5 py-3 font-medium">Categoría</th>
+          <th class="px-5 py-3 font-medium">Precio</th>
+          <th class="px-5 py-3 font-medium">Stock</th>
+          <th class="px-5 py-3 font-medium">Estado</th>
+          <th class="px-5 py-3 font-medium"></th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-line">
+        <% products.forEach(p => { %>
+          <tr>
+            <td class="px-5 py-3"><%= p.name %></td>
+            <td class="px-5 py-3 text-moss"><%= p.category %></td>
+            <td class="px-5 py-3 font-mono">$<%= Number(p.price).toFixed(2) %></td>
+            <td class="px-5 py-3"><%= p.stock %></td>
+            <td class="px-5 py-3">
+              <% if (p.active) { %>
+                <span class="status-pill bg-ok/10 text-ok">Activo</span>
+              <% } else { %>
+                <span class="status-pill bg-danger/10 text-danger">Oculto</span>
+              <% } %>
+            </td>
+            <td class="px-5 py-3 text-right">
+              <a href="/admin/productos/<%= p.id %>/editar" class="text-clay hover:underline">Editar</a>
+              <form action="/admin/productos/<%= p.id %>/eliminar" method="POST" class="inline" onsubmit="return confirm('¿Eliminar este producto?');">
+                <button class="ml-3 text-moss hover:text-danger">Eliminar</button>
+              </form>
+            </td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+    <% if (products.length === 0) { %>
+      <p class="p-8 text-center text-moss">Todavía no has cargado productos.</p>
+    <% } %>
+  </div>
+
+<%- include('../partials/admin-close') %>
+</body>
+</html>

@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="es">
+<head><%- include('partials/head', { title: 'Carrito' }) %></head>
+<body>
+  <%- include('partials/header') %>
+
+  <section class="mx-auto max-w-3xl px-6 py-14">
+    <span class="label-eyebrow">Tu carrito</span>
+    <h1 class="mt-2 text-3xl font-bold">Resumen de compra</h1>
+
+    <% if (cart.length === 0) { %>
+      <div class="mt-10 rounded-2xl border border-line bg-surface p-10 text-center">
+        <p class="text-moss">Tu carrito está vacío.</p>
+        <a href="/" class="btn-primary mt-6 inline-flex">Ver catálogo</a>
+      </div>
+    <% } else { %>
+      <div class="mt-8 divide-y divide-line rounded-2xl border border-line bg-surface">
+        <% cart.forEach(item => { %>
+          <div class="flex items-center justify-between gap-4 p-5">
+            <div>
+              <p class="font-medium"><%= item.name %></p>
+              <p class="text-sm text-moss">Cantidad: <%= item.quantity %></p>
+            </div>
+            <div class="flex items-center gap-4">
+              <span class="font-mono text-clay">$<%= (item.price * item.quantity).toFixed(2) %></span>
+              <form action="/carrito/quitar/<%= item.productId %>" method="POST">
+                <button class="text-xs text-moss hover:text-danger">Quitar</button>
+              </form>
+            </div>
+          </div>
+        <% }) %>
+      </div>
+
+      <div class="mt-6 flex items-center justify-between rounded-2xl border border-line bg-surface2 p-6">
+        <span class="text-moss">Total</span>
+        <span class="font-mono text-2xl font-semibold text-clay">$<%= total.toFixed(2) %></span>
+      </div>
+
+      <a href="/checkout" class="btn-primary mt-8 flex w-full justify-center">Continuar al pago</a>
+    <% } %>
+  </section>
+
+  <%- include('partials/footer') %>
+</body>
+</html>

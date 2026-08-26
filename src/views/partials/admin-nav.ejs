@@ -1,0 +1,22 @@
+<div class="flex min-h-screen bg-cream">
+  <aside class="hidden w-64 flex-shrink-0 border-r border-line bg-surface md:block">
+    <div class="flex items-center gap-2 px-6 py-6">
+      <span class="h-2 w-2 rounded-full bg-leaf shadow-glow"></span>
+      <span class="font-display text-lg font-bold tracking-widest">Arborea</span>
+      <span class="label-eyebrow ml-auto">Admin</span>
+    </div>
+    <nav class="mt-4 flex flex-col gap-1 px-3 text-sm">
+      <a href="/admin" class="rounded-lg px-4 py-2.5 text-moss hover:bg-surface2 hover:text-ink <%= active === 'dashboard' ? 'bg-surface2 text-ink' : '' %>">Resumen</a>
+      <a href="/admin/productos" class="rounded-lg px-4 py-2.5 text-moss hover:bg-surface2 hover:text-ink <%= active === 'productos' ? 'bg-surface2 text-ink' : '' %>">Catálogo</a>
+      <a href="/admin/pedidos?vista=entrantes" class="rounded-lg px-4 py-2.5 text-moss hover:bg-surface2 hover:text-ink <%= active === 'pedidos' ? 'bg-surface2 text-ink' : '' %>">Pedidos</a>
+      <a href="/admin/ajustes" class="rounded-lg px-4 py-2.5 text-moss hover:bg-surface2 hover:text-ink <%= active === 'ajustes' ? 'bg-surface2 text-ink' : '' %>">Ajustes / WhatsApp</a>
+    </nav>
+    <div class="absolute bottom-0 w-64 border-t border-line p-4">
+      <a href="/" class="block px-4 py-2 text-xs text-moss hover:text-ink">← Ver tienda pública</a>
+      <form action="/salir" method="POST">
+        <button class="w-full rounded-lg border border-line px-4 py-2 text-xs text-moss hover:border-leaf hover:text-clay">Cerrar sesión</button>
+      </form>
+    </div>
+  </aside>
+
+  <main class="flex-1 px-6 py-8 md:px-10 md:py-10">

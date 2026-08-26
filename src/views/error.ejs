@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html lang="es">
+<head><%- include('partials/head', { title: 'Error' }) %></head>
+<body>
+  <%- include('partials/header') %>
+  <section class="mx-auto max-w-lg px-6 py-32 text-center">
+    <span class="label-eyebrow">Error 500</span>
+    <h1 class="mt-3 text-3xl font-bold">Algo salió mal</h1>
+    <p class="mt-3 text-moss"><%= message %></p>
+    <a href="/" class="btn-primary mt-8 inline-flex">Volver al inicio</a>
+  </section>
+  <%- include('partials/footer') %>
+</body>
+</html>

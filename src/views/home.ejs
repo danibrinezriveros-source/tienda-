@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="es">
+<head><%- include('partials/head', { title: 'Inicio' }) %></head>
+<body>
+  <%- include('partials/header') %>
+
+  <section class="relative overflow-hidden bg-canopy">
+    <div class="mx-auto grid max-w-6xl gap-10 px-6 pb-16 pt-16 md:grid-cols-2 md:items-center md:pt-24">
+      <div class="text-center md:text-left">
+        <span class="label-eyebrow">Vivero online</span>
+        <h1 class="mt-4 text-4xl font-semibold leading-[1.05] md:text-5xl lg:text-6xl">
+          Plantas con alma,<br /> cuidado con propósito.
+        </h1>
+        <p class="mx-auto mt-5 max-w-md text-moss md:mx-0">
+          Elegimos cada planta pensando en que sobreviva a tu ritmo de vida, no solo a la foto.
+          Llega con su guía de cuidado, y si no sabes por dónde empezar, nuestro asistente te
+          recomienda justo lo que tu espacio necesita.
+        </p>
+        <div class="mt-8 flex flex-wrap items-center justify-center gap-4 md:justify-start">
+          <a href="/asistente" class="btn-primary">Encuentra tu planta</a>
+          <a href="#catalogo" class="btn-secondary">Ver catálogo</a>
+        </div>
+      </div>
+
+      <div class="relative mx-auto hidden aspect-square w-full max-w-sm md:block">
+        <svg viewBox="0 0 400 400" class="h-full w-full">
+          <circle cx="200" cy="200" r="180" fill="#f1ead9" />
+          <g fill="none" stroke="#2f5233" stroke-width="6" stroke-linecap="round">
+            <path d="M200 320 C 200 220, 200 220, 200 90" />
+            <path d="M200 260 C 160 240, 130 210, 120 160" />
+            <path d="M200 260 C 240 240, 270 210, 280 160" />
+            <path d="M200 190 C 165 175, 140 150, 130 110" />
+            <path d="M200 190 C 235 175, 260 150, 270 110" />
+          </g>
+          <g fill="#4c7a4f">
+            <ellipse cx="118" cy="152" rx="26" ry="15" transform="rotate(-35 118 152)"/>
+            <ellipse cx="282" cy="152" rx="26" ry="15" transform="rotate(35 282 152)"/>
+            <ellipse cx="128" cy="102" rx="22" ry="13" transform="rotate(-40 128 102)"/>
+            <ellipse cx="272" cy="102" rx="22" ry="13" transform="rotate(40 272 102)"/>
+            <ellipse cx="200" cy="80" rx="16" ry="26"/>
+          </g>
+        </svg>
+      </div>
+    </div>
+  </section>
+
+  <section class="border-y border-line bg-surface2/50">
+    <div class="mx-auto grid max-w-6xl grid-cols-2 gap-6 px-6 py-12 sm:grid-cols-4">
+      <div class="text-center">
+        <p class="text-2xl">🌿</p>
+        <p class="mt-2 text-sm font-medium">Cultivadas con cuidado</p>
+      </div>
+      <div class="text-center">
+        <p class="text-2xl">📋</p>
+        <p class="mt-2 text-sm font-medium">Guía de cuidado incluida</p>
+      </div>
+      <div class="text-center">
+        <p class="text-2xl">🚚</p>
+        <p class="mt-2 text-sm font-medium">Empacadas para el viaje</p>
+      </div>
+      <div class="text-center">
+        <p class="text-2xl">💬</p>
+        <p class="mt-2 text-sm font-medium">Asesoría personalizada</p>
+      </div>
+    </div>
+  </section>
+
+  <% if (categories.length > 0) { %>
+    <section class="mx-auto max-w-6xl px-6 py-14">
+      <span class="label-eyebrow">Explora</span>
+      <h2 class="section-heading mt-2">Busca por categoría</h2>
+      <div class="mt-6 flex flex-wrap gap-3">
+        <a href="/" class="tag-chip <%= activeCategory === '' ? '!border-leaf !text-leaf' : '' %>">Todas</a>
+        <% categories.forEach(c => { %>
+          <a href="/?category=<%= encodeURIComponent(c.category) %>"
+             class="tag-chip <%= activeCategory === c.category ? '!border-leaf !text-leaf' : '' %>"><%= c.category %></a>
+        <% }) %>
+      </div>
+    </section>
+  <% } %>
+
+  <section id="catalogo" class="mx-auto max-w-6xl px-6 py-8">
+    <div class="flex flex-col gap-6 border-b border-line pb-8 md:flex-row md:items-end md:justify-between">
+      <div>
+        <span class="label-eyebrow">Catálogo</span>
+        <h2 class="section-heading mt-2">Plantas disponibles</h2>
+      </div>
+
+      <form class="flex flex-wrap items-center gap-3" method="GET" action="/">
+        <input type="text" name="q" value="<%= q %>" placeholder="Buscar planta…" class="input-field !w-56" />
+        <select name="category" class="input-field !w-44" onchange="this.form.submit()">
+          <option value="">Todas las categorías</option>
+          <% categories.forEach(c => { %>
+            <option value="<%= c.category %>" <%= activeCategory === c.category ? 'selected' : '' %>><%= c.category %></option>
+          <% }) %>
+        </select>
+        <button type="submit" class="btn-secondary !px-4 !py-2 text-xs">Filtrar</button>
+      </form>
+    </div>
+
+    <% if (products.length === 0) { %>
+      <p class="mt-12 text-center text-moss">No encontramos plantas con ese filtro. Prueba con otra búsqueda.</p>
+    <% } else { %>
+      <div class="mt-10 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <% products.forEach(p => { %>
+          <a href="/producto/<%= p.id %>" class="card group flex flex-col overflow-hidden">
+            <div class="aspect-[4/3] overflow-hidden bg-surface2">
+              <% if (p.image_url) { %>
+                <img src="<%= p.image_url %>" alt="<%= p.name %>" class="h-full w-full object-cover transition duration-500 group-hover:scale-105" />
+              <% } %>
+            </div>
+            <div class="flex flex-1 flex-col gap-2 p-5">
+              <span class="label-eyebrow"><%= p.category %></span>
+              <h3 class="text-lg font-semibold"><%= p.name %></h3>
+              <p class="line-clamp-2 text-sm text-moss"><%= p.description %></p>
+              <div class="mt-auto flex items-center justify-between pt-3">
+                <span class="font-mono text-xl font-semibold text-clay">$<%= Number(p.price).toFixed(2) %></span>
+                <% if (p.stock > 0) { %>
+                  <span class="status-pill bg-ok/10 text-ok"><span class="h-1.5 w-1.5 rounded-full bg-ok"></span> Disponible</span>
+                <% } else { %>
+                  <span class="status-pill bg-danger/10 text-danger"><span class="h-1.5 w-1.5 rounded-full bg-danger"></span> Agotada</span>
+                <% } %>
+              </div>
+            </div>
+          </a>
+        <% }) %>
+      </div>
+    <% } %>
+  </section>
+
+  <% if (typeof featuredGuides !== 'undefined' && featuredGuides.length > 0) { %>
+    <section class="mx-auto max-w-6xl px-6 py-16">
+      <div class="flex flex-col gap-2 border-b border-line pb-8 md:flex-row md:items-end md:justify-between">
+        <div>
+          <span class="label-eyebrow">Aprende</span>
+          <h2 class="section-heading mt-2">Guías de cuidado</h2>
+        </div>
+        <a href="/guias" class="text-sm text-clay hover:underline">Ver todas las guías →</a>
+      </div>
+      <div class="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-3">
+        <% featuredGuides.forEach(g => { %>
+          <a href="/guias#<%= g.slug %>" class="card flex flex-col gap-3 p-6">
+            <span class="text-3xl"><%= g.icon %></span>
+            <h3 class="text-lg font-semibold"><%= g.title %></h3>
+            <p class="text-sm text-moss"><%= g.summary %></p>
+          </a>
+        <% }) %>
+      </div>
+    </section>
+  <% } %>
+
+  <section class="bg-leaf">
+    <div class="mx-auto max-w-6xl px-6 py-16 text-cream">
+      <div class="grid grid-cols-1 gap-10 md:grid-cols-3">
+        <div>
+          <span class="font-mono text-xs uppercase tracking-[0.2em] text-cream/70">Nuestro compromiso</span>
+          <h2 class="mt-3 font-display text-2xl font-semibold">Verde de verdad, de principio a fin</h2>
+        </div>
+        <div>
+          <p class="font-semibold">Origen responsable</p>
+          <p class="mt-2 text-sm text-cream/80">Trabajamos con productores locales y evitamos especies de origen incierto o en riesgo.</p>
+        </div>
+        <div>
+          <p class="font-semibold">Menos plástico</p>
+          <p class="mt-2 text-sm text-cream/80">Reutilizamos empaques cuando podemos y preferimos materiales biodegradables en el envío.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <%- include('partials/footer') %>
+</body>
+</html>

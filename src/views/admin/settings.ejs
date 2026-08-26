@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="es">
+<head><%- include('../partials/head', { title: 'Ajustes' }) %></head>
+<body>
+<%- include('../partials/admin-nav', { active: 'ajustes' }) %>
+
+  <span class="label-eyebrow">Ajustes</span>
+  <h1 class="mt-2 text-3xl font-bold">Notificaciones por WhatsApp</h1>
+
+  <% if (ok) { %>
+    <p class="mt-5 rounded-lg border border-ok/40 bg-ok/10 px-4 py-3 text-sm text-ok">Ajustes guardados.</p>
+  <% } %>
+
+  <div class="mt-8 max-w-xl rounded-2xl border border-line bg-surface p-6">
+    <div class="flex items-center justify-between">
+      <div>
+        <p class="font-medium">Estado de conexión</p>
+        <p class="mt-1 text-sm text-moss">Credenciales de Twilio en el servidor</p>
+      </div>
+      <% if (twilioConfigured) { %>
+        <span class="status-pill bg-ok/10 text-ok"><span class="h-1.5 w-1.5 rounded-full bg-ok"></span> Conectado</span>
+      <% } else { %>
+        <span class="status-pill bg-warn/10 text-warn"><span class="h-1.5 w-1.5 rounded-full bg-warn"></span> Sin configurar</span>
+      <% } %>
+    </div>
+    <% if (!twilioConfigured) { %>
+      <p class="mt-4 text-sm text-moss">
+        Aún no has agregado tus credenciales de Twilio. Puedes activar el interruptor de abajo desde ya:
+        mientras no haya credenciales, las confirmaciones se simulan en la consola del servidor,
+        así puedes probar todo el flujo. Cuando tengas cuenta de Twilio, agrega
+        <code class="text-clay">TWILIO_ACCOUNT_SID</code>, <code class="text-clay">TWILIO_AUTH_TOKEN</code>
+        y <code class="text-clay">TWILIO_WHATSAPP_FROM</code> en el archivo <code class="text-clay">.env</code> y reinicia el servidor.
+      </p>
+    <% } %>
+  </div>
+
+  <form action="/admin/ajustes" method="POST" class="mt-6 max-w-xl space-y-5 rounded-2xl border border-line bg-surface p-6">
+    <label class="flex items-center justify-between">
+      <span class="text-sm">Enviar confirmación de pedidos por WhatsApp</span>
+      <input type="checkbox" name="whatsapp_enabled" <%= settings.whatsapp_enabled === 'true' ? 'checked' : '' %> class="h-5 w-9 rounded-full" />
+    </label>
+    <div>
+      <label class="mb-1 block text-sm text-moss">Número que recibe las notificaciones (con código de país, solo números)</label>
+      <input type="text" name="whatsapp_notify_number" value="<%= settings.whatsapp_notify_number || '' %>" placeholder="573001234567" class="input-field" />
+    </div>
+    <button type="submit" class="btn-primary">Guardar ajustes</button>
+  </form>
+
+<%- include('../partials/admin-close') %>
+</body>
+</html>
