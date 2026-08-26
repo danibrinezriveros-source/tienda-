@@ -6,8 +6,17 @@ const router = express.Router();
 const { pool } = require('../db');
 const { requireAdmin } = require('../middleware/auth');
 const { isTwilioConfigured } = require('../config/whatsapp');
+const { uploadProductImage } = require('../config/storage');
 
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 2 * 1024 * 1024 } });
+const uploadImage = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 5 * 1024 * 1024 },
+  fileFilter: (req, file, cb) => {
+    if (!file.mimetype.startsWith('image/')) return cb(new Error('El archivo debe ser una imagen.'));
+    cb(null, true);
+  }
+});
 
 // --- Ingreso de administrador ---
 router.get('/ingresar', (req, res) => {
@@ -67,13 +76,16 @@ router.get('/productos/nuevo', (req, res) => {
   res.render('admin/product-form', { product: null, error: null });
 });
 
-router.post('/productos/nuevo', async (req, res, next) => {
+router.post('/productos/nuevo', uploadImage.single('image'), async (req, res, next) => {
   try {
     const { name, description, price, stock, category, tags, image_url } = req.body;
+    const finalImageUrl = req.file
+      ? await uploadProductImage(req.file.buffer, req.file.originalname, req.file.mimetype)
+      : image_url || null;
     await pool.query(
       `INSERT INTO products (name, description, price, stock, category, tags, image_url)
        VALUES ($1,$2,$3,$4,$5,$6,$7)`,
-      [name, description, price, stock || 0, category || 'general', tags || '', image_url || null]
+      [name, description, price, stock || 0, category || 'general', tags || '', finalImageUrl]
     );
     res.redirect('/admin/productos?ok=creado');
   } catch (err) {
@@ -91,13 +103,16 @@ router.get('/productos/:id/editar', async (req, res, next) => {
   }
 });
 
-router.post('/productos/:id/editar', async (req, res, next) => {
+router.post('/productos/:id/editar', uploadImage.single('image'), async (req, res, next) => {
   try {
     const { name, description, price, stock, category, tags, image_url, active } = req.body;
+    const finalImageUrl = req.file
+      ? await uploadProductImage(req.file.buffer, req.file.originalname, req.file.mimetype)
+      : image_url || null;
     await pool.query(
       `UPDATE products SET name=$1, description=$2, price=$3, stock=$4, category=$5,
        tags=$6, image_url=$7, active=$8, updated_at=NOW() WHERE id=$9`,
-      [name, description, price, stock || 0, category, tags || '', image_url || null, active === 'on', req.params.id]
+      [name, description, price, stock || 0, category, tags || '', finalImageUrl, active === 'on', req.params.id]
     );
     res.redirect('/admin/productos?ok=actualizado');
   } catch (err) {
