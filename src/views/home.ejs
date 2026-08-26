@@ -39,22 +39,30 @@
   </section>
 
   <section class="border-y border-line bg-surface2/50">
-    <div class="mx-auto grid max-w-6xl grid-cols-2 gap-6 px-6 py-12 sm:grid-cols-4">
-      <div class="text-center">
-        <p class="text-2xl">🌿</p>
-        <p class="mt-2 text-sm font-medium">Cultivadas con cuidado</p>
+    <div class="mx-auto grid max-w-6xl grid-cols-2 gap-8 px-6 py-14 sm:grid-cols-4">
+      <div class="flex flex-col items-center gap-3 text-center">
+        <span class="flex h-12 w-12 items-center justify-center rounded-full border border-line bg-surface text-leaf">
+          <%- include('partials/icon', { name: 'leaf', cls: 'h-5 w-5' }) %>
+        </span>
+        <p class="text-sm font-medium">Cultivadas con cuidado</p>
       </div>
-      <div class="text-center">
-        <p class="text-2xl">📋</p>
-        <p class="mt-2 text-sm font-medium">Guía de cuidado incluida</p>
+      <div class="flex flex-col items-center gap-3 text-center">
+        <span class="flex h-12 w-12 items-center justify-center rounded-full border border-line bg-surface text-leaf">
+          <%- include('partials/icon', { name: 'guide', cls: 'h-5 w-5' }) %>
+        </span>
+        <p class="text-sm font-medium">Guía de cuidado incluida</p>
       </div>
-      <div class="text-center">
-        <p class="text-2xl">🚚</p>
-        <p class="mt-2 text-sm font-medium">Empacadas para el viaje</p>
+      <div class="flex flex-col items-center gap-3 text-center">
+        <span class="flex h-12 w-12 items-center justify-center rounded-full border border-line bg-surface text-leaf">
+          <%- include('partials/icon', { name: 'delivery', cls: 'h-5 w-5' }) %>
+        </span>
+        <p class="text-sm font-medium">Empacadas para el viaje</p>
       </div>
-      <div class="text-center">
-        <p class="text-2xl">💬</p>
-        <p class="mt-2 text-sm font-medium">Asesoría personalizada</p>
+      <div class="flex flex-col items-center gap-3 text-center">
+        <span class="flex h-12 w-12 items-center justify-center rounded-full border border-line bg-surface text-leaf">
+          <%- include('partials/icon', { name: 'chat', cls: 'h-5 w-5' }) %>
+        </span>
+        <p class="text-sm font-medium">Asesoría personalizada</p>
       </div>
     </div>
   </section>
@@ -132,7 +140,9 @@
       <div class="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-3">
         <% featuredGuides.forEach(g => { %>
           <a href="/guias#<%= g.slug %>" class="card flex flex-col gap-3 p-6">
-            <span class="text-3xl"><%= g.icon %></span>
+            <span class="flex h-11 w-11 items-center justify-center rounded-full border border-line bg-surface2 text-leaf">
+              <%- include('partials/icon', { name: g.icon, cls: 'h-4 w-4' }) %>
+            </span>
             <h3 class="text-lg font-semibold"><%= g.title %></h3>
             <p class="text-sm text-moss"><%= g.summary %></p>
           </a>

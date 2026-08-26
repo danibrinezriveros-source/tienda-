@@ -18,7 +18,9 @@
       <% guides.forEach(g => { %>
         <div id="<%= g.slug %>" class="card scroll-mt-24 p-8">
           <div class="flex items-start gap-4">
-            <span class="text-3xl"><%= g.icon %></span>
+            <span class="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full border border-line bg-surface2 text-leaf">
+              <%- include('partials/icon', { name: g.icon, cls: 'h-5 w-5' }) %>
+            </span>
             <div>
               <h2 class="text-xl font-semibold"><%= g.title %></h2>
               <p class="mt-1 text-sm text-moss"><%= g.summary %></p>

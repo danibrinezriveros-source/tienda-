@@ -19,7 +19,9 @@
   <section class="mx-auto max-w-5xl px-6 py-16">
     <div class="grid grid-cols-1 gap-8 md:grid-cols-3">
       <div class="card p-7">
-        <span class="text-2xl">🌱</span>
+        <span class="flex h-11 w-11 items-center justify-center rounded-full border border-line bg-surface2 text-leaf">
+          <%- include('partials/icon', { name: 'sprout', cls: 'h-4 w-4' }) %>
+        </span>
         <h2 class="mt-4 text-lg font-semibold">Selección con criterio</h2>
         <p class="mt-2 text-sm text-moss">
           No listamos todo lo que existe: elegimos especies que se adaptan bien a hogares y climas
@@ -27,7 +29,9 @@
         </p>
       </div>
       <div class="card p-7">
-        <span class="text-2xl">📖</span>
+        <span class="flex h-11 w-11 items-center justify-center rounded-full border border-line bg-surface2 text-leaf">
+          <%- include('partials/icon', { name: 'book', cls: 'h-4 w-4' }) %>
+        </span>
         <h2 class="mt-4 text-lg font-semibold">Educación antes que venta</h2>
         <p class="mt-2 text-sm text-moss">
           Nuestras <a href="/guias" class="text-clay hover:underline">guías de cuidado</a> y el
@@ -35,7 +39,9 @@
         </p>
       </div>
       <div class="card p-7">
-        <span class="text-2xl">🌎</span>
+        <span class="flex h-11 w-11 items-center justify-center rounded-full border border-line bg-surface2 text-leaf">
+          <%- include('partials/icon', { name: 'globe', cls: 'h-4 w-4' }) %>
+        </span>
         <h2 class="mt-4 text-lg font-semibold">Impacto consciente</h2>
         <p class="mt-2 text-sm text-moss">
           Buscamos trabajar con proveedores responsables y reducir el empaque de un solo uso en

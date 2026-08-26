@@ -7,7 +7,7 @@
 const CARE_GUIDES = [
   {
     slug: 'luz',
-    icon: '☀️',
+    icon: 'sun',
     title: 'Cuánta luz necesita tu planta',
     summary: 'La causa más común de que una planta sufra no es el riego: es la luz.',
     tips: [
@@ -19,7 +19,7 @@ const CARE_GUIDES = [
   },
   {
     slug: 'riego',
-    icon: '💧',
+    icon: 'drop',
     title: 'Riego sin excesos',
     summary: 'Se matan más plantas por exceso de agua que por falta de ella.',
     tips: [
@@ -31,7 +31,7 @@ const CARE_GUIDES = [
   },
   {
     slug: 'trasplante',
-    icon: '🪴',
+    icon: 'repot',
     title: 'Trasplante y sustrato',
     summary: 'Cambiar de maceta a tiempo evita que la planta se quede sin espacio para crecer.',
     tips: [
@@ -43,7 +43,7 @@ const CARE_GUIDES = [
   },
   {
     slug: 'plagas',
-    icon: '🔍',
+    icon: 'search',
     title: 'Plagas y enfermedades comunes',
     summary: 'Revisar tus plantas cada semana permite atajar cualquier problema a tiempo.',
     tips: [
@@ -55,7 +55,7 @@ const CARE_GUIDES = [
   },
   {
     slug: 'principiantes',
-    icon: '🌱',
+    icon: 'sprout',
     title: 'Plantas para empezar sin miedo',
     summary: 'Si vas empezando, elige especies que perdonen algún olvido.',
     tips: [
@@ -67,7 +67,7 @@ const CARE_GUIDES = [
   },
   {
     slug: 'mascotas',
-    icon: '🐾',
+    icon: 'paw',
     title: 'Plantas seguras para hogares con mascotas',
     summary: 'Algunas especies comunes son tóxicas para perros y gatos si las mastican.',
     tips: [

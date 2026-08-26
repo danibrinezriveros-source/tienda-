@@ -25,7 +25,8 @@
            hover:border-leaf hover:text-leaf2;
   }
   .card {
-    @apply rounded-2xl border border-line bg-surface transition hover:border-leaf/50 hover:shadow-glow;
+    @apply rounded-2xl border border-line bg-surface transition duration-300 ease-out
+           hover:-translate-y-0.5 hover:border-leaf/50 hover:shadow-glow;
   }
   .input-field {
     @apply w-full rounded-lg border border-line bg-surface2 px-4 py-3 text-sm text-ink

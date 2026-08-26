@@ -22,7 +22,7 @@
         <% if (careTags.length > 0) { %>
           <div class="mt-5 flex flex-wrap gap-2">
             <% careTags.forEach(t => { %>
-              <span class="tag-chip">🌿 <%= t %></span>
+              <span class="tag-chip"><%- include('partials/icon', { name: 'leaf', cls: 'h-3 w-3 text-leaf' }) %> <%= t %></span>
             <% }) %>
           </div>
         <% } %>
