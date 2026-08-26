@@ -9,9 +9,7 @@
 
     <div class="mt-6 grid grid-cols-1 gap-12 md:grid-cols-2">
       <div class="aspect-square overflow-hidden rounded-2xl border border-line bg-surface2">
-        <% if (product.image_url) { %>
-          <img src="<%= product.image_url %>" alt="<%= product.name %>" class="h-full w-full object-cover" />
-        <% } %>
+        <%- include('partials/product-image', { image_url: product.image_url, name: product.name }) %>
       </div>
 
       <div>

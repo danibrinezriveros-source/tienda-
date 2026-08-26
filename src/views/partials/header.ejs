@@ -41,14 +41,67 @@
       </a>
 
       <% if (currentUser && currentUser.role === 'user') { %>
-        <span class="hidden text-sm sm:inline <%= isTransparent ? 'text-cream/80' : 'text-moss' %>">Hola, <%= currentUser.name.split(' ')[0] %></span>
-        <form action="/salir" method="POST">
+        <span class="hidden text-sm md:inline <%= isTransparent ? 'text-cream/80' : 'text-moss' %>">Hola, <%= currentUser.name.split(' ')[0] %></span>
+        <form action="/salir" method="POST" class="hidden md:block">
           <button class="btn-secondary !px-4 !py-2 text-xs <%= secondaryBtnClass %>">Salir</button>
         </form>
       <% } else { %>
-        <a href="/ingresar" class="btn-secondary !px-4 !py-2 text-xs <%= secondaryBtnClass %>">Ingresar</a>
-        <a href="/registrarse" class="btn-primary !px-4 !py-2 text-xs">Crear cuenta</a>
+        <a href="/ingresar" class="hidden btn-secondary !px-4 !py-2 text-xs md:inline-flex <%= secondaryBtnClass %>">Ingresar</a>
+        <a href="/registrarse" class="hidden btn-primary !px-4 !py-2 text-xs md:inline-flex">Crear cuenta</a>
+      <% } %>
+
+      <button
+        type="button"
+        id="mobile-menu-btn"
+        aria-label="Abrir menú"
+        aria-expanded="false"
+        class="flex h-9 w-9 items-center justify-center rounded-full transition md:hidden <%= isTransparent ? 'text-cream' : 'text-ink' %>"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+          <path id="mobile-menu-icon-open" stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5M3.75 17.25h16.5" />
+          <path id="mobile-menu-icon-close" class="hidden" stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <div id="mobile-menu-panel" class="hidden border-t border-line bg-night/98 backdrop-blur md:hidden">
+    <nav class="flex flex-col gap-1 px-6 py-4 text-sm text-moss">
+      <a href="/" class="rounded-lg px-2 py-2.5 transition hover:bg-surface2 hover:text-ink">Catálogo</a>
+      <a href="/guias" class="rounded-lg px-2 py-2.5 transition hover:bg-surface2 hover:text-ink">Guías de cuidado</a>
+      <a href="/sobre-arborea" class="rounded-lg px-2 py-2.5 transition hover:bg-surface2 hover:text-ink">Sobre Arborea</a>
+      <a href="/asistente" class="rounded-lg px-2 py-2.5 transition hover:bg-surface2 hover:text-ink">Encuentra tu planta</a>
+      <% if (currentUser && currentUser.role === 'user') { %>
+        <a href="/mis-pedidos" class="rounded-lg px-2 py-2.5 transition hover:bg-surface2 hover:text-ink">Mis pedidos</a>
+      <% } %>
+    </nav>
+    <div class="flex flex-col gap-3 border-t border-line px-6 py-4">
+      <% if (currentUser && currentUser.role === 'user') { %>
+        <span class="text-sm text-moss">Hola, <%= currentUser.name.split(' ')[0] %></span>
+        <form action="/salir" method="POST">
+          <button class="btn-secondary w-full !px-4 !py-2 text-xs">Salir</button>
+        </form>
+      <% } else { %>
+        <a href="/ingresar" class="btn-secondary flex !px-4 !py-2 text-xs">Ingresar</a>
+        <a href="/registrarse" class="btn-primary flex !px-4 !py-2 text-xs">Crear cuenta</a>
       <% } %>
     </div>
   </div>
 </header>
+
+<script>
+  (function () {
+    var btn = document.getElementById('mobile-menu-btn');
+    var panel = document.getElementById('mobile-menu-panel');
+    var iconOpen = document.getElementById('mobile-menu-icon-open');
+    var iconClose = document.getElementById('mobile-menu-icon-close');
+    if (!btn || !panel) return;
+    btn.addEventListener('click', function () {
+      var isOpen = !panel.classList.contains('hidden');
+      panel.classList.toggle('hidden');
+      iconOpen.classList.toggle('hidden');
+      iconClose.classList.toggle('hidden');
+      btn.setAttribute('aria-expanded', String(!isOpen));
+    });
+  })();
+</script>

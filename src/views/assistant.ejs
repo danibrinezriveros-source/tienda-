@@ -63,7 +63,7 @@
             <% results.forEach(r => { %>
               <a href="/producto/<%= r.id %>" class="card flex flex-col gap-4 p-5 sm:flex-row sm:items-center">
                 <div class="h-20 w-28 flex-shrink-0 overflow-hidden rounded-lg bg-surface2">
-                  <% if (r.image_url) { %><img src="<%= r.image_url %>" class="h-full w-full object-cover" alt="<%= r.name %>" /><% } %>
+                  <%- include('partials/product-image', { image_url: r.image_url, name: r.name }) %>
                 </div>
                 <div class="flex-1">
                   <h3 class="font-semibold"><%= r.name %></h3>

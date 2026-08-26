@@ -37,7 +37,11 @@
   <form action="/admin/ajustes" method="POST" class="mt-6 max-w-xl space-y-5 rounded-2xl border border-line bg-surface p-6">
     <label class="flex items-center justify-between">
       <span class="text-sm">Enviar confirmación de pedidos por WhatsApp</span>
-      <input type="checkbox" name="whatsapp_enabled" <%= settings.whatsapp_enabled === 'true' ? 'checked' : '' %> class="h-5 w-9 rounded-full" />
+      <span class="relative inline-flex h-6 w-11 flex-shrink-0 items-center">
+        <input type="checkbox" name="whatsapp_enabled" <%= settings.whatsapp_enabled === 'true' ? 'checked' : '' %> class="peer sr-only" />
+        <span class="absolute inset-0 rounded-full border border-line bg-surface2 transition peer-checked:border-leaf peer-checked:bg-leaf peer-focus-visible:ring-2 peer-focus-visible:ring-leaf/50"></span>
+        <span class="absolute left-1 h-4 w-4 rounded-full bg-cream transition peer-checked:translate-x-5"></span>
+      </span>
     </label>
     <div>
       <label class="mb-1 block text-sm text-moss">Número que recibe las notificaciones (con código de país, solo números)</label>
