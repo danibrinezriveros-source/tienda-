@@ -3,6 +3,7 @@ const router = express.Router();
 const { pool } = require('../db');
 const { requireLogin } = require('../middleware/auth');
 const { sendOrderConfirmation } = require('../config/whatsapp');
+const { checkoutLimiter } = require('../middleware/rateLimit');
 
 router.get('/checkout', requireLogin, (req, res) => {
   const cart = req.session.cart || [];
@@ -11,7 +12,7 @@ router.get('/checkout', requireLogin, (req, res) => {
   res.render('checkout', { cart, total, error: null });
 });
 
-router.post('/checkout', requireLogin, async (req, res, next) => {
+router.post('/checkout', requireLogin, checkoutLimiter, async (req, res, next) => {
   const client = await pool.connect();
   try {
     const cart = req.session.cart || [];

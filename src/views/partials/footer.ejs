@@ -53,16 +53,4 @@
       <p>© <%= new Date().getFullYear() %> Arborea. Cultivado con cuidado.</p>
     </div>
   </div>
-
-  <script>
-    (function () {
-      var form = document.getElementById('newsletter-form');
-      if (!form) return;
-      form.addEventListener('submit', function (e) {
-        e.preventDefault();
-        document.getElementById('newsletter-note').textContent = '¡Gracias! En cuanto activemos los envíos, tu correo será el primero en la lista.';
-        form.reset();
-      });
-    })();
-  </script>
 </footer>

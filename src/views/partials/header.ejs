@@ -88,20 +88,3 @@
     </div>
   </div>
 </header>
-
-<script>
-  (function () {
-    var btn = document.getElementById('mobile-menu-btn');
-    var panel = document.getElementById('mobile-menu-panel');
-    var iconOpen = document.getElementById('mobile-menu-icon-open');
-    var iconClose = document.getElementById('mobile-menu-icon-close');
-    if (!btn || !panel) return;
-    btn.addEventListener('click', function () {
-      var isOpen = !panel.classList.contains('hidden');
-      panel.classList.toggle('hidden');
-      iconOpen.classList.toggle('hidden');
-      iconClose.classList.toggle('hidden');
-      btn.setAttribute('aria-expanded', String(!isOpen));
-    });
-  })();
-</script>

@@ -7,6 +7,10 @@
   <a href="/admin/productos" class="text-sm text-moss hover:text-ink">&larr; Catálogo</a>
   <h1 class="mt-3 text-3xl font-bold"><%= product ? 'Editar producto' : 'Nuevo producto' %></h1>
 
+  <% if (error) { %>
+    <p class="mt-4 max-w-xl rounded-lg border border-danger/40 bg-danger/10 px-4 py-3 text-sm text-danger"><%= error %></p>
+  <% } %>
+
   <form action="<%= product ? `/admin/productos/${product.id}/editar` : '/admin/productos/nuevo' %>" method="POST" enctype="multipart/form-data" class="mt-8 max-w-xl space-y-5">
     <div>
       <label class="mb-1 block text-sm text-moss">Nombre</label>

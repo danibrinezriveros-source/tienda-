@@ -90,7 +90,7 @@
 
       <form class="flex flex-wrap items-center gap-3" method="GET" action="/">
         <input type="text" name="q" value="<%= q %>" placeholder="Buscar planta…" class="input-field !w-56" />
-        <select name="category" class="input-field !w-44" onchange="this.form.submit()">
+        <select name="category" id="category-select" class="input-field !w-44">
           <option value="">Todas las categorías</option>
           <% categories.forEach(c => { %>
             <option value="<%= c.category %>" <%= activeCategory === c.category ? 'selected' : '' %>><%= c.category %></option>

@@ -1,5 +1,6 @@
 require('dotenv').config();
 const express = require('express');
+const helmet = require('helmet');
 const session = require('express-session');
 const pgSession = require('connect-pg-simple')(session);
 const path = require('path');
@@ -12,6 +13,22 @@ const app = express();
 // Sin esto, express-session nunca ve la request como "segura" y las cookies
 // con `secure: true` se descartan en producción.
 app.set('trust proxy', 1);
+
+// Cabeceras de seguridad. No hay scripts ni estilos inline en ninguna vista
+// (todo vive en /css y /js), así que se puede dejar la política por defecto
+// de helmet (script-src 'self', sin unsafe-inline) — solo se amplía img-src
+// porque el hero, las fotos subidas a Vercel Blob y las URLs de imagen que
+// un admin pueda pegar a mano vienen de hosts externos.
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      directives: {
+        ...helmet.contentSecurityPolicy.getDefaultDirectives(),
+        'img-src': ["'self'", 'data:', 'https:']
+      }
+    }
+  })
+);
 
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
@@ -28,7 +45,9 @@ app.use(
     saveUninitialized: false,
     cookie: {
       maxAge: 1000 * 60 * 60 * 24 * 7, // 7 días
-      secure: process.env.NODE_ENV === 'production'
+      secure: process.env.NODE_ENV === 'production',
+      httpOnly: true,
+      sameSite: 'lax'
     }
   })
 );

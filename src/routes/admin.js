@@ -7,6 +7,7 @@ const { pool } = require('../db');
 const { requireAdmin } = require('../middleware/auth');
 const { isTwilioConfigured } = require('../config/whatsapp');
 const { uploadProductImage } = require('../config/storage');
+const { loginLimiter } = require('../middleware/rateLimit');
 
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 2 * 1024 * 1024 } });
 const uploadImage = multer({
@@ -23,7 +24,7 @@ router.get('/ingresar', (req, res) => {
   res.render('admin/login', { error: null });
 });
 
-router.post('/ingresar', async (req, res, next) => {
+router.post('/ingresar', loginLimiter, async (req, res, next) => {
   try {
     const { email, password } = req.body;
     const { rows } = await pool.query('SELECT * FROM users WHERE email = $1 AND role = $2', [
@@ -79,13 +80,21 @@ router.get('/productos/nuevo', (req, res) => {
 router.post('/productos/nuevo', uploadImage.single('image'), async (req, res, next) => {
   try {
     const { name, description, price, stock, category, tags, image_url } = req.body;
+    const priceNum = parseFloat(price);
+    const stockNum = parseInt(stock, 10);
+    if (!name || Number.isNaN(priceNum) || priceNum < 0 || Number.isNaN(stockNum) || stockNum < 0) {
+      return res.render('admin/product-form', {
+        product: null,
+        error: 'Revisa el nombre, el precio y el stock: el precio y el stock deben ser números válidos y no negativos.'
+      });
+    }
     const finalImageUrl = req.file
       ? await uploadProductImage(req.file.buffer, req.file.originalname, req.file.mimetype)
       : image_url || null;
     await pool.query(
       `INSERT INTO products (name, description, price, stock, category, tags, image_url)
        VALUES ($1,$2,$3,$4,$5,$6,$7)`,
-      [name, description, price, stock || 0, category || 'general', tags || '', finalImageUrl]
+      [name, description, priceNum, stockNum, category || 'general', tags || '', finalImageUrl]
     );
     res.redirect('/admin/productos?ok=creado');
   } catch (err) {
@@ -106,13 +115,21 @@ router.get('/productos/:id/editar', async (req, res, next) => {
 router.post('/productos/:id/editar', uploadImage.single('image'), async (req, res, next) => {
   try {
     const { name, description, price, stock, category, tags, image_url, active } = req.body;
+    const priceNum = parseFloat(price);
+    const stockNum = parseInt(stock, 10);
+    if (!name || Number.isNaN(priceNum) || priceNum < 0 || Number.isNaN(stockNum) || stockNum < 0) {
+      return res.render('admin/product-form', {
+        product: { ...req.body, id: req.params.id, active: active === 'on' },
+        error: 'Revisa el nombre, el precio y el stock: el precio y el stock deben ser números válidos y no negativos.'
+      });
+    }
     const finalImageUrl = req.file
       ? await uploadProductImage(req.file.buffer, req.file.originalname, req.file.mimetype)
       : image_url || null;
     await pool.query(
       `UPDATE products SET name=$1, description=$2, price=$3, stock=$4, category=$5,
        tags=$6, image_url=$7, active=$8, updated_at=NOW() WHERE id=$9`,
-      [name, description, price, stock || 0, category, tags || '', finalImageUrl, active === 'on', req.params.id]
+      [name, description, priceNum, stockNum, category, tags || '', finalImageUrl, active === 'on', req.params.id]
     );
     res.redirect('/admin/productos?ok=actualizado');
   } catch (err) {

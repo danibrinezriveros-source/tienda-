@@ -2,16 +2,25 @@ const express = require('express');
 const bcrypt = require('bcryptjs');
 const router = express.Router();
 const { pool } = require('../db');
+const { loginLimiter, registerLimiter } = require('../middleware/rateLimit');
+
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 router.get('/registrarse', (req, res) => {
   res.render('register', { error: null, form: {} });
 });
 
-router.post('/registrarse', async (req, res, next) => {
+router.post('/registrarse', registerLimiter, async (req, res, next) => {
   try {
     const { name, email, password, phone } = req.body;
     if (!name || !email || !password) {
       return res.render('register', { error: 'Completa todos los campos obligatorios.', form: req.body });
+    }
+    if (!EMAIL_RE.test(email)) {
+      return res.render('register', { error: 'Ese correo no parece válido.', form: req.body });
+    }
+    if (password.length < 8) {
+      return res.render('register', { error: 'La contraseña debe tener al menos 8 caracteres.', form: req.body });
     }
     const { rows: existing } = await pool.query('SELECT id FROM users WHERE email = $1', [email]);
     if (existing[0]) {
@@ -34,7 +43,7 @@ router.get('/ingresar', (req, res) => {
   res.render('login', { error: null });
 });
 
-router.post('/ingresar', async (req, res, next) => {
+router.post('/ingresar', loginLimiter, async (req, res, next) => {
   try {
     const { email, password } = req.body;
     const { rows } = await pool.query('SELECT * FROM users WHERE email = $1 AND role = $2', [

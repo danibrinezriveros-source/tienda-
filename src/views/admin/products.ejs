@@ -55,7 +55,7 @@
             </td>
             <td class="px-5 py-3 text-right">
               <a href="/admin/productos/<%= p.id %>/editar" class="text-clay hover:underline">Editar</a>
-              <form action="/admin/productos/<%= p.id %>/eliminar" method="POST" class="inline" onsubmit="return confirm('¿Eliminar este producto?');">
+              <form action="/admin/productos/<%= p.id %>/eliminar" method="POST" class="inline" data-confirm="¿Eliminar este producto?">
                 <button class="ml-3 text-moss hover:text-danger">Eliminar</button>
               </form>
             </td>
