@@ -9,6 +9,9 @@ async function run() {
   console.log('→ Creando tablas...');
   await pool.query(schema);
 
+  // Migración liviana para bases que ya existían antes de esta columna.
+  await pool.query('ALTER TABLE users ADD COLUMN IF NOT EXISTS terms_accepted_at TIMESTAMP');
+
   const adminEmail = process.env.ADMIN_EMAIL || 'admin@arborea.com';
   const adminPassword = process.env.ADMIN_PASSWORD || 'CambiaEstaClave123!';
 

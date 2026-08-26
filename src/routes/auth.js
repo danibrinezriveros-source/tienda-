@@ -13,7 +13,7 @@ router.get('/registrarse', (req, res) => {
 
 router.post('/registrarse', registerLimiter, async (req, res, next) => {
   try {
-    const { name, email, password, phone } = req.body;
+    const { name, email, password, phone, accept_terms } = req.body;
     if (!name || !email || !password) {
       return res.render('register', { error: 'Completa todos los campos obligatorios.', form: req.body });
     }
@@ -23,14 +23,20 @@ router.post('/registrarse', registerLimiter, async (req, res, next) => {
     if (password.length < 8) {
       return res.render('register', { error: 'La contraseña debe tener al menos 8 caracteres.', form: req.body });
     }
+    if (accept_terms !== 'on') {
+      return res.render('register', {
+        error: 'Debes aceptar la política de tratamiento de datos personales para crear tu cuenta.',
+        form: req.body
+      });
+    }
     const { rows: existing } = await pool.query('SELECT id FROM users WHERE email = $1', [email]);
     if (existing[0]) {
       return res.render('register', { error: 'Ya existe una cuenta con ese correo.', form: req.body });
     }
     const hash = await bcrypt.hash(password, 10);
     const { rows } = await pool.query(
-      `INSERT INTO users (name, email, password_hash, phone, role)
-       VALUES ($1,$2,$3,$4,'user') RETURNING id, name, email, role`,
+      `INSERT INTO users (name, email, password_hash, phone, role, terms_accepted_at)
+       VALUES ($1,$2,$3,$4,'user',NOW()) RETURNING id, name, email, role`,
       [name, email, hash, phone || null]
     );
     await regenerateSession(req);

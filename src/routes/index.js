@@ -44,6 +44,10 @@ router.get('/sobre-arborea', (req, res) => {
   res.render('sobre-arborea');
 });
 
+router.get('/privacidad', (req, res) => {
+  res.render('privacidad', { contactEmail: process.env.ADMIN_EMAIL || 'contacto@arborea.com' });
+});
+
 router.get('/producto/:id', async (req, res, next) => {
   try {
     const { rows } = await pool.query('SELECT * FROM products WHERE id = $1 AND active = TRUE', [

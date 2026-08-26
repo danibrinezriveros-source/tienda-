@@ -2,13 +2,14 @@
 -- Ejecutar con: psql -d tienda_web -f db/schema.sql  (o via db:init)
 
 CREATE TABLE IF NOT EXISTS users (
-  id            SERIAL PRIMARY KEY,
-  name          VARCHAR(150) NOT NULL,
-  email         VARCHAR(150) UNIQUE NOT NULL,
-  password_hash TEXT NOT NULL,
-  phone         VARCHAR(30),
-  role          VARCHAR(10) NOT NULL DEFAULT 'user' CHECK (role IN ('user', 'admin')),
-  created_at    TIMESTAMP NOT NULL DEFAULT NOW()
+  id                 SERIAL PRIMARY KEY,
+  name               VARCHAR(150) NOT NULL,
+  email              VARCHAR(150) UNIQUE NOT NULL,
+  password_hash      TEXT NOT NULL,
+  phone              VARCHAR(30),
+  role               VARCHAR(10) NOT NULL DEFAULT 'user' CHECK (role IN ('user', 'admin')),
+  terms_accepted_at  TIMESTAMP,  -- evidencia de que aceptó la política de tratamiento de datos al registrarse
+  created_at         TIMESTAMP NOT NULL DEFAULT NOW()
 );
 
 CREATE TABLE IF NOT EXISTS products (

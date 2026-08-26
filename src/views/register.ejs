@@ -17,6 +17,15 @@
       <input type="email" name="email" required placeholder="Correo electrónico" value="<%= form.email || '' %>" class="input-field" />
       <input type="tel" name="phone" placeholder="Teléfono (opcional)" value="<%= form.phone || '' %>" class="input-field" />
       <input type="password" name="password" required placeholder="Contraseña" class="input-field" />
+
+      <label class="flex items-start gap-2 text-xs text-moss">
+        <input type="checkbox" name="accept_terms" required class="mt-0.5 rounded border-line bg-surface2" />
+        <span>
+          He leído y acepto la
+          <a href="/privacidad" target="_blank" rel="noopener" class="text-clay hover:underline">política de tratamiento de datos personales</a>.
+        </span>
+      </label>
+
       <button type="submit" class="btn-primary w-full justify-center">Crear cuenta</button>
     </form>
 
