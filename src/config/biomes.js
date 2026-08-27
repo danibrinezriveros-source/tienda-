@@ -122,12 +122,31 @@ function buildBiomes(products) {
     if (!claimed.has(p.id)) map.selva.push(p);
   });
 
-  return BIOMES.map((b) => ({
-    ...b,
-    products: interleaveByCategory(map[b.key]),
-    total: map[b.key].length,
-    shown: Math.min(map[b.key].length, SLOTS_PER_ISLAND)
-  }));
+  return BIOMES.map((b) => {
+    // A dónde lleva la isla: al índice filtrado por lo que de verdad crece en
+    // ella. Se toman las categorías de sus productos, no las declaradas, para
+    // que lo que cae en la selva por descarte también venga en el filtro.
+    const present = [];
+    map[b.key].forEach((p) => {
+      if (p.category && present.indexOf(p.category) === -1) present.push(p.category);
+    });
+    const filter = present.length ? present : b.categories;
+
+    // "El jardín" pide "entrar al jardín" y "las 12 del jardín", no "a el" ni
+    // "de el". Se resuelve aquí para que las vistas solo escriban la frase.
+    const low = b.name.toLowerCase();
+    const masculine = low.indexOf('el ') === 0;
+
+    return {
+      ...b,
+      into: masculine ? 'al ' + low.slice(3) : 'a ' + low,
+      of: masculine ? 'del ' + low.slice(3) : 'de ' + low,
+      products: interleaveByCategory(map[b.key]),
+      total: map[b.key].length,
+      shown: Math.min(map[b.key].length, SLOTS_PER_ISLAND),
+      href: '/?' + filter.map((c) => 'category=' + encodeURIComponent(c)).join('&')
+    };
+  });
 }
 
 function findBiome(products, key) {

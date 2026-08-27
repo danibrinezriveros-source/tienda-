@@ -140,6 +140,107 @@
     text-shadow: 0 2px 12px rgba(0, 0, 0, 0.9);
   }
 
+  /* ——— La entrada al bioma ———
+     Secuencia de imágenes recorrida con el scroll: la sección es alta, la toma
+     queda fija y cada cuadro se dibuja en el canvas mientras la cámara avanza.
+     En el último tramo el bioma se abre y aparecen sus variedades. Sin JS —o
+     con movimiento reducido— la sección se aplana, queda una sola vista y las
+     variedades se leen siempre: el catálogo nunca depende del scrubbing. */
+  .approach {
+    @apply relative border-t border-line bg-night;
+    --shot: 100%;   /* cuánto de la toma ocupa el cuadro; en vertical, una banda */
+  }
+  .approach[data-ready] { height: 360vh; }
+
+  .approach-stick {
+    @apply relative flex w-full items-end overflow-hidden;
+    min-height: 72svh;
+  }
+  .approach[data-ready] .approach-stick {
+    @apply sticky top-0;
+    height: 100svh;
+  }
+
+  .approach-shot {
+    @apply absolute inset-x-0 top-0 overflow-hidden;
+    height: var(--shot);
+  }
+  .approach-canvas {
+    @apply absolute inset-0 h-full w-full;
+    /* El cielo del bioma, para que el lienzo nunca sea un hueco. */
+    background: radial-gradient(120% 80% at 50% 58%, #1d2f22 0%, #0b120e 76%);
+  }
+  .approach-fade {
+    @apply pointer-events-none absolute inset-x-0 bottom-0 h-2/3;
+    background: linear-gradient(to top, theme('colors.night') 3%, rgba(11, 18, 14, 0.6) 46%, transparent 100%);
+  }
+
+  .approach-hud {
+    @apply relative z-10 w-full px-6 pb-14 pt-24 sm:px-10 sm:pb-16;
+  }
+  /* El rótulo del bioma y sus variedades ocupan el mismo sitio: lo primero se
+     aparta cuando llega lo segundo, igual que la maleza del primer plano. */
+  .approach-panels { @apply grid; }
+  .approach-panels > * { grid-area: 1 / 1; }
+  /* El rótulo se desvanece (no puede usar visibility: no transiciona, y se
+     iría de golpe). Las variedades sí, porque llevan enlaces: mientras no se
+     hayan abierto no deben poder recibir el foco. */
+  .approach[data-ready] .approach-lead {
+    @apply opacity-100 transition duration-700 ease-camera;
+  }
+  .approach[data-ready][data-open] .approach-lead {
+    @apply pointer-events-none -translate-y-4 opacity-0;
+  }
+  .approach[data-ready] .approach-varieties {
+    @apply invisible translate-y-6 opacity-0 transition duration-700 ease-camera;
+  }
+  .approach[data-ready][data-open] .approach-varieties {
+    @apply visible translate-y-0 opacity-100;
+  }
+  .approach:not([data-ready]) .approach-panels { @apply block space-y-12; }
+
+  .approach-row {
+    @apply mt-8 flex gap-8 overflow-x-auto pb-2;
+    scrollbar-width: none;
+  }
+  .approach-row::-webkit-scrollbar { display: none; }
+  .approach-variety {
+    @apply w-32 shrink-0 sm:w-36;
+  }
+  /* Cada variedad asoma un instante después de la anterior, como si la vista
+     se posara en ellas de una en una. */
+  .approach[data-ready] .approach-variety {
+    @apply translate-y-4 opacity-0 transition duration-700 ease-camera;
+    transition-delay: 0ms;
+  }
+  .approach[data-ready][data-open] .approach-variety {
+    @apply translate-y-0 opacity-100;
+    transition-delay: calc(var(--i, 0) * 90ms + 120ms);
+  }
+  .approach-variety-thumb {
+    @apply block aspect-square w-full overflow-hidden rounded-full;
+    filter: brightness(0.9) saturate(0.95);
+    transition: filter 700ms theme('transitionTimingFunction.camera');
+  }
+  .approach-variety a:hover .approach-variety-thumb { filter: brightness(1.06) saturate(1.05); }
+  .approach-variety a:hover .font-display { @apply text-gold; }
+
+  .approach-rail { @apply mt-10 h-px w-full max-w-xs bg-line; }
+  .approach-rail span {
+    @apply block h-px origin-left bg-gold;
+    transform: scaleX(var(--p, 0));
+  }
+  .approach:not([data-ready]) .approach-rail { @apply hidden; }
+
+  /* El cuadro es apaisado: en una pantalla vertical, cubrirla entera mostraría
+     una franja de terreno y nada del bioma. La toma se queda en una banda y lo
+     que se lee baja debajo, como el pie de una foto. */
+  @media (max-aspect-ratio: 5 / 4) {
+    .approach { --shot: min(52svh, 88vw); }
+    .approach[data-ready] .approach-stick { @apply items-start; }
+    .approach[data-ready] .approach-hud { padding-top: calc(var(--shot) + 1.75rem); }
+  }
+
   /* ——— Mundo isométrico ———
      La isla es una sola escena SVG. Cada planta se levanta del suelo al
      acercarse el cursor y solo entonces dice su nombre y su precio. */
@@ -192,6 +293,19 @@
     .iso-tag-meta { font-size: 26px; stroke-width: 9px; }
     .iso-pin { r: 7; }
   }
+  /* La isla es la puerta del ecosistema. No lleva rótulo encima: se anuncia
+     encendiéndose al pasar por ella, y el nombre ya está escrito al lado. */
+  .iso-ground { cursor: pointer; }
+  /* La bruma y las luciérnagas son aire: se dibujan encima de todo, así que sin
+     esto se comerían el clic de la isla y el de las plantas que tapan. */
+  .iso-air { pointer-events: none; }
+  .iso-ground-lift {
+    opacity: 0;
+    transition: opacity 700ms theme('transitionTimingFunction.camera');
+  }
+  .iso-ground:hover .iso-ground-lift,
+  .iso-ground:focus-visible .iso-ground-lift { opacity: 0.07; }
+
   .iso-plant {
     cursor: pointer;
     pointer-events: bounding-box;

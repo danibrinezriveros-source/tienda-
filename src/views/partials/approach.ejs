@@ -1,0 +1,69 @@
+<%
+  // ——— La entrada al bioma ———
+  // El visitante cae en un ecosistema y lo ve de lejos. Al bajar, la cámara
+  // avanza: la maleza del primer plano se aparta, el sendero se acorta y al
+  // final el bioma se abre en las variedades que crecen ahí.
+  // Cuál bioma toca se decide en el servidor, en cada visita.
+  var b = biome;
+  var varieties = b.products.slice(0, 6);
+  function money(v) { return '$' + Number(v).toLocaleString('es-CO', { maximumFractionDigits: 0 }); }
+%>
+<section id="entrada" class="approach" data-approach
+         data-frames="<%= shots.count %>" data-src="<%= shots.base %>"
+         <% if (shots.list) { %>data-list="<%= JSON.stringify(shots.list) %>"<% } %>
+         <% if (shots.version) { %>data-version="<%= shots.version %>"<% } %>
+         aria-labelledby="entrada-titulo">
+  <div class="approach-stick">
+    <div class="approach-shot">
+      <canvas class="approach-canvas" data-approach-canvas role="img"
+              aria-label="<%= b.name %> visto desde el sendero: <%= b.line %>"></canvas>
+      <div class="approach-fade" aria-hidden="true"></div>
+    </div>
+
+    <div class="approach-hud">
+      <div class="mx-auto max-w-5xl">
+        <div class="approach-panels">
+          <div class="approach-lead">
+            <p class="stratum-index" id="entrada-titulo">Hoy entras por aquí</p>
+            <p class="mt-4 font-display text-5xl leading-none text-ink sm:text-6xl"><%= b.name %></p>
+            <p class="mt-4 max-w-sm text-sm leading-relaxed text-sand"><%= b.line %></p>
+            <p class="mt-8 text-[10px] uppercase tracking-wander text-sandDim">
+              Sigue bajando para entrar
+            </p>
+          </div>
+
+          <div class="approach-varieties" data-approach-varieties>
+            <p class="stratum-index">
+              Lo que crece en <%= b.name.toLowerCase() %> · <%= b.total %>
+              <%= b.total === 1 ? 'especie' : 'especies' %>
+            </p>
+            <ul class="approach-row">
+              <% varieties.forEach(function (p, pi) { %>
+                <li class="approach-variety" style="--i: <%= pi %>">
+                  <a href="/producto/<%= p.id %>">
+                    <span class="approach-variety-thumb">
+                      <%- include('product-image', { image_url: p.image_url, name: p.name, category: p.category, pid: p.id }) %>
+                    </span>
+                    <span class="mt-4 block font-display text-lg leading-tight text-ink"><%= p.name %></span>
+                    <span class="mt-1 block text-xs text-sandDim">
+                      <%= money(p.price) %><%= p.stock > 0 ? '' : ' · agotada' %>
+                    </span>
+                  </a>
+                </li>
+              <% }) %>
+            </ul>
+            <p class="mt-8 text-[11px] uppercase tracking-wander text-sandDim">
+              <% if (b.total > varieties.length) { %>
+                <a href="<%= b.href %>" class="text-gold hover:underline">Las <%= b.total %> <%= b.of %></a>
+                ·
+              <% } %>
+              <a href="#mundo" class="quiet-link">Los otros ecosistemas</a>
+            </p>
+          </div>
+        </div>
+
+        <div class="approach-rail" aria-hidden="true"><span></span></div>
+      </div>
+    </div>
+  </div>
+</section>

@@ -38,7 +38,7 @@
         </p>
       </div>
 
-      <a href="#mundo" class="absolute inset-x-0 bottom-10 z-[10] mx-auto flex w-max flex-col items-center gap-3 text-sand transition-colors duration-500 hover:text-ink" data-enter="3">
+      <a href="#entrada" class="absolute inset-x-0 bottom-10 z-[10] mx-auto flex w-max flex-col items-center gap-3 text-sand transition-colors duration-500 hover:text-ink" data-enter="3">
         <span class="text-[10px] uppercase tracking-wander">Explorar</span>
         <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-4 drift-slow" viewBox="0 0 16 32" fill="none" stroke="currentColor" stroke-width="1" aria-hidden="true">
           <path stroke-linecap="round" d="M8 4v24M3 22l5 6 5-6" />
@@ -46,8 +46,13 @@
       </a>
     </section>
 
-    <!-- ——— El mundo: los ecosistemas se recorren de lado ——— -->
+    <!-- ——— La entrada: hoy el mundo se abre por un bioma, y solo por uno ——— -->
     <% var world = biomes.filter(function (bm) { return bm.total > 0; }); %>
+    <% if (entrance) { %>
+      <%- include('partials/approach', { biome: entrance, shots: entranceShots }) %>
+    <% } %>
+
+    <!-- ——— El mundo: los ecosistemas se recorren de lado ——— -->
     <section id="mundo" class="relative scroll-mt-24 border-t border-line bg-night py-20 sm:py-24">
       <div class="mx-auto max-w-6xl px-6 sm:px-10">
         <div class="flex flex-col gap-8 sm:flex-row sm:items-end sm:justify-between">
@@ -89,7 +94,7 @@
                 </div>
                 <% if (bi === 0) { %>
                   <p class="max-w-[15rem] text-[11px] uppercase leading-relaxed tracking-wander text-sandDim">
-                    Acércate a una planta para saber quién es.
+                    Acércate a una planta para saber quién es. Pulsa la isla para verlas todas.
                   </p>
                 <% } %>
               </div>
@@ -107,6 +112,12 @@
                 <% } %>
                 <% bm.categories.forEach(function (cat, ci) { %><a href="/?category=<%= encodeURIComponent(cat) %>" class="text-gold hover:underline"><%= cat %></a><%= ci < bm.categories.length - 1 ? ' · ' : '' %><% }) %>
               </p>
+
+              <!-- La isla ya es pulsable; esto lo dice en voz alta, y da un
+                   destino al teclado sin tener que atravesar las plantas. -->
+              <a href="<%= bm.href %>" class="action mt-8">
+                Entrar <%= bm.into %>
+              </a>
             </div>
           </article>
         <% }) %>
@@ -129,15 +140,18 @@
             <label for="q" class="mb-2 block text-[10px] uppercase tracking-wander text-sandDim">Buscar</label>
             <input id="q" type="text" name="q" value="<%= q %>" placeholder="Nombre de la planta…" class="field" />
           </div>
+          <!-- Si el visitante entró por una isla, buscar dentro de ella no
+               debe sacarlo del ecosistema. -->
+          <% activeCategories.forEach(function (c) { %><input type="hidden" name="category" value="<%= c %>" /><% }) %>
           <button type="submit" class="action shrink-0">Buscar</button>
         </form>
 
         <% if (categories.length > 0) { %>
           <div class="mt-10 flex flex-wrap items-center gap-x-7 gap-y-3 text-[11px] uppercase tracking-wander">
-            <a href="/" class="<%= activeCategory === '' ? 'text-gold' : 'quiet-link' %>">Todas</a>
+            <a href="/" class="<%= activeCategories.length === 0 ? 'text-gold' : 'quiet-link' %>">Todas</a>
             <% categories.forEach(function (c) { %>
               <a href="/?category=<%= encodeURIComponent(c.category) %>"
-                 class="<%= activeCategory === c.category ? 'text-gold' : 'quiet-link' %>"><%= c.category %></a>
+                 class="<%= activeCategories.indexOf(c.category) !== -1 ? 'text-gold' : 'quiet-link' %>"><%= c.category %></a>
             <% }) %>
           </div>
         <% } %>
