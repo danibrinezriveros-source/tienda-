@@ -4,6 +4,7 @@ const { pool } = require('../db');
 const { requireLogin } = require('../middleware/auth');
 const { sendOrderConfirmation } = require('../config/whatsapp');
 const { checkoutLimiter } = require('../middleware/rateLimit');
+const { toId } = require('../utils/ids');
 
 router.get('/checkout', requireLogin, (req, res) => {
   const cart = req.session.cart || [];
@@ -19,9 +20,39 @@ router.post('/checkout', requireLogin, checkoutLimiter, async (req, res, next) =
     if (cart.length === 0) return res.redirect('/carrito');
 
     const { phone, address, notes } = req.body;
-    const total = cart.reduce((sum, i) => sum + i.price * i.quantity, 0);
 
     await client.query('BEGIN');
+
+    // La cantidad del carrito es una intención, no una garantía: entre agregar
+    // y pagar, el stock pudo cambiar (o el producto desaparecer). Se re-valida
+    // contra la base de datos y se bloquea cada fila con FOR UPDATE, de modo que
+    // dos pedidos simultáneos no puedan vender el mismo stock dos veces. El
+    // precio también se toma de la BD, no del carrito, por si cambió.
+    const validated = [];
+    for (const item of cart) {
+      const { rows } = await client.query(
+        'SELECT id, name, price, stock FROM products WHERE id = $1 AND active = TRUE FOR UPDATE',
+        [item.productId]
+      );
+      const product = rows[0];
+      if (!product || product.stock <= 0) continue; // agotado o retirado: se omite
+      validated.push({
+        productId: product.id,
+        name: product.name,
+        price: Number(product.price),
+        quantity: Math.min(item.quantity, product.stock)
+      });
+    }
+
+    // Si nada quedó disponible, no se crea un pedido vacío.
+    if (validated.length === 0) {
+      await client.query('ROLLBACK');
+      req.session.cart = [];
+      return res.redirect('/carrito');
+    }
+
+    const total = validated.reduce((sum, i) => sum + i.price * i.quantity, 0);
+
     const { rows: orderRows } = await client.query(
       `INSERT INTO orders (user_id, customer_name, customer_phone, customer_email, address, notes, total, status)
        VALUES ($1,$2,$3,$4,$5,$6,$7,'pendiente') RETURNING *`,
@@ -29,7 +60,7 @@ router.post('/checkout', requireLogin, checkoutLimiter, async (req, res, next) =
     );
     const order = orderRows[0];
 
-    for (const item of cart) {
+    for (const item of validated) {
       await client.query(
         `INSERT INTO order_items (order_id, product_id, product_name, unit_price, quantity)
          VALUES ($1,$2,$3,$4,$5)`,
@@ -45,7 +76,7 @@ router.post('/checkout', requireLogin, checkoutLimiter, async (req, res, next) =
     req.session.cart = [];
 
     // Confirmación por WhatsApp (si está activada en el panel de admin)
-    sendOrderConfirmation(order, cart.map((i) => ({ product_name: i.name, quantity: i.quantity }))).catch(
+    sendOrderConfirmation(order, validated.map((i) => ({ product_name: i.name, quantity: i.quantity }))).catch(
       (e) => console.error('WhatsApp:', e.message)
     );
 
@@ -72,14 +103,14 @@ router.get('/mis-pedidos', requireLogin, async (req, res, next) => {
 
 router.get('/mis-pedidos/:id', requireLogin, async (req, res, next) => {
   try {
+    const id = toId(req.params.id);
+    if (id === null) return res.status(404).render('404');
     const { rows } = await pool.query('SELECT * FROM orders WHERE id = $1 AND user_id = $2', [
-      req.params.id,
+      id,
       req.session.user.id
     ]);
     if (!rows[0]) return res.status(404).render('404');
-    const { rows: items } = await pool.query('SELECT * FROM order_items WHERE order_id = $1', [
-      req.params.id
-    ]);
+    const { rows: items } = await pool.query('SELECT * FROM order_items WHERE order_id = $1', [id]);
     res.render('order-detail', { order: rows[0], items });
   } catch (err) {
     next(err);
