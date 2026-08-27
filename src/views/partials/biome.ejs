@@ -69,6 +69,12 @@
 
   <rect x="196" y="66" width="808" height="706" fill="url(#iso-sun-<%= b.key %>)" />
 
+  <!-- La isla entera es la puerta del ecosistema: pulsar el suelo lleva al
+       índice filtrado por lo que crece aquí. Va antes que los habitantes, así
+       que el clic sobre una planta sigue siendo el de esa planta. -->
+  <a href="<%= b.href %>" class="iso-ground"
+     aria-label="Ver las <%= b.total %> <%= b.total === 1 ? 'especie' : 'especies' %> <%= b.of %>">
+
   <!-- Roca: la isla tiene espesor, no es una lámina -->
   <path d="M<%= pt(left) %> L<%= pt(bottom) %> L600 736 L318 501 Z" fill="<%= g.edge %>" />
   <path d="M<%= pt(right) %> L<%= pt(bottom) %> L600 736 L884 498 Z" fill="url(#iso-rock-<%= b.key %>)" />
@@ -167,6 +173,12 @@
       </g>
     <% } %>
   </g>
+
+  <!-- La luz que se enciende al pasar por encima: la isla se sabe pulsable -->
+  <path class="iso-ground-lift"
+        d="M<%= pt(top) %> L<%= pt(right) %> L<%= pt(bottom) %> L<%= pt(left) %> Z"
+        fill="#c8a86a" />
+  </a>
 
   <!-- Habitantes: cada planta es un producto que vive aquí -->
   <% living.forEach(function (item) {
