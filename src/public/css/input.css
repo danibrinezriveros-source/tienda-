@@ -170,13 +170,21 @@
     /* El cielo del bioma, para que el lienzo nunca sea un hueco. */
     background: radial-gradient(120% 80% at 50% 58%, #1d2f22 0%, #0b120e 76%);
   }
+  /* La foto manda, pero debajo tiene que poder leerse. El velo baja hasta
+     negro porque una foto a contraluz —arena, cielo de atardecer— se come
+     cualquier texto tenue puesto encima. */
   .approach-fade {
-    @apply pointer-events-none absolute inset-x-0 bottom-0 h-2/3;
-    background: linear-gradient(to top, theme('colors.night') 3%, rgba(11, 18, 14, 0.6) 46%, transparent 100%);
+    @apply pointer-events-none absolute inset-x-0 bottom-0 h-3/4;
+    background: linear-gradient(to top,
+      theme('colors.night') 0%,
+      rgba(11, 18, 14, 0.94) 22%,
+      rgba(11, 18, 14, 0.62) 52%,
+      transparent 100%);
   }
 
   .approach-hud {
     @apply relative z-10 w-full px-6 pb-14 pt-24 sm:px-10 sm:pb-16;
+    text-shadow: 0 1px 16px rgba(0, 0, 0, 0.75);
   }
   /* El rótulo del bioma y sus variedades ocupan el mismo sitio: lo primero se
      aparta cuando llega lo segundo, igual que la maleza del primer plano. */
@@ -217,6 +225,7 @@
     @apply translate-y-0 opacity-100;
     transition-delay: calc(var(--i, 0) * 90ms + 120ms);
   }
+  .approach-variety-thumb + span { @apply mt-4; }
   .approach-variety-thumb {
     @apply block aspect-square w-full overflow-hidden rounded-full;
     filter: brightness(0.9) saturate(0.95);

@@ -41,10 +41,18 @@
               <% varieties.forEach(function (p, pi) { %>
                 <li class="approach-variety" style="--i: <%= pi %>">
                   <a href="/producto/<%= p.id %>">
-                    <span class="approach-variety-thumb">
-                      <%- include('product-image', { image_url: p.image_url, name: p.name, category: p.category, pid: p.id }) %>
-                    </span>
-                    <span class="mt-4 block font-display text-lg leading-tight text-ink"><%= p.name %></span>
+                    <%
+                      // La miniatura solo cuando hay foto de verdad. El sprite
+                      // dibujado que se usa de reemplazo funciona sobre fondo
+                      // liso, pero pegado sobre una fotografía delata que no es
+                      // una planta: mejor el nombre solo.
+                    %>
+                    <% if (p.image_url) { %>
+                      <span class="approach-variety-thumb">
+                        <%- include('product-image', { image_url: p.image_url, name: p.name, category: p.category, pid: p.id }) %>
+                      </span>
+                    <% } %>
+                    <span class="block font-display text-lg leading-tight text-ink"><%= p.name %></span>
                     <span class="mt-1 block text-xs text-sandDim">
                       <%= money(p.price) %><%= p.stock > 0 ? '' : ' · agotada' %>
                     </span>
