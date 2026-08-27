@@ -4,50 +4,59 @@
 <body>
 <%- include('../partials/admin-nav', { active: 'ajustes' }) %>
 
-  <span class="label-eyebrow">Ajustes</span>
-  <h1 class="mt-2 text-3xl font-bold">Notificaciones por WhatsApp</h1>
+  <h1 class="admin-title">Notificaciones por WhatsApp</h1>
 
   <% if (ok) { %>
-    <p class="mt-5 rounded-lg border border-ok/40 bg-ok/10 px-4 py-3 text-sm text-ok">Ajustes guardados.</p>
+    <p class="admin-note admin-note-ok mt-6 max-w-2xl" role="status">Ajustes guardados.</p>
   <% } %>
 
-  <div class="mt-8 max-w-xl rounded-2xl border border-line bg-surface p-6">
-    <div class="flex items-center justify-between">
+  <div class="admin-panel mt-10 max-w-2xl p-6">
+    <div class="flex flex-wrap items-center justify-between gap-4">
       <div>
-        <p class="font-medium">Estado de conexión</p>
-        <p class="mt-1 text-sm text-moss">Credenciales de Twilio en el servidor</p>
+        <p class="text-sm text-ink">Estado de conexión</p>
+        <p class="mt-1 text-xs text-sandDim">Credenciales de Twilio en el servidor</p>
       </div>
       <% if (twilioConfigured) { %>
-        <span class="status-pill bg-ok/10 text-ok"><span class="h-1.5 w-1.5 rounded-full bg-ok"></span> Conectado</span>
+        <span class="badge badge-ok">Conectado</span>
       <% } else { %>
-        <span class="status-pill bg-warn/10 text-warn"><span class="h-1.5 w-1.5 rounded-full bg-warn"></span> Sin configurar</span>
+        <span class="badge badge-warn">Sin configurar</span>
       <% } %>
     </div>
+
     <% if (!twilioConfigured) { %>
-      <p class="mt-4 text-sm text-moss">
-        Aún no has agregado tus credenciales de Twilio. Puedes activar el interruptor de abajo desde ya:
-        mientras no haya credenciales, las confirmaciones se simulan en la consola del servidor,
-        así puedes probar todo el flujo. Cuando tengas cuenta de Twilio, agrega
-        <code class="text-clay">TWILIO_ACCOUNT_SID</code>, <code class="text-clay">TWILIO_AUTH_TOKEN</code>
-        y <code class="text-clay">TWILIO_WHATSAPP_FROM</code> en el archivo <code class="text-clay">.env</code> y reinicia el servidor.
+      <p class="mt-5 border-t border-line pt-5 text-sm leading-relaxed text-sandDim">
+        Aún no has agregado tus credenciales de Twilio. Puedes activar el interruptor de abajo
+        desde ya: mientras no haya credenciales, las confirmaciones se simulan en la consola del
+        servidor, así puedes probar el flujo completo sin costo. Cuando tengas cuenta, agrega
+        <code class="admin-code">TWILIO_ACCOUNT_SID</code>,
+        <code class="admin-code">TWILIO_AUTH_TOKEN</code> y
+        <code class="admin-code">TWILIO_WHATSAPP_FROM</code>
+        en el archivo <code class="admin-code">.env</code> y reinicia el servidor.
       </p>
     <% } %>
   </div>
 
-  <form action="/admin/ajustes" method="POST" class="mt-6 max-w-xl space-y-5 rounded-2xl border border-line bg-surface p-6">
-    <label class="flex items-center justify-between">
-      <span class="text-sm">Enviar confirmación de pedidos por WhatsApp</span>
-      <span class="relative inline-flex h-6 w-11 flex-shrink-0 items-center">
-        <input type="checkbox" name="whatsapp_enabled" <%= settings.whatsapp_enabled === 'true' ? 'checked' : '' %> class="peer sr-only" />
-        <span class="absolute inset-0 rounded-full border border-line bg-surface2 transition peer-checked:border-leaf peer-checked:bg-leaf peer-focus-visible:ring-2 peer-focus-visible:ring-leaf/50"></span>
-        <span class="absolute left-1 h-4 w-4 rounded-full bg-cream transition peer-checked:translate-x-5"></span>
+  <form action="/admin/ajustes" method="POST" class="admin-panel mt-6 max-w-2xl space-y-7 p-6">
+    <label class="flex items-center justify-between gap-6">
+      <span class="text-sm text-ink">Enviar confirmación de pedidos por WhatsApp</span>
+      <span class="relative inline-flex h-6 w-11 shrink-0 items-center">
+        <input type="checkbox" name="whatsapp_enabled"
+               <%= settings.whatsapp_enabled === 'true' ? 'checked' : '' %>
+               class="peer absolute inset-0 z-10 h-full w-full cursor-pointer opacity-0" />
+        <span class="absolute inset-0 rounded-full border border-line bg-surface2 transition-colors duration-300 peer-checked:border-gold peer-checked:bg-gold peer-focus-visible:ring-2 peer-focus-visible:ring-gold/50"></span>
+        <span class="absolute left-1 h-4 w-4 rounded-full bg-sandDim transition-transform duration-300 peer-checked:translate-x-5 peer-checked:bg-night"></span>
       </span>
     </label>
-    <div>
-      <label class="mb-1 block text-sm text-moss">Número que recibe las notificaciones (con código de país, solo números)</label>
-      <input type="text" name="whatsapp_notify_number" value="<%= settings.whatsapp_notify_number || '' %>" placeholder="573001234567" class="input-field" />
+
+    <div class="border-t border-line pt-6">
+      <label for="whatsapp_notify_number" class="admin-label">Número que recibe las notificaciones</label>
+      <input id="whatsapp_notify_number" type="text" name="whatsapp_notify_number"
+             value="<%= settings.whatsapp_notify_number || '' %>"
+             placeholder="573001234567" inputmode="numeric" class="admin-field" />
+      <p class="mt-2 text-xs text-sandDim">Con código de país, solo números.</p>
     </div>
-    <button type="submit" class="btn-primary">Guardar ajustes</button>
+
+    <button type="submit" class="admin-btn">Guardar ajustes</button>
   </form>
 
 <%- include('../partials/admin-close') %>

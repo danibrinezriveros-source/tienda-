@@ -4,39 +4,31 @@
 <body>
   <%- include('partials/header') %>
 
-  <section class="mx-auto max-w-4xl px-6 py-14 text-center">
-    <span class="label-eyebrow">Aprende</span>
-    <h1 class="mt-2 text-4xl font-semibold">Guías de cuidado</h1>
-    <p class="mx-auto mt-4 max-w-xl text-moss">
-      Lo esencial para que tus plantas prosperen, explicado sin tecnicismos. Si tienes dudas sobre
-      una especie en particular, cuéntanos en el <a href="/asistente" class="text-clay hover:underline">asistente</a>.
+  <section class="mx-auto max-w-3xl px-6 pt-32 sm:px-10">
+    <h1 class="font-display text-5xl text-ink sm:text-6xl">Guías de cuidado</h1>
+    <p class="mt-6 max-w-md text-sm leading-relaxed text-sand">
+      Lo esencial para que tus plantas prosperen, sin tecnicismos. Si tu duda es sobre una
+      especie concreta, el <a href="/asistente" class="text-gold hover:underline">asistente</a>
+      afina más.
     </p>
   </section>
 
-  <section class="mx-auto max-w-4xl px-6 pb-20">
-    <div class="space-y-6">
-      <% guides.forEach(g => { %>
-        <div id="<%= g.slug %>" class="card scroll-mt-24 p-8">
-          <div class="flex items-start gap-4">
-            <span class="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full border border-line bg-surface2 text-leaf">
-              <%- include('partials/icon', { name: g.icon, cls: 'h-5 w-5' }) %>
-            </span>
-            <div>
-              <h2 class="text-xl font-semibold"><%= g.title %></h2>
-              <p class="mt-1 text-sm text-moss"><%= g.summary %></p>
-            </div>
-          </div>
-          <ul class="mt-5 space-y-2 border-t border-line pt-5 text-sm text-ink">
-            <% g.tips.forEach(tip => { %>
-              <li class="flex gap-2">
-                <span class="mt-1 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-leaf"></span>
-                <span><%= tip %></span>
-              </li>
-            <% }) %>
-          </ul>
-        </div>
-      <% }) %>
-    </div>
+  <section class="mx-auto max-w-3xl px-6 pb-24 pt-16 sm:px-10">
+    <% guides.forEach(function (g, gi) { %>
+      <article id="<%= g.slug %>" class="scroll-mt-28 border-t border-line py-14">
+        <span class="text-[10px] uppercase tracking-wander text-sandDim"><%= String(gi + 1).padStart(2, '0') %></span>
+        <h2 class="mt-4 font-display text-3xl text-ink sm:text-4xl"><%= g.title %></h2>
+        <p class="mt-4 max-w-lg text-base font-light leading-relaxed text-sand"><%= g.summary %></p>
+        <ul class="mt-10 space-y-5">
+          <% g.tips.forEach(function (tip) { %>
+            <li class="flex gap-5 text-sm leading-relaxed text-sand">
+              <span class="mt-2 h-px w-6 shrink-0 bg-gold/60" aria-hidden="true"></span>
+              <span><%= tip %></span>
+            </li>
+          <% }) %>
+        </ul>
+      </article>
+    <% }) %>
   </section>
 
   <%- include('partials/footer') %>

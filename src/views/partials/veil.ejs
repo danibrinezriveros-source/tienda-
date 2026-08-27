@@ -1,0 +1,21 @@
+<%
+  // Capa 1 — las hojas más cercanas a la cámara: fuera de foco, ancladas a las
+  // esquinas para dar profundidad sin taparle nada al visitante.
+  var tone = typeof tone !== 'undefined' ? tone : '#16281e';
+%>
+<svg class="scene-figure" viewBox="0 0 1440 900" preserveAspectRatio="xMidYMid slice" aria-hidden="true" focusable="false">
+  <g fill="<%= tone %>">
+    <g transform="translate(-40,-30) rotate(18)">
+      <path d="M0 0 C 120 -150 330 -180 470 -60 C 330 70 120 110 0 0 Z" />
+    </g>
+    <g transform="translate(1500,120) rotate(163)">
+      <path d="M0 0 C 130 -160 350 -190 500 -64 C 350 74 130 118 0 0 Z" />
+    </g>
+    <g transform="translate(-70,960) rotate(-42)">
+      <path d="M0 0 C 110 -140 300 -168 430 -56 C 300 66 110 102 0 0 Z" />
+    </g>
+    <g transform="translate(1470,880) rotate(212)">
+      <path d="M0 0 C 100 -128 276 -154 396 -52 C 276 60 100 94 0 0 Z" />
+    </g>
+  </g>
+</svg>

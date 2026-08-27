@@ -1,0 +1,25 @@
+<%
+  // Capa 5 — atmósfera. Luz que baja entre las hojas y se disuelve.
+  // `id` evita que los gradientes de dos escenas colisionen.
+  var id = typeof id !== 'undefined' ? id : 'a';
+  var warm = typeof warm !== 'undefined' ? warm : 0.16;
+%>
+<svg class="scene-figure" viewBox="0 0 1440 900" preserveAspectRatio="xMidYMid slice" aria-hidden="true" focusable="false">
+  <defs>
+    <linearGradient id="shaft-<%= id %>" x1="0" y1="0" x2="0.35" y2="1">
+      <stop offset="0%" stop-color="#e8dcae" stop-opacity="<%= warm %>" />
+      <stop offset="55%" stop-color="#cbbf8a" stop-opacity="<%= (warm * 0.4).toFixed(3) %>" />
+      <stop offset="100%" stop-color="#cbbf8a" stop-opacity="0" />
+    </linearGradient>
+    <radialGradient id="glow-<%= id %>" cx="0.5" cy="0.08" r="0.75">
+      <stop offset="0%" stop-color="#f0e6c2" stop-opacity="<%= (warm * 1.5).toFixed(3) %>" />
+      <stop offset="100%" stop-color="#f0e6c2" stop-opacity="0" />
+    </radialGradient>
+  </defs>
+  <rect width="1440" height="900" fill="url(#glow-<%= id %>)" />
+  <g>
+    <path d="M320 -60 L520 -60 L300 900 L120 900 Z" fill="url(#shaft-<%= id %>)" />
+    <path d="M760 -60 L880 -60 L700 900 L560 900 Z" fill="url(#shaft-<%= id %>)" opacity="0.75" />
+    <path d="M1180 -60 L1340 -60 L1180 900 L980 900 Z" fill="url(#shaft-<%= id %>)" opacity="0.55" />
+  </g>
+</svg>

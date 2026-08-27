@@ -1,25 +1,35 @@
 <!DOCTYPE html>
 <html lang="es">
 <head><%- include('../partials/head', { title: 'Acceso administrador' }) %></head>
-<body class="flex min-h-screen items-center justify-center bg-canopy px-6">
-  <div class="w-full max-w-sm rounded-2xl border border-line bg-surface p-8">
-    <div class="flex items-center gap-2">
-      <span class="h-2 w-2 rounded-full bg-leaf shadow-glow"></span>
-      <span class="font-display text-lg font-bold tracking-widest">Arborea</span>
+<body class="flex min-h-screen items-center justify-center bg-night px-6">
+  <div class="w-full max-w-sm">
+    <div class="flex items-center gap-3">
+      <span class="h-1.5 w-1.5 rounded-full bg-gold" aria-hidden="true"></span>
+      <span class="font-display text-base tracking-[0.32em] text-ink">ARBÓREA</span>
+      <span class="ml-auto text-[10px] uppercase tracking-wander text-sandDim">Admin</span>
     </div>
-    <p class="label-eyebrow mt-4">Panel de administrador</p>
-    <h1 class="mt-1 text-2xl font-bold">Acceso restringido</h1>
+
+    <h1 class="mt-10 font-display text-4xl text-ink">Acceso restringido</h1>
 
     <% if (error) { %>
-      <p class="mt-4 rounded-lg border border-danger/40 bg-danger/10 px-4 py-3 text-sm text-danger"><%= error %></p>
+      <p class="admin-note admin-note-danger mt-6" role="alert"><%= error %></p>
     <% } %>
 
-    <form action="/admin/ingresar" method="POST" class="mt-6 space-y-4">
-      <input type="email" name="email" required placeholder="Correo de administrador" class="input-field" />
-      <input type="password" name="password" required placeholder="Contraseña" class="input-field" />
-      <button type="submit" class="btn-primary w-full justify-center">Ingresar</button>
+    <form action="/admin/ingresar" method="POST" class="mt-10 space-y-6">
+      <div>
+        <label for="email" class="admin-label">Correo</label>
+        <input id="email" type="email" name="email" required autocomplete="email" class="admin-field" />
+      </div>
+      <div>
+        <label for="password" class="admin-label">Contraseña</label>
+        <input id="password" type="password" name="password" required autocomplete="current-password" class="admin-field" />
+      </div>
+      <button type="submit" class="admin-btn w-full">Ingresar</button>
     </form>
-    <a href="/" class="mt-6 block text-center text-xs text-moss hover:text-ink">← Volver a la tienda</a>
+
+    <a href="/" class="mt-10 block text-[10px] uppercase tracking-wander text-sandDim transition-colors hover:text-ink">
+      ← Volver a la tienda
+    </a>
   </div>
 </body>
 </html>

@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { pool } = require('../db');
 const { CARE_GUIDES } = require('../config/careGuides');
+const { buildBiomes } = require('../config/biomes');
 
 router.get('/', async (req, res, next) => {
   try {
@@ -24,12 +25,18 @@ router.get('/', async (req, res, next) => {
       'SELECT DISTINCT category FROM products WHERE active = TRUE ORDER BY category'
     );
 
+    const isBrowsing = Boolean(category || q);
+
     res.render('home', {
       products,
       categories,
       activeCategory: category || '',
       q: q || '',
-      featuredGuides: CARE_GUIDES.slice(0, 3)
+      featuredGuides: CARE_GUIDES.slice(0, 3),
+      // El mundo solo se arma cuando el visitante llega a explorar. Si viene
+      // filtrando o buscando, ya sabe qué quiere y la home cae al listado.
+      biomes: isBrowsing ? null : buildBiomes(products),
+      isBrowsing
     });
   } catch (err) {
     next(err);

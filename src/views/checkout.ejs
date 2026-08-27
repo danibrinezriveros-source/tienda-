@@ -4,29 +4,44 @@
 <body>
   <%- include('partials/header') %>
 
-  <section class="mx-auto max-w-3xl px-6 py-14">
-    <span class="label-eyebrow">Paso final</span>
-    <h1 class="mt-2 text-3xl font-bold">Datos de entrega</h1>
+  <section class="mx-auto max-w-2xl px-6 pb-24 pt-32 sm:px-10">
+    <h1 class="font-display text-5xl text-ink sm:text-6xl">Dónde te la dejamos</h1>
+    <p class="mt-5 max-w-md text-sm leading-relaxed text-sand">
+      Confirmamos el pedido por WhatsApp antes de despachar, así que el teléfono importa
+      más que cualquier otro dato.
+    </p>
 
-    <div class="mt-8 rounded-2xl border border-line bg-surface2 p-6">
-      <p class="text-sm text-moss">Total a pagar</p>
-      <p class="font-mono text-3xl font-semibold text-clay">$<%= total.toFixed(2) %></p>
+    <div class="mt-12 flex items-end justify-between border-y border-line py-6">
+      <span class="text-[11px] uppercase tracking-wander text-sandDim">Total a pagar</span>
+      <span class="font-display text-3xl text-gold">
+        $<%= total.toLocaleString('es-CO', { maximumFractionDigits: 0 }) %>
+      </span>
     </div>
 
-    <form action="/checkout" method="POST" class="mt-8 space-y-5">
+    <form action="/checkout" method="POST" class="mt-12 space-y-10">
       <div>
-        <label class="mb-1 block text-sm text-moss">Teléfono de contacto (recibirás la confirmación aquí)</label>
-        <input type="tel" name="phone" required class="input-field" placeholder="Ej: 3001234567" />
+        <label for="phone" class="mb-2 block text-[10px] uppercase tracking-wander text-sandDim">
+          Teléfono de contacto
+        </label>
+        <input id="phone" type="tel" name="phone" required class="field" placeholder="Ej: 3001234567" />
       </div>
       <div>
-        <label class="mb-1 block text-sm text-moss">Dirección de entrega</label>
-        <textarea name="address" required rows="3" class="input-field"></textarea>
+        <label for="address" class="mb-2 block text-[10px] uppercase tracking-wander text-sandDim">
+          Dirección de entrega
+        </label>
+        <textarea id="address" name="address" required rows="3" class="field resize-none"></textarea>
       </div>
       <div>
-        <label class="mb-1 block text-sm text-moss">Notas (opcional)</label>
-        <textarea name="notes" rows="2" class="input-field"></textarea>
+        <label for="notes" class="mb-2 block text-[10px] uppercase tracking-wander text-sandDim">
+          Notas <span class="normal-case tracking-normal">(opcional)</span>
+        </label>
+        <textarea id="notes" name="notes" rows="2" class="field resize-none"></textarea>
       </div>
-      <button type="submit" class="btn-primary w-full justify-center">Confirmar pedido</button>
+
+      <div class="flex flex-wrap items-center gap-8 pt-2">
+        <button type="submit" class="action-solid">Confirmar pedido</button>
+        <a href="/carrito" class="quiet-link text-[11px] uppercase tracking-wander">Volver al carrito</a>
+      </div>
     </form>
   </section>
 

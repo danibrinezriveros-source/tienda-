@@ -1,53 +1,40 @@
 <%
-  var isTransparent = typeof transparent !== 'undefined' && transparent;
-  var headerClass = isTransparent
-    ? 'absolute inset-x-0 top-0 z-50 bg-transparent'
-    : 'sticky top-0 z-50 border-b border-line bg-night/90 backdrop-blur';
-  var brandClass = isTransparent ? 'text-cream' : 'text-ink';
-  var iconClass = isTransparent ? 'text-cream' : 'text-leaf';
-  var navLinkClass = isTransparent ? 'text-cream/80 hover:text-cream' : 'text-moss hover:text-ink';
-  var cartIconClass = isTransparent ? 'text-cream/90 hover:text-cream' : 'text-moss hover:text-ink';
-  var secondaryBtnClass = isTransparent
-    ? '!border-cream/30 !bg-cream/10 !text-cream hover:!border-cream/60 hover:!bg-cream/15'
-    : '';
+  // `overlay` = el encabezado flota sobre la escena y solo gana contraste
+  // cuando el visitante se aleja de la primera toma.
+  var overlay = typeof overlay !== 'undefined' && overlay;
 %>
-<header class="<%= headerClass %>">
-  <div class="mx-auto flex max-w-6xl items-center justify-between px-6 py-5">
-    <a href="/" class="flex items-center gap-2">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="h-6 w-6 <%= iconClass %>" fill="currentColor">
+<header id="site-header" class="fixed inset-x-0 top-0 z-50 transition-colors duration-700 <%= overlay ? '' : 'is-solid' %>">
+  <div class="mx-auto flex max-w-7xl items-center justify-between px-6 py-6 sm:px-10">
+    <a href="/" class="group flex items-center gap-3">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="h-5 w-5 text-gold" fill="currentColor" aria-hidden="true">
         <path d="M12 2c-4.5 3-7 6.8-7 10.8C5 17.3 8.1 21 12 21s7-3.7 7-8.2C19 8.8 16.5 5 12 2zm0 3.4c2.9 2.4 4.5 5 4.5 7.4 0 3-2 5.4-4.5 5.4S7.5 15.8 7.5 12.8c0-2.4 1.6-5 4.5-7.4z"/>
       </svg>
-      <span class="font-display text-lg font-semibold uppercase tracking-[0.15em] <%= brandClass %>">Arborea</span>
+      <span class="font-display text-xl tracking-[0.42em] text-ink">ARBÓREA</span>
     </a>
 
-    <nav class="hidden items-center gap-8 text-sm <%= navLinkClass %> md:flex">
-      <a href="/" class="transition <%= navLinkClass %>">Catálogo</a>
-      <a href="/guias" class="transition <%= navLinkClass %>">Guías de cuidado</a>
-      <a href="/sobre-arborea" class="transition <%= navLinkClass %>">Sobre Arborea</a>
-      <a href="/asistente" class="transition <%= navLinkClass %>">Encuentra tu planta</a>
-      <% if (currentUser && currentUser.role === 'user') { %>
-        <a href="/mis-pedidos" class="transition <%= navLinkClass %>">Mis pedidos</a>
-      <% } %>
+    <nav class="hidden items-center gap-10 text-[11px] uppercase tracking-wander md:flex">
+      <a href="/" class="quiet-link">Explorar</a>
+      <a href="/?category=<%= encodeURIComponent('exterior') %>" class="quiet-link">Jardín</a>
+      <a href="/guias" class="quiet-link">Guías</a>
+      <a href="/asistente" class="quiet-link">Asistente</a>
     </nav>
 
-    <div class="flex items-center gap-4">
-      <a href="/carrito" class="relative flex items-center gap-2 text-sm transition <%= cartIconClass %>">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+    <div class="flex items-center gap-6">
+      <a href="/carrito" class="relative flex items-center text-sand transition-colors duration-500 hover:text-ink" aria-label="Carrito">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.2" aria-hidden="true">
           <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.836l.383 1.437M7.5 14.25a3 3 0 00-3 3h15.75m-12.75-3h11.218c1.121-2.3 1.87-4.9 2.13-7.65a1.125 1.125 0 00-1.11-1.235H5.104M7.5 14.25L5.106 5.272M6.75 20.25a.75.75 0 11-1.5 0 .75.75 0 011.5 0zm12 0a.75.75 0 11-1.5 0 .75.75 0 011.5 0z" />
         </svg>
         <% if (cartCount > 0) { %>
-          <span class="absolute -right-2 -top-2 flex h-4 w-4 items-center justify-center rounded-full bg-leaf text-[10px] font-bold text-cream"><%= cartCount %></span>
+          <span class="absolute -right-2.5 -top-2 flex h-4 min-w-4 items-center justify-center rounded-full bg-gold px-1 text-[10px] font-medium text-night"><%= cartCount %></span>
         <% } %>
       </a>
 
       <% if (currentUser && currentUser.role === 'user') { %>
-        <span class="hidden text-sm md:inline <%= isTransparent ? 'text-cream/80' : 'text-moss' %>">Hola, <%= currentUser.name.split(' ')[0] %></span>
         <form action="/salir" method="POST" class="hidden md:block">
-          <button class="btn-secondary !px-4 !py-2 text-xs <%= secondaryBtnClass %>">Salir</button>
+          <button class="text-[11px] uppercase tracking-wander text-sand transition-colors duration-500 hover:text-ink">Salir</button>
         </form>
       <% } else { %>
-        <a href="/ingresar" class="hidden btn-secondary !px-4 !py-2 text-xs md:inline-flex <%= secondaryBtnClass %>">Ingresar</a>
-        <a href="/registrarse" class="hidden btn-primary !px-4 !py-2 text-xs md:inline-flex">Crear cuenta</a>
+        <a href="/ingresar" class="hidden text-[11px] uppercase tracking-wander text-sand transition-colors duration-500 hover:text-ink md:block">Entrar</a>
       <% } %>
 
       <button
@@ -55,35 +42,35 @@
         id="mobile-menu-btn"
         aria-label="Abrir menú"
         aria-expanded="false"
-        class="flex h-9 w-9 items-center justify-center rounded-full transition md:hidden <%= isTransparent ? 'text-cream' : 'text-ink' %>"
+        aria-controls="mobile-menu-panel"
+        class="flex h-6 w-6 items-center justify-center text-ink md:hidden"
       >
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
-          <path id="mobile-menu-icon-open" stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5M3.75 17.25h16.5" />
-          <path id="mobile-menu-icon-close" class="hidden" stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.2" aria-hidden="true">
+          <path id="mobile-menu-icon-open" stroke-linecap="round" d="M3.75 8h16.5M3.75 16h16.5" />
+          <path id="mobile-menu-icon-close" class="hidden" stroke-linecap="round" d="M6 18L18 6M6 6l12 12" />
         </svg>
       </button>
     </div>
   </div>
 
-  <div id="mobile-menu-panel" class="hidden border-t border-line bg-night/98 backdrop-blur md:hidden">
-    <nav class="flex flex-col gap-1 px-6 py-4 text-sm text-moss">
-      <a href="/" class="rounded-lg px-2 py-2.5 transition hover:bg-surface2 hover:text-ink">Catálogo</a>
-      <a href="/guias" class="rounded-lg px-2 py-2.5 transition hover:bg-surface2 hover:text-ink">Guías de cuidado</a>
-      <a href="/sobre-arborea" class="rounded-lg px-2 py-2.5 transition hover:bg-surface2 hover:text-ink">Sobre Arborea</a>
-      <a href="/asistente" class="rounded-lg px-2 py-2.5 transition hover:bg-surface2 hover:text-ink">Encuentra tu planta</a>
+  <div id="mobile-menu-panel" class="hidden border-t border-line bg-night/95 backdrop-blur-md md:hidden">
+    <nav class="flex flex-col gap-1 px-6 py-6 text-sm">
+      <a href="/" class="py-2.5 text-ink">Explorar</a>
+      <a href="/?category=<%= encodeURIComponent('exterior') %>" class="py-2.5 text-sand">Jardín</a>
+      <a href="/guias" class="py-2.5 text-sand">Guías de cuidado</a>
+      <a href="/asistente" class="py-2.5 text-sand">Asistente</a>
+      <a href="/sobre-arborea" class="py-2.5 text-sand">Sobre Arbórea</a>
       <% if (currentUser && currentUser.role === 'user') { %>
-        <a href="/mis-pedidos" class="rounded-lg px-2 py-2.5 transition hover:bg-surface2 hover:text-ink">Mis pedidos</a>
+        <a href="/mis-pedidos" class="py-2.5 text-sand">Mis pedidos</a>
       <% } %>
     </nav>
-    <div class="flex flex-col gap-3 border-t border-line px-6 py-4">
+    <div class="border-t border-line px-6 py-5">
       <% if (currentUser && currentUser.role === 'user') { %>
-        <span class="text-sm text-moss">Hola, <%= currentUser.name.split(' ')[0] %></span>
         <form action="/salir" method="POST">
-          <button class="btn-secondary w-full !px-4 !py-2 text-xs">Salir</button>
+          <button class="action">Salir</button>
         </form>
       <% } else { %>
-        <a href="/ingresar" class="btn-secondary flex !px-4 !py-2 text-xs">Ingresar</a>
-        <a href="/registrarse" class="btn-primary flex !px-4 !py-2 text-xs">Crear cuenta</a>
+        <a href="/ingresar" class="action">Entrar</a>
       <% } %>
     </div>
   </div>

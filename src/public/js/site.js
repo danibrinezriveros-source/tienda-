@@ -9,6 +9,15 @@
     });
   }
 
+  var header = document.getElementById('site-header');
+  if (header && !header.classList.contains('is-solid')) {
+    var solidify = function () {
+      header.classList.toggle('is-solid', window.scrollY > window.innerHeight * 0.6);
+    };
+    window.addEventListener('scroll', solidify, { passive: true });
+    solidify();
+  }
+
   var menuBtn = document.getElementById('mobile-menu-btn');
   var menuPanel = document.getElementById('mobile-menu-panel');
   var menuIconOpen = document.getElementById('mobile-menu-icon-open');

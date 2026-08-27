@@ -7,46 +7,441 @@
     @apply bg-night text-ink font-body antialiased;
   }
   h1, h2, h3, h4 {
-    @apply font-display tracking-tight;
+    @apply font-display;
   }
   ::selection {
-    @apply bg-leaf/30 text-ink;
+    @apply bg-gold/25 text-ink;
+  }
+  /* La interfaz es casi invisible: hasta las superficies del navegador
+     pertenecen a la selva, no al sistema operativo. */
+  ::-webkit-scrollbar { width: 10px; }
+  ::-webkit-scrollbar-track { background: theme('colors.night'); }
+  ::-webkit-scrollbar-thumb {
+    background: theme('colors.canopy');
+    border-radius: 9999px;
+    border: 3px solid theme('colors.night');
+  }
+  ::-webkit-scrollbar-thumb:hover { background: theme('colors.understory'); }
+  :focus-visible {
+    outline: 2px solid theme('colors.gold');
+    outline-offset: 3px;
   }
 }
 
 @layer components {
-  .btn-primary {
-    @apply inline-flex items-center justify-center gap-2 rounded-full bg-cream px-6 py-3
-           text-sm font-semibold text-night transition hover:bg-cream/90 hover:shadow-glow;
+  /* ——— Escena: una cámara dentro del vivero ———
+     Cada estrato es una toma. Las capas se mueven a distinta velocidad según
+     --p (progreso 0→1 de la toma), que scene.js escribe en cada escena. */
+  .scene {
+    @apply relative isolate w-full overflow-hidden;
+    min-height: 100svh;
   }
-  .btn-secondary {
-    @apply inline-flex items-center justify-center gap-2 rounded-full border border-line
-           bg-surface2/60 px-6 py-3 text-sm font-semibold text-ink backdrop-blur-sm transition
-           hover:border-leaf hover:text-leaf2;
+  .scene-layer {
+    @apply pointer-events-none absolute inset-0 h-full w-full;
+    will-change: transform;
   }
-  .card {
-    @apply rounded-2xl border border-line bg-surface transition duration-300 ease-out
-           hover:-translate-y-0.5 hover:border-leaf/50 hover:shadow-glow;
+  .scene-figure {
+    @apply h-full w-full object-cover;
   }
-  .input-field {
-    @apply w-full rounded-lg border border-line bg-surface2 px-4 py-3 text-sm text-ink
-           placeholder:text-moss/70 focus:border-leaf focus:outline-none focus:ring-1 focus:ring-leaf;
+
+  /* Capa 5 — atmósfera: la luz que baja entre las hojas. */
+  .scene-light {
+    @apply pointer-events-none absolute inset-0 z-[5] mix-blend-screen opacity-70;
   }
-  .label-eyebrow {
-    @apply font-mono text-xs uppercase tracking-[0.2em] text-clay;
+  /* Capa 1 — hojas desenfocadas pegadas a la cámara. */
+  .scene-foreground {
+    @apply z-[9] opacity-80;
+    filter: blur(16px);
   }
-  .status-pill {
-    @apply inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium font-mono;
+
+  /* Los habitantes viven a media profundidad: la vegetación cercana pasa por
+     delante, la lejana por detrás. */
+  .inhabitant {
+    --x: 50%; --y: 50%; --mx: 50%; --my: 50%;
+    left: var(--mx);
+    top: var(--my);
   }
-  .tag-chip {
-    @apply inline-flex items-center gap-1 rounded-full border border-line bg-surface2 px-3 py-1
-           text-xs text-moss;
+  @screen sm {
+    .inhabitant { left: var(--x); top: var(--y); }
   }
-  .section-heading {
-    @apply text-2xl font-bold uppercase tracking-wide text-ink sm:text-3xl;
+
+  /* Cada toma entra cuando la cámara llega, no antes. */
+  .scene [data-enter] {
+    opacity: 0;
+    transform: translateY(26px);
+    transition: opacity 1.5s theme('transitionTimingFunction.camera'),
+                transform 1.5s theme('transitionTimingFunction.camera');
   }
-  .label-eyebrow-hero {
-    @apply inline-flex items-center gap-1.5 rounded-full border border-cream/25 bg-cream/5
-           px-4 py-1.5 font-mono text-[11px] uppercase tracking-[0.3em] text-cream/85 backdrop-blur-sm;
+  .scene[data-seen] [data-enter] {
+    opacity: 1;
+    transform: none;
+  }
+  .scene[data-seen] [data-enter="2"] { transition-delay: 260ms; }
+  .scene[data-seen] [data-enter="3"] { transition-delay: 480ms; }
+  @media (prefers-reduced-motion: reduce) {
+    .scene [data-enter] { opacity: 1; transform: none; transition: none; }
+  }
+
+  /* ——— Descubrimiento: los productos habitan la escena ———
+     Sin tarjeta. Un punto de luz que respira; el nombre y el precio solo
+     aparecen cuando el visitante se acerca. */
+  .inhabitant {
+    @apply absolute z-[7] block -translate-x-1/2 -translate-y-1/2 cursor-pointer;
+  }
+  .inhabitant-body {
+    @apply relative block overflow-hidden rounded-full;
+    box-shadow:
+      0 18px 50px -12px rgba(0, 0, 0, 0.75),
+      0 0 0 1px rgba(226, 220, 203, 0.1);
+    transition: transform 900ms theme('transitionTimingFunction.camera'),
+                box-shadow 900ms theme('transitionTimingFunction.camera'),
+                filter 900ms theme('transitionTimingFunction.camera');
+    filter: brightness(0.78) saturate(0.85);
+  }
+  .inhabitant:hover .inhabitant-body,
+  .inhabitant:focus-visible .inhabitant-body {
+    transform: scale(1.06);
+    filter: brightness(1.06) saturate(1.05);
+    box-shadow:
+      0 26px 70px -14px rgba(0, 0, 0, 0.8),
+      0 0 0 1px rgba(200, 168, 106, 0.55),
+      0 0 46px -6px rgba(200, 168, 106, 0.35);
+  }
+  .inhabitant-body img { @apply h-full w-full object-cover; }
+
+  /* El punto: única señal de que algo aquí está vivo. */
+  .inhabitant-pin {
+    @apply absolute left-1/2 top-full mt-3 h-1.5 w-1.5 -translate-x-1/2 rounded-full bg-gold;
+    box-shadow: 0 0 0 0 rgba(200, 168, 106, 0.5);
+    animation: pin-breathe 3.4s ease-in-out infinite;
+  }
+  .inhabitant-label {
+    @apply pointer-events-none absolute left-1/2 top-full mt-6 w-max max-w-[46vw]
+           -translate-x-1/2 text-center opacity-0;
+    transform: translate(-50%, 6px);
+    transition: opacity 620ms theme('transitionTimingFunction.camera'),
+                transform 620ms theme('transitionTimingFunction.camera');
+  }
+  .inhabitant:hover .inhabitant-label,
+  .inhabitant:focus-visible .inhabitant-label,
+  .inhabitant.is-open .inhabitant-label {
+    @apply opacity-100;
+    transform: translate(-50%, 0);
+  }
+  .inhabitant:hover .inhabitant-pin,
+  .inhabitant:focus-visible .inhabitant-pin,
+  .inhabitant.is-open .inhabitant-pin { @apply opacity-0; }
+  .inhabitant-name {
+    @apply block font-display text-lg leading-tight text-ink;
+    text-shadow: 0 2px 14px rgba(0, 0, 0, 0.85);
+  }
+  .inhabitant-meta {
+    @apply mt-0.5 block text-[11px] uppercase tracking-wander text-sand;
+    text-shadow: 0 2px 12px rgba(0, 0, 0, 0.9);
+  }
+
+  /* ——— Mundo isométrico ———
+     La isla es una sola escena SVG. Cada planta se levanta del suelo al
+     acercarse el cursor y solo entonces dice su nombre y su precio. */
+  /* ——— El mundo: los ecosistemas se recorren de lado ———
+     Carril con scroll horizontal nativo: hay swipe en táctil, teclado y
+     fallback sin JS. El JS solo añade el pan suave y el estado activo. */
+  .world-track {
+    @apply flex w-full snap-x snap-mandatory overflow-x-auto overscroll-x-contain;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  .world-track::-webkit-scrollbar { display: none; }
+  .world-panel {
+    @apply w-full shrink-0 grow-0 snap-center;
+    flex-basis: 100%;
+  }
+
+  .world-menu {
+    @apply flex flex-wrap items-center gap-x-8 gap-y-3 text-[11px] uppercase tracking-wander;
+  }
+  .world-menu a {
+    @apply relative whitespace-nowrap pb-1 text-sandDim transition-colors duration-500 hover:text-ink;
+  }
+  .world-menu a::after {
+    content: '';
+    @apply absolute inset-x-0 bottom-0 h-px origin-left scale-x-0 bg-gold transition-transform duration-500;
+  }
+  .world-menu a[aria-current='true'] {
+    @apply text-gold;
+  }
+  .world-menu a[aria-current='true']::after { @apply scale-x-100; }
+
+  .world-step {
+    @apply flex h-11 w-11 items-center justify-center rounded-full border border-line
+           text-sand transition duration-500 hover:border-gold/60 hover:text-ink
+           disabled:pointer-events-none disabled:opacity-25;
+  }
+
+  .iso-world {
+    @apply relative w-full overflow-hidden rounded-sm;
+    aspect-ratio: 808 / 706;
+  }
+  .iso-stage {
+    @apply block h-full w-full;
+  }
+  /* En pantallas angostas la isla se ve más pequeña, así que su rotulación
+     crece en unidades de usuario para no volverse ilegible. */
+  @media (max-width: 640px) {
+    .iso-tag-name { font-size: 46px; stroke-width: 10px; }
+    .iso-tag-meta { font-size: 26px; stroke-width: 9px; }
+    .iso-pin { r: 7; }
+  }
+  .iso-plant {
+    cursor: pointer;
+    pointer-events: bounding-box;
+  }
+  .iso-lift {
+    transition: transform 700ms theme('transitionTimingFunction.camera');
+  }
+  .iso-plant:hover .iso-lift,
+  .iso-plant:focus-visible .iso-lift {
+    transform: translateY(-14px);
+  }
+  .iso-halo {
+    opacity: 0;
+    transition: opacity 700ms theme('transitionTimingFunction.camera');
+    filter: blur(30px);
+  }
+  .iso-plant:hover .iso-halo,
+  .iso-plant:focus-visible .iso-halo { opacity: 0.28; }
+
+  .iso-pin {
+    transition: opacity 500ms theme('transitionTimingFunction.camera');
+    animation: pin-breathe 3.4s ease-in-out infinite;
+  }
+  .iso-plant:hover .iso-pin,
+  .iso-plant:focus-visible .iso-pin,
+  .iso-plant.is-open .iso-pin { opacity: 0; }
+
+  .iso-tag {
+    opacity: 0;
+    transform: translateY(8px);
+    transition: opacity 550ms theme('transitionTimingFunction.camera'),
+                transform 550ms theme('transitionTimingFunction.camera');
+  }
+  .iso-plant:hover .iso-tag,
+  .iso-plant:focus-visible .iso-tag,
+  .iso-plant.is-open .iso-tag {
+    opacity: 1;
+    transform: none;
+  }
+  .iso-tag-name {
+    font-family: theme('fontFamily.display');
+    font-size: 25px;
+    fill: theme('colors.ink');
+    paint-order: stroke;
+    stroke: rgba(11, 18, 14, 0.85);
+    stroke-width: 6px;
+    stroke-linejoin: round;
+  }
+  .iso-tag-meta {
+    font-family: theme('fontFamily.body');
+    font-size: 15px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    fill: theme('colors.gold');
+    paint-order: stroke;
+    stroke: rgba(11, 18, 14, 0.85);
+    stroke-width: 5px;
+    stroke-linejoin: round;
+  }
+
+  .iso-firefly { animation: firefly 7s ease-in-out infinite; }
+  .iso-shimmer { animation: shimmer 9s ease-in-out infinite; }
+
+  /* ——— Rótulo de estrato ——— */
+  .stratum-name {
+    @apply font-display text-3xl leading-none text-ink sm:text-4xl;
+    text-shadow: 0 4px 30px rgba(0, 0, 0, 0.8);
+  }
+  .stratum-line {
+    @apply mt-3 max-w-xs text-sm leading-relaxed text-sand;
+    text-shadow: 0 2px 18px rgba(0, 0, 0, 0.9);
+  }
+  .stratum-index {
+    @apply block text-[11px] uppercase tracking-wander text-gold/80;
+  }
+
+  /* ——— Interfaz mínima ———
+     El encabezado desaparece dentro de la escena y solo gana cuerpo cuando
+     el visitante deja atrás la primera toma. */
+  #site-header.is-solid {
+    @apply border-b border-line bg-night/85 backdrop-blur-md;
+  }
+  .quiet-link {
+    @apply text-sand transition-colors duration-500 hover:text-ink;
+  }
+  .field {
+    @apply w-full rounded-none border-0 border-b border-line bg-transparent px-0 py-3
+           text-sm text-ink placeholder:text-sandDim
+           focus:border-gold focus:outline-none focus:ring-0;
+  }
+  .action {
+    @apply inline-flex items-center gap-3 border-b border-gold/50 pb-1 text-[11px]
+           uppercase tracking-wander text-gold transition-colors duration-500
+           hover:border-gold hover:text-ink;
+  }
+  .action-solid {
+    @apply inline-flex items-center justify-center gap-2 rounded-full bg-ink/95 px-7 py-3
+           text-[11px] uppercase tracking-wander text-night transition
+           duration-500 hover:bg-gold;
+  }
+
+  /* ——— Panel de administración ———
+     Otra superficie, otro trabajo: aquí no se explora, se opera. Comparte
+     paleta y tipografía con la tienda, pero manda la densidad y el escaneo.
+     La voz serif queda solo en los títulos; los datos van en sans con cifras
+     tabulares para que las columnas cuadren. */
+  .admin-shell { @apply flex min-h-screen bg-night; }
+  .admin-side {
+    @apply hidden w-60 shrink-0 flex-col border-r border-line bg-surface md:flex;
+  }
+  .admin-main { @apply min-w-0 flex-1 px-5 py-8 md:px-10 md:py-10; }
+
+  .admin-link {
+    @apply block rounded-sm px-4 py-2.5 text-sm text-sand transition-colors duration-300
+           hover:bg-surface2 hover:text-ink;
+  }
+  .admin-link[aria-current='page'] {
+    @apply bg-surface2 text-ink;
+    box-shadow: inset 2px 0 0 theme('colors.gold');
+  }
+  /* En móvil la navegación no desaparece: se vuelve una fila desplazable. */
+  .admin-tab {
+    @apply whitespace-nowrap border-b-2 border-transparent px-1 pb-2 text-sm text-sand
+           transition-colors duration-300;
+  }
+  .admin-tab[aria-current='page'] { @apply border-gold text-ink; }
+
+  .admin-title { @apply font-display text-3xl text-ink sm:text-4xl; }
+  .admin-panel { @apply rounded-sm border border-line bg-surface; }
+  .admin-label { @apply mb-2 block text-[10px] uppercase tracking-wander text-sandDim; }
+  .admin-field {
+    @apply w-full rounded-sm border border-line bg-surface2 px-3.5 py-2.5 text-sm text-ink
+           placeholder:text-sandDim focus:border-gold focus:outline-none focus:ring-0;
+  }
+  .admin-btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-sm bg-gold px-5 py-2.5
+           text-[11px] uppercase tracking-wander text-night transition duration-300
+           hover:bg-goldDim;
+  }
+  .admin-btn-ghost {
+    @apply inline-flex items-center justify-center gap-2 rounded-sm border border-line px-5 py-2.5
+           text-[11px] uppercase tracking-wander text-sand transition duration-300
+           hover:border-gold/60 hover:text-ink;
+  }
+  /* Cormorant trae cifras de estilo antiguo (con ascendentes y descendentes),
+     preciosas en prosa e ilegibles en una columna de datos: aquí se fuerzan
+     versales y de ancho fijo para que las cantidades se puedan comparar. */
+  .admin-metric {
+    @apply font-display text-4xl text-ink;
+    font-variant-numeric: lining-nums tabular-nums;
+  }
+
+  .admin-table { @apply w-full text-left text-sm; }
+  .admin-table th {
+    @apply whitespace-nowrap px-5 py-3 text-[10px] font-normal uppercase tracking-wander text-sandDim;
+  }
+  .admin-table td { @apply px-5 py-3.5 align-middle text-sand; }
+  .admin-table tbody tr { @apply border-t border-line/70 transition-colors duration-300 hover:bg-surface2; }
+  .admin-table .num {
+    @apply text-right text-ink;
+    font-variant-numeric: lining-nums tabular-nums;
+  }
+  /* Necesita esta especificidad para ganarle a `.admin-table .num`: una
+     utilidad suelta (text-danger) pierde y el agotado se vería normal. */
+  .admin-table .num.is-alert { @apply text-danger; }
+
+  /* Estado codificado por color: en un panel hay que verlo, no leerlo. */
+  .badge {
+    @apply inline-flex items-center gap-2 rounded-full border px-3 py-1 text-[10px]
+           uppercase tracking-wander;
+  }
+  .badge::before { content: ''; @apply h-1.5 w-1.5 rounded-full bg-current; }
+  .badge-ok { @apply border-ok/40 text-ok; }
+  .badge-warn { @apply border-warn/40 text-warn; }
+  .badge-danger { @apply border-danger/40 text-danger; }
+  .badge-info { @apply border-gold/40 text-gold; }
+  .badge-mute { @apply border-line text-sandDim; }
+
+  .admin-note { @apply rounded-sm border px-4 py-3 text-sm; }
+  .admin-note-ok { @apply border-ok/40 bg-ok/10 text-ok; }
+  .admin-note-warn { @apply border-warn/40 bg-warn/10 text-warn; }
+  .admin-note-danger { @apply border-danger/40 bg-danger/10 text-danger; }
+
+  .admin-file {
+    @apply w-full text-sm text-sandDim
+           file:mr-4 file:cursor-pointer file:rounded-sm file:border-0 file:bg-surface2
+           file:px-4 file:py-2.5 file:text-[11px] file:uppercase file:tracking-wander
+           file:text-sand hover:file:text-ink;
+  }
+  .admin-code { @apply rounded-sm bg-surface2 px-1.5 py-0.5 text-gold; }
+
+  /* Opción de un grupo de radios: se marca por contorno, no por relleno. */
+  .choice {
+    @apply inline-flex items-center rounded-full border border-line px-5 py-2.5
+           text-[11px] uppercase tracking-wander text-sand transition duration-500;
+  }
+  .peer:hover + .choice { @apply border-sandDim text-ink; }
+  .peer:checked + .choice { @apply border-gold text-gold; }
+  .peer:focus-visible + .choice { outline: 2px solid theme('colors.gold'); outline-offset: 3px; }
+
+  /* Retrato de la ficha: la planta es la protagonista de la página. */
+  .specimen-portrait {
+    @apply relative overflow-hidden rounded-sm border border-line;
+    aspect-ratio: 4 / 5;
+    background: radial-gradient(circle at 50% 30%, #1b3021 0%, #0e1a13 78%);
+  }
+  .specimen-portrait > svg,
+  .specimen-portrait > img { @apply h-full w-full object-cover; }
+
+  /* ——— Listado (búsqueda / filtro): sigue siendo la selva, sin cuadrícula dura ——— */
+  .specimen-row {
+    @apply relative flex items-center gap-6 border-b border-line/70 py-6
+           transition-colors duration-500 hover:border-gold/40;
+  }
+  .specimen-thumb {
+    @apply h-20 w-20 shrink-0 overflow-hidden rounded-full;
+    filter: brightness(0.85) saturate(0.9);
+    transition: filter 700ms theme('transitionTimingFunction.camera');
+  }
+  .specimen-row:hover .specimen-thumb { filter: brightness(1.05) saturate(1); }
+}
+
+@layer utilities {
+  @keyframes pin-breathe {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(200, 168, 106, 0.45); opacity: 0.9; }
+    50%      { box-shadow: 0 0 0 9px rgba(200, 168, 106, 0); opacity: 0.55; }
+  }
+  @keyframes firefly {
+    0%, 100% { opacity: 0; transform: translate3d(0, 0, 0); }
+    35%      { opacity: 0.85; }
+    50%      { transform: translate3d(14px, -22px, 0); }
+    65%      { opacity: 0.2; }
+  }
+  @keyframes shimmer {
+    0%, 100% { opacity: 0.24; transform: translate3d(0, 0, 0); }
+    50%      { opacity: 0.1; transform: translate3d(26px, 4px, 0); }
+  }
+  @keyframes drift {
+    0%, 100% { transform: translate3d(0, 0, 0) rotate(0deg); }
+    50%      { transform: translate3d(0, -14px, 0) rotate(0.7deg); }
+  }
+  /* Movimiento de hojas: lento, casi imperceptible. La página respira. */
+  .drift-slow { animation: drift 17s ease-in-out infinite; }
+  .drift-slower { animation: drift 26s ease-in-out infinite; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .drift-slow, .drift-slower, .inhabitant-pin,
+    .iso-pin, .iso-firefly, .iso-shimmer { animation: none !important; }
+    .iso-firefly { opacity: 0.5; }
+    .scene-layer { transform: none !important; }
+    * { scroll-behavior: auto !important; }
   }
 }

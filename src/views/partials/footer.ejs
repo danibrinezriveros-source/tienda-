@@ -1,57 +1,60 @@
-<footer class="mt-24 border-t border-line/70 bg-surface2/60">
-  <div class="mx-auto max-w-6xl px-6 py-14">
-    <div class="grid grid-cols-1 gap-10 md:grid-cols-4">
-      <div class="md:col-span-2 md:pr-8">
-        <a href="/" class="flex items-center gap-2">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="h-6 w-6 text-leaf" fill="currentColor">
+<footer class="border-t border-line bg-night">
+  <div class="mx-auto max-w-6xl px-6 py-20 sm:px-10">
+    <div class="grid grid-cols-1 gap-14 md:grid-cols-[1.4fr_1fr_1fr]">
+      <div class="md:pr-10">
+        <a href="/" class="flex items-center gap-3">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="h-5 w-5 text-gold" fill="currentColor" aria-hidden="true">
             <path d="M12 2c-4.5 3-7 6.8-7 10.8C5 17.3 8.1 21 12 21s7-3.7 7-8.2C19 8.8 16.5 5 12 2zm0 3.4c2.9 2.4 4.5 5 4.5 7.4 0 3-2 5.4-4.5 5.4S7.5 15.8 7.5 12.8c0-2.4 1.6-5 4.5-7.4z"/>
           </svg>
-          <span class="font-display text-lg font-semibold tracking-tight">Arborea</span>
+          <span class="font-display text-lg tracking-[0.42em] text-ink">ARBÓREA</span>
         </a>
-        <p class="mt-4 max-w-sm text-sm leading-relaxed text-moss">
-          Un vivero online para quienes quieren llenar su casa de verde sin adivinar.
-          Cada planta llega con su guía de cuidado, y nuestro asistente te ayuda a elegir
-          la que mejor se adapta a tu espacio y tu ritmo de vida.
+        <p class="mt-6 max-w-xs text-sm leading-relaxed text-sandDim">
+          Un vivero para recorrer. Cada planta llega con su guía de cuidado, y el asistente
+          te ayuda a elegir la que se adapta a tu espacio.
         </p>
 
-        <form id="newsletter-form" class="mt-6 flex max-w-sm flex-col gap-2 sm:flex-row">
-          <label for="newsletter-email" class="sr-only">Correo electrónico</label>
-          <input id="newsletter-email" type="email" required placeholder="tu@correo.com"
-                 class="input-field !bg-surface" />
-          <button type="submit" class="btn-primary !px-5 whitespace-nowrap">Recibir consejos</button>
+        <form id="newsletter-form" class="mt-10 max-w-xs">
+          <label for="newsletter-email" class="mb-2 block text-[10px] uppercase tracking-wander text-sandDim">
+            Consejos de cuidado
+          </label>
+          <div class="flex items-end gap-4">
+            <input id="newsletter-email" type="email" required placeholder="tu@correo.com" class="field flex-1" />
+            <button type="submit" class="action shrink-0">Recibir</button>
+          </div>
         </form>
-        <p id="newsletter-note" class="mt-2 text-xs text-moss">
-          Un correo al mes con consejos de cuidado y novedades del catálogo. Sin spam.
+        <p id="newsletter-note" class="mt-3 text-xs leading-relaxed text-sandDim">
+          Un correo al mes. Sin spam.
         </p>
       </div>
 
       <div>
-        <p class="label-eyebrow">Explora</p>
-        <nav class="mt-4 flex flex-col gap-2 text-sm text-moss">
-          <a href="/" class="hover:text-ink">Catálogo</a>
-          <a href="/guias" class="hover:text-ink">Guías de cuidado</a>
-          <a href="/sobre-arborea" class="hover:text-ink">Sobre Arborea</a>
-          <a href="/asistente" class="hover:text-ink">Encuentra tu planta</a>
+        <p class="text-[10px] uppercase tracking-wander text-sandDim">Explorar</p>
+        <nav class="mt-6 flex flex-col gap-3 text-sm">
+          <a href="/" class="quiet-link">El mundo</a>
+          <a href="/?category=<%= encodeURIComponent('exterior') %>" class="quiet-link">Jardín</a>
+          <a href="/guias" class="quiet-link">Guías de cuidado</a>
+          <a href="/asistente" class="quiet-link">Encuentra tu planta</a>
+          <a href="/sobre-arborea" class="quiet-link">Sobre Arbórea</a>
         </nav>
       </div>
 
       <div>
-        <p class="label-eyebrow">Ayuda</p>
-        <nav class="mt-4 flex flex-col gap-2 text-sm text-moss">
-          <a href="/mis-pedidos" class="hover:text-ink">Mis pedidos</a>
-          <a href="/registrarse" class="hover:text-ink">Crear cuenta</a>
-          <a href="/admin/ingresar" class="hover:text-ink">Acceso administrador</a>
+        <p class="text-[10px] uppercase tracking-wander text-sandDim">Tu cuenta</p>
+        <nav class="mt-6 flex flex-col gap-3 text-sm">
+          <a href="/mis-pedidos" class="quiet-link">Mis pedidos</a>
+          <a href="/registrarse" class="quiet-link">Crear cuenta</a>
+          <a href="/privacidad" class="quiet-link">Privacidad</a>
+          <a href="/admin/ingresar" class="quiet-link">Administrador</a>
         </nav>
       </div>
     </div>
 
-    <div class="mt-12 flex flex-col items-center justify-between gap-4 border-t border-line pt-6 text-xs text-moss md:flex-row">
-      <div class="flex items-center gap-2 font-mono">
-        <span class="h-1.5 w-1.5 rounded-full bg-ok"></span>
+    <div class="mt-20 flex flex-col gap-4 border-t border-line pt-8 text-[10px] uppercase tracking-wander text-sandDim sm:flex-row sm:items-center sm:justify-between">
+      <span class="flex items-center gap-3">
+        <span class="h-1 w-1 rounded-full bg-ok" aria-hidden="true"></span>
         Catálogo actualizado
-      </div>
-      <p>© <%= new Date().getFullYear() %> Arborea. Cultivado con cuidado.</p>
-      <a href="/privacidad" class="hover:text-ink">Política de privacidad</a>
+      </span>
+      <span class="normal-case tracking-normal">© <%= new Date().getFullYear() %> Arbórea</span>
     </div>
   </div>
 </footer>

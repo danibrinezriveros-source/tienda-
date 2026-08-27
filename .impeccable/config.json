@@ -1,0 +1,62 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "design-system-font-size",
+        "value": "46px",
+        "createdAt": "2026-08-27T02:57:47.091Z",
+        "reason": "Claude: SVG viewBox user units inside the isometric stage, not screen px; documented in DESIGN.md Typography"
+      },
+      {
+        "rule": "design-system-font-size",
+        "value": "26px",
+        "createdAt": "2026-08-27T02:57:47.375Z",
+        "reason": "Claude: SVG viewBox user units inside the isometric stage, not screen px; documented in DESIGN.md Typography"
+      },
+      {
+        "rule": "design-system-font-size",
+        "value": "25px",
+        "createdAt": "2026-08-27T02:57:47.624Z",
+        "reason": "Claude: SVG viewBox user units inside the isometric stage, not screen px; documented in DESIGN.md Typography"
+      },
+      {
+        "rule": "design-system-font-size",
+        "value": "15px",
+        "createdAt": "2026-08-27T02:57:47.860Z",
+        "reason": "Claude: SVG viewBox user units inside the isometric stage, not screen px; documented in DESIGN.md Typography"
+      },
+      {
+        "rule": "design-system-color",
+        "value": "rgba(0, 0, 0, 0.85)",
+        "createdAt": "2026-08-27T02:57:57.627Z",
+        "reason": "Claude: text-shadow/paint-order stroke for legibility over scene imagery, not a palette color"
+      },
+      {
+        "rule": "design-system-color",
+        "value": "rgba(0, 0, 0, 0.9)",
+        "createdAt": "2026-08-27T02:57:57.832Z",
+        "reason": "Claude: text-shadow/paint-order stroke for legibility over scene imagery, not a palette color"
+      },
+      {
+        "rule": "design-system-color",
+        "value": "rgba(0, 0, 0, 0.8)",
+        "createdAt": "2026-08-27T02:57:58.037Z",
+        "reason": "Claude: text-shadow/paint-order stroke for legibility over scene imagery, not a palette color"
+      },
+      {
+        "rule": "design-system-font",
+        "value": "theme('fontfamily.display')",
+        "createdAt": "2026-08-27T02:57:58.240Z",
+        "reason": "Claude: false positive - theme() reference resolves to the DESIGN.md family"
+      },
+      {
+        "rule": "design-system-font",
+        "value": "theme('fontfamily.body')",
+        "createdAt": "2026-08-27T02:57:58.488Z",
+        "reason": "Claude: false positive - theme() reference resolves to the DESIGN.md family"
+      }
+    ]
+  }
+}

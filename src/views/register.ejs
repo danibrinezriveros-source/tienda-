@@ -4,33 +4,47 @@
 <body>
   <%- include('partials/header') %>
 
-  <section class="mx-auto max-w-md px-6 py-20">
-    <span class="label-eyebrow">Únete</span>
-    <h1 class="mt-2 text-3xl font-bold">Crea tu cuenta</h1>
+  <section class="mx-auto max-w-sm px-6 pb-24 pt-36 sm:px-10">
+    <h1 class="font-display text-5xl text-ink">Crear cuenta</h1>
 
     <% if (error) { %>
-      <p class="mt-4 rounded-lg border border-danger/40 bg-danger/10 px-4 py-3 text-sm text-danger"><%= error %></p>
+      <p class="mt-8 border-l-2 border-danger pl-4 text-sm text-danger"><%= error %></p>
     <% } %>
 
-    <form action="/registrarse" method="POST" class="mt-8 space-y-4">
-      <input type="text" name="name" required placeholder="Nombre completo" value="<%= form.name || '' %>" class="input-field" />
-      <input type="email" name="email" required placeholder="Correo electrónico" value="<%= form.email || '' %>" class="input-field" />
-      <input type="tel" name="phone" placeholder="Teléfono (opcional)" value="<%= form.phone || '' %>" class="input-field" />
-      <input type="password" name="password" required placeholder="Contraseña" class="input-field" />
+    <form action="/registrarse" method="POST" class="mt-12 space-y-8">
+      <div>
+        <label for="name" class="mb-2 block text-[10px] uppercase tracking-wander text-sandDim">Nombre completo</label>
+        <input id="name" type="text" name="name" required autocomplete="name" value="<%= form.name || '' %>" class="field" />
+      </div>
+      <div>
+        <label for="email" class="mb-2 block text-[10px] uppercase tracking-wander text-sandDim">Correo</label>
+        <input id="email" type="email" name="email" required autocomplete="email" value="<%= form.email || '' %>" class="field" />
+      </div>
+      <div>
+        <label for="phone" class="mb-2 block text-[10px] uppercase tracking-wander text-sandDim">
+          Teléfono <span class="normal-case tracking-normal">(opcional)</span>
+        </label>
+        <input id="phone" type="tel" name="phone" autocomplete="tel" value="<%= form.phone || '' %>" class="field" />
+      </div>
+      <div>
+        <label for="password" class="mb-2 block text-[10px] uppercase tracking-wander text-sandDim">Contraseña</label>
+        <input id="password" type="password" name="password" required autocomplete="new-password" class="field" />
+      </div>
 
-      <label class="flex items-start gap-2 text-xs text-moss">
-        <input type="checkbox" name="accept_terms" required class="mt-0.5 rounded border-line bg-surface2" />
+      <label class="flex items-start gap-3 pt-2 text-sm leading-relaxed text-sandDim">
+        <input type="checkbox" name="accept_terms" required
+               class="mt-1 h-4 w-4 shrink-0 rounded-none border border-line bg-transparent accent-gold" />
         <span>
           He leído y acepto la
-          <a href="/privacidad" target="_blank" rel="noopener" class="text-clay hover:underline">política de tratamiento de datos personales</a>.
+          <a href="/privacidad" target="_blank" rel="noopener" class="text-gold hover:underline">política de tratamiento de datos personales</a>.
         </span>
       </label>
 
-      <button type="submit" class="btn-primary w-full justify-center">Crear cuenta</button>
+      <button type="submit" class="action-solid !flex w-full">Crear cuenta</button>
     </form>
 
-    <p class="mt-6 text-center text-sm text-moss">
-      ¿Ya tienes cuenta? <a href="/ingresar" class="text-clay hover:underline">Ingresa aquí</a>
+    <p class="mt-10 text-sm text-sandDim">
+      ¿Ya tienes cuenta? <a href="/ingresar" class="text-gold hover:underline">Entra aquí</a>
     </p>
   </section>
 

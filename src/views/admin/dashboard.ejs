@@ -4,48 +4,67 @@
 <body>
 <%- include('../partials/admin-nav', { active: 'dashboard' }) %>
 
-  <span class="label-eyebrow">Resumen</span>
-  <h1 class="mt-2 text-3xl font-bold">Estado general</h1>
+  <h1 class="admin-title">Estado general</h1>
 
-  <div class="mt-8 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
-    <div class="card p-6">
-      <p class="label-eyebrow">Productos activos</p>
-      <p class="mt-3 font-mono text-3xl font-semibold"><%= stats.total_products %></p>
+  <div class="mt-10 grid grid-cols-2 gap-px overflow-hidden rounded-sm border border-line bg-line lg:grid-cols-4">
+    <div class="bg-surface p-6">
+      <p class="text-[10px] uppercase tracking-wander text-sandDim">Productos activos</p>
+      <p class="admin-metric mt-3"><%= stats.total_products %></p>
     </div>
-    <div class="card p-6">
-      <p class="label-eyebrow">Pedidos entrantes</p>
-      <p class="mt-3 font-mono text-3xl font-semibold text-warn"><%= stats.incoming %></p>
+    <div class="bg-surface p-6">
+      <p class="text-[10px] uppercase tracking-wander text-sandDim">Pedidos entrantes</p>
+      <p class="admin-metric mt-3 <%= Number(stats.incoming) > 0 ? 'text-warn' : '' %>"><%= stats.incoming %></p>
+      <% if (Number(stats.incoming) > 0) { %>
+        <a href="/admin/pedidos?vista=entrantes" class="mt-3 inline-block text-[10px] uppercase tracking-wander text-gold hover:underline">
+          Atender ahora
+        </a>
+      <% } %>
     </div>
-    <div class="card p-6">
-      <p class="label-eyebrow">Pedidos salientes</p>
-      <p class="mt-3 font-mono text-3xl font-semibold text-clay"><%= stats.outgoing %></p>
+    <div class="bg-surface p-6">
+      <p class="text-[10px] uppercase tracking-wander text-sandDim">Pedidos salientes</p>
+      <p class="admin-metric mt-3"><%= stats.outgoing %></p>
     </div>
-    <div class="card p-6">
-      <p class="label-eyebrow">Ingresos acumulados</p>
-      <p class="mt-3 font-mono text-3xl font-semibold text-ok">$<%= Number(stats.revenue).toFixed(2) %></p>
+    <div class="bg-surface p-6">
+      <p class="text-[10px] uppercase tracking-wander text-sandDim">Ingresos acumulados</p>
+      <p class="admin-metric mt-3 text-ok">$<%= Number(stats.revenue).toLocaleString('es-CO', { maximumFractionDigits: 0 }) %></p>
     </div>
   </div>
 
-  <div class="mt-10">
-    <div class="flex items-center justify-between">
-      <h2 class="text-xl font-semibold">Pedidos recientes</h2>
-      <a href="/admin/pedidos" class="text-sm text-clay hover:underline">Ver todos</a>
+  <div class="mt-14">
+    <div class="flex items-end justify-between">
+      <h2 class="font-display text-2xl text-ink">Pedidos recientes</h2>
+      <a href="/admin/pedidos" class="text-[10px] uppercase tracking-wander text-gold hover:underline">Ver todos</a>
     </div>
-    <div class="mt-5 divide-y divide-line rounded-2xl border border-line bg-surface">
-      <% recentOrders.forEach(o => { %>
-        <a href="/admin/pedidos/<%= o.id %>" class="flex items-center justify-between p-5 hover:bg-surface2">
-          <div>
-            <p class="font-medium">#<%= o.id %> — <%= o.customer_name %></p>
-            <p class="text-sm text-moss"><%= new Date(o.created_at).toLocaleString('es-CO') %></p>
-          </div>
-          <div class="flex items-center gap-4">
-            <span class="font-mono text-clay">$<%= Number(o.total).toFixed(2) %></span>
-            <span class="status-pill bg-surface2 text-moss"><%= o.status %></span>
-          </div>
-        </a>
-      <% }) %>
+
+    <div class="admin-panel mt-5 overflow-x-auto">
       <% if (recentOrders.length === 0) { %>
-        <p class="p-6 text-center text-moss">Aún no hay pedidos.</p>
+        <p class="px-5 py-12 text-center text-sm text-sandDim">Aún no hay pedidos.</p>
+      <% } else { %>
+        <table class="admin-table">
+          <caption class="sr-only">Últimos pedidos recibidos</caption>
+          <thead>
+            <tr>
+              <th scope="col">Pedido</th>
+              <th scope="col">Cliente</th>
+              <th scope="col">Fecha</th>
+              <th scope="col" class="!text-right">Total</th>
+              <th scope="col">Estado</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% recentOrders.forEach(function (o) { %>
+              <tr>
+                <td class="num !text-left">
+                  <a href="/admin/pedidos/<%= o.id %>" class="text-ink hover:text-gold">n.º <%= o.id %></a>
+                </td>
+                <td class="whitespace-nowrap text-ink"><%= o.customer_name %></td>
+                <td class="whitespace-nowrap"><%= new Date(o.created_at).toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric' }) %></td>
+                <td class="num">$<%= Number(o.total).toLocaleString('es-CO', { maximumFractionDigits: 0 }) %></td>
+                <td><%- include('../partials/order-status', { status: o.status }) %></td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
       <% } %>
     </div>
   </div>

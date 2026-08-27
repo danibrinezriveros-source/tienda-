@@ -4,69 +4,79 @@
 <body>
 <%- include('../partials/admin-nav', { active: 'productos' }) %>
 
-  <div class="flex flex-wrap items-center justify-between gap-4">
-    <div>
-      <span class="label-eyebrow">Catálogo</span>
-      <h1 class="mt-2 text-3xl font-bold">Productos</h1>
-    </div>
-    <a href="/admin/productos/nuevo" class="btn-primary">+ Nuevo producto</a>
+  <div class="flex flex-wrap items-center justify-between gap-5">
+    <h1 class="admin-title">Catálogo</h1>
+    <a href="/admin/productos/nuevo" class="admin-btn">Nuevo producto</a>
   </div>
 
   <% if (ok) { %>
-    <p class="mt-5 rounded-lg border border-ok/40 bg-ok/10 px-4 py-3 text-sm text-ok">Cambios guardados correctamente.</p>
+    <p class="admin-note admin-note-ok mt-6" role="status">Cambios guardados correctamente.</p>
   <% } %>
 
-  <div class="mt-8 rounded-2xl border border-line bg-surface p-6">
-    <p class="label-eyebrow">Carga masiva</p>
-    <p class="mt-1 text-sm text-moss">
-      Sube un archivo CSV con las columnas: <code class="text-clay">name,description,price,stock,category,tags,image_url</code>
+  <details class="admin-panel mt-8 p-6">
+    <summary class="cursor-pointer text-sm text-ink marker:text-gold">Carga masiva por CSV</summary>
+    <p class="mt-4 text-sm leading-relaxed text-sandDim">
+      El archivo debe traer estas columnas, en este orden:
+      <code class="admin-code">name,description,price,stock,category,tags,image_url</code>
     </p>
-    <form action="/admin/productos/importar" method="POST" enctype="multipart/form-data" class="mt-4 flex flex-wrap items-center gap-3">
-      <input type="file" name="csv" accept=".csv" required class="text-sm text-moss file:mr-4 file:rounded-full file:border-0 file:bg-leaf file:px-4 file:py-2 file:text-sm file:font-semibold file:text-cream" />
-      <button type="submit" class="btn-secondary">Importar catálogo</button>
+    <form action="/admin/productos/importar" method="POST" enctype="multipart/form-data"
+          class="mt-5 flex flex-wrap items-center gap-4">
+      <label for="csv" class="sr-only">Archivo CSV</label>
+      <input id="csv" type="file" name="csv" accept=".csv" required class="admin-file max-w-sm" />
+      <button type="submit" class="admin-btn-ghost">Importar</button>
     </form>
-  </div>
+  </details>
 
-  <div class="mt-8 overflow-x-auto rounded-2xl border border-line bg-surface">
-    <table class="w-full text-left text-sm">
-      <thead class="border-b border-line text-moss">
-        <tr>
-          <th class="px-5 py-3 font-medium">Producto</th>
-          <th class="px-5 py-3 font-medium">Categoría</th>
-          <th class="px-5 py-3 font-medium">Precio</th>
-          <th class="px-5 py-3 font-medium">Stock</th>
-          <th class="px-5 py-3 font-medium">Estado</th>
-          <th class="px-5 py-3 font-medium"></th>
-        </tr>
-      </thead>
-      <tbody class="divide-y divide-line">
-        <% products.forEach(p => { %>
-          <tr>
-            <td class="px-5 py-3"><%= p.name %></td>
-            <td class="px-5 py-3 text-moss"><%= p.category %></td>
-            <td class="px-5 py-3 font-mono">$<%= Number(p.price).toFixed(2) %></td>
-            <td class="px-5 py-3"><%= p.stock %></td>
-            <td class="px-5 py-3">
-              <% if (p.active) { %>
-                <span class="status-pill bg-ok/10 text-ok">Activo</span>
-              <% } else { %>
-                <span class="status-pill bg-danger/10 text-danger">Oculto</span>
-              <% } %>
-            </td>
-            <td class="px-5 py-3 text-right">
-              <a href="/admin/productos/<%= p.id %>/editar" class="text-clay hover:underline">Editar</a>
-              <form action="/admin/productos/<%= p.id %>/eliminar" method="POST" class="inline" data-confirm="¿Eliminar este producto?">
-                <button class="ml-3 text-moss hover:text-danger">Eliminar</button>
-              </form>
-            </td>
-          </tr>
-        <% }) %>
-      </tbody>
-    </table>
+  <div class="admin-panel mt-8 overflow-x-auto">
     <% if (products.length === 0) { %>
-      <p class="p-8 text-center text-moss">Todavía no has cargado productos.</p>
+      <p class="px-5 py-16 text-center text-sm text-sandDim">
+        Todavía no has cargado productos.
+        <a href="/admin/productos/nuevo" class="text-gold hover:underline">Crea el primero</a>.
+      </p>
+    <% } else { %>
+      <table class="admin-table">
+        <caption class="sr-only">Productos del catálogo</caption>
+        <thead>
+          <tr>
+            <th scope="col">Producto</th>
+            <th scope="col" class="hidden lg:table-cell">Categoría</th>
+            <th scope="col" class="!text-right">Precio</th>
+            <th scope="col" class="!text-right">Stock</th>
+            <th scope="col">Estado</th>
+            <th scope="col"><span class="sr-only">Acciones</span></th>
+          </tr>
+        </thead>
+        <tbody>
+          <% products.forEach(function (p) { %>
+            <tr>
+              <td class="text-ink">
+                <a href="/admin/productos/<%= p.id %>/editar" class="hover:text-gold"><%= p.name %></a>
+              </td>
+              <td class="hidden whitespace-nowrap lg:table-cell"><%= p.category %></td>
+              <td class="num">$<%= Number(p.price).toLocaleString('es-CO', { maximumFractionDigits: 0 }) %></td>
+              <td class="num <%= p.stock <= 0 ? 'is-alert' : '' %>"><%= p.stock %></td>
+              <td>
+                <% if (p.active) { %>
+                  <span class="badge badge-ok">Activo</span>
+                <% } else { %>
+                  <span class="badge badge-mute">Oculto</span>
+                <% } %>
+              </td>
+              <td class="whitespace-nowrap text-right">
+                <a href="/admin/productos/<%= p.id %>/editar" class="text-[10px] uppercase tracking-wander text-gold hover:underline">Editar</a>
+                <form action="/admin/productos/<%= p.id %>/eliminar" method="POST" class="ml-4 inline"
+                      data-confirm="¿Eliminar «<%= p.name %>»? Esta acción no se puede deshacer.">
+                  <button class="text-[10px] uppercase tracking-wander text-sandDim transition-colors hover:text-danger">Eliminar</button>
+                </form>
+              </td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
     <% } %>
   </div>
+
+  <p class="mt-5 text-xs text-sandDim"><%= products.length %> <%= products.length === 1 ? 'producto' : 'productos' %> en total.</p>
 
 <%- include('../partials/admin-close') %>
 </body>

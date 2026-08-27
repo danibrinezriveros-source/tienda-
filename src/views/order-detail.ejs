@@ -4,36 +4,47 @@
 <body>
   <%- include('partials/header') %>
 
-  <section class="mx-auto max-w-2xl px-6 py-14">
-    <a href="/mis-pedidos" class="text-sm text-moss hover:text-ink">&larr; Mis pedidos</a>
+  <section class="mx-auto max-w-2xl px-6 pb-24 pt-32 sm:px-10">
+    <a href="/mis-pedidos" class="quiet-link text-[11px] uppercase tracking-wander">← Mis pedidos</a>
 
-    <div class="mt-6 flex items-center justify-between">
-      <h1 class="text-3xl font-bold">Pedido #<%= order.id %></h1>
-      <span class="status-pill bg-surface2 text-moss"><%= order.status %></span>
-    </div>
-    <p class="mt-1 text-sm text-moss">Realizado el <%= new Date(order.created_at).toLocaleString('es-CO') %></p>
+    <h1 class="mt-10 font-display text-5xl text-ink">Pedido n.º <%= order.id %></h1>
+    <p class="mt-3 text-[11px] uppercase tracking-wander text-sandDim">
+      <%= order.status %> · <%= new Date(order.created_at).toLocaleString('es-CO') %>
+    </p>
 
-    <div class="mt-8 divide-y divide-line rounded-2xl border border-line bg-surface">
-      <% items.forEach(i => { %>
-        <div class="flex items-center justify-between p-5">
-          <div>
-            <p class="font-medium"><%= i.product_name %></p>
-            <p class="text-sm text-moss">Cantidad: <%= i.quantity %></p>
-          </div>
-          <span class="font-mono text-clay">$<%= (i.unit_price * i.quantity).toFixed(2) %></span>
+    <div class="mt-12">
+      <% items.forEach(function (i) { %>
+        <div class="flex items-baseline gap-6 border-b border-line/70 py-5">
+          <span class="min-w-0 flex-1">
+            <span class="block font-display text-xl text-ink"><%= i.product_name %></span>
+            <span class="mt-1 block text-[11px] uppercase tracking-wander text-sandDim">
+              <%= i.quantity %> × $<%= Number(i.unit_price).toLocaleString('es-CO', { maximumFractionDigits: 0 }) %>
+            </span>
+          </span>
+          <span class="shrink-0 text-sm text-sand">
+            $<%= (i.unit_price * i.quantity).toLocaleString('es-CO', { maximumFractionDigits: 0 }) %>
+          </span>
         </div>
       <% }) %>
     </div>
 
-    <div class="mt-6 flex items-center justify-between rounded-2xl border border-line bg-surface2 p-6">
-      <span class="text-moss">Total</span>
-      <span class="font-mono text-2xl font-semibold text-clay">$<%= Number(order.total).toFixed(2) %></span>
+    <div class="mt-8 flex items-end justify-between border-t border-line pt-8">
+      <span class="text-[11px] uppercase tracking-wander text-sandDim">Total</span>
+      <span class="font-display text-3xl text-gold">
+        $<%= Number(order.total).toLocaleString('es-CO', { maximumFractionDigits: 0 }) %>
+      </span>
     </div>
 
-    <div class="mt-6 rounded-2xl border border-line bg-surface p-6 text-sm text-moss">
-      <p><span class="text-ink">Dirección:</span> <%= order.address %></p>
-      <p class="mt-1"><span class="text-ink">Teléfono:</span> <%= order.customer_phone %></p>
-    </div>
+    <dl class="mt-14 space-y-6 border-t border-line pt-10 text-sm">
+      <div>
+        <dt class="text-[10px] uppercase tracking-wander text-sandDim">Dirección</dt>
+        <dd class="mt-2 leading-relaxed text-sand"><%= order.address %></dd>
+      </div>
+      <div>
+        <dt class="text-[10px] uppercase tracking-wander text-sandDim">Teléfono</dt>
+        <dd class="mt-2 text-sand"><%= order.customer_phone %></dd>
+      </div>
+    </dl>
   </section>
 
   <%- include('partials/footer') %>

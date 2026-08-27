@@ -4,22 +4,27 @@
 <body>
   <%- include('partials/header') %>
 
-  <section class="mx-auto max-w-md px-6 py-20">
-    <span class="label-eyebrow">Bienvenido</span>
-    <h1 class="mt-2 text-3xl font-bold">Ingresa a tu cuenta</h1>
+  <section class="mx-auto max-w-sm px-6 pb-24 pt-36 sm:px-10">
+    <h1 class="font-display text-5xl text-ink">Entrar</h1>
 
     <% if (error) { %>
-      <p class="mt-4 rounded-lg border border-danger/40 bg-danger/10 px-4 py-3 text-sm text-danger"><%= error %></p>
+      <p class="mt-8 border-l-2 border-danger pl-4 text-sm text-danger"><%= error %></p>
     <% } %>
 
-    <form action="/ingresar" method="POST" class="mt-8 space-y-4">
-      <input type="email" name="email" required placeholder="Correo electrónico" class="input-field" />
-      <input type="password" name="password" required placeholder="Contraseña" class="input-field" />
-      <button type="submit" class="btn-primary w-full justify-center">Ingresar</button>
+    <form action="/ingresar" method="POST" class="mt-12 space-y-8">
+      <div>
+        <label for="email" class="mb-2 block text-[10px] uppercase tracking-wander text-sandDim">Correo</label>
+        <input id="email" type="email" name="email" required autocomplete="email" class="field" />
+      </div>
+      <div>
+        <label for="password" class="mb-2 block text-[10px] uppercase tracking-wander text-sandDim">Contraseña</label>
+        <input id="password" type="password" name="password" required autocomplete="current-password" class="field" />
+      </div>
+      <button type="submit" class="action-solid !flex w-full">Ingresar</button>
     </form>
 
-    <p class="mt-6 text-center text-sm text-moss">
-      ¿No tienes cuenta? <a href="/registrarse" class="text-clay hover:underline">Crea una aquí</a>
+    <p class="mt-10 text-sm text-sandDim">
+      ¿No tienes cuenta? <a href="/registrarse" class="text-gold hover:underline">Crea una</a>
     </p>
   </section>
 

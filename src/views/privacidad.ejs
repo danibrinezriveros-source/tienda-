@@ -4,31 +4,30 @@
 <body>
   <%- include('partials/header') %>
 
-  <section class="mx-auto max-w-3xl px-6 py-14">
-    <span class="label-eyebrow">Legal</span>
-    <h1 class="mt-2 text-3xl font-bold">Política de tratamiento de datos personales</h1>
-    <p class="mt-3 text-sm text-moss">Última actualización: <%= new Date().toLocaleDateString('es-CO', { year: 'numeric', month: 'long', day: 'numeric' }) %></p>
+  <section class="mx-auto max-w-2xl px-6 pb-24 pt-32 sm:px-10">
+    <h1 class="font-display text-5xl leading-[1.05] text-ink">Política de tratamiento de datos personales</h1>
+    <p class="mt-5 text-[11px] uppercase tracking-wander text-sandDim">Última actualización: <%= new Date().toLocaleDateString('es-CO', { year: 'numeric', month: 'long', day: 'numeric' }) %></p>
 
-    <div class="mt-6 rounded-lg border border-warn/40 bg-warn/10 px-4 py-3 text-sm text-warn">
+    <div class="admin-note admin-note-warn mt-10">
       Este texto es una base general redactada como punto de partida, no una asesoría legal.
       Antes de operar la tienda con clientes reales, revísalo con un abogado para confirmar que
       cumple la Ley 1581 de 2012 y el Decreto 1377 de 2013 en tu caso específico (por ejemplo, si
       el volumen de datos que manejas te obliga a inscribirte en el RNBD de la SIC).
     </div>
 
-    <div class="mt-10 space-y-8 text-sm leading-relaxed text-ink">
+    <div class="mt-14 space-y-12 text-sm leading-relaxed">
       <div>
-        <h2 class="text-lg font-semibold">1. Responsable del tratamiento</h2>
-        <p class="mt-2 text-moss">
+        <h2 class="font-display text-2xl text-ink">1. Responsable del tratamiento</h2>
+        <p class="mt-4 text-sand">
           Arborea es responsable del tratamiento de los datos personales que recolecta a través de
           este sitio. Para cualquier solicitud relacionada con tus datos, puedes escribir a
-          <a href="mailto:<%= contactEmail %>" class="text-clay hover:underline"><%= contactEmail %></a>.
+          <a href="mailto:<%= contactEmail %>" class="text-gold hover:underline"><%= contactEmail %></a>.
         </p>
       </div>
 
       <div>
-        <h2 class="text-lg font-semibold">2. Qué datos recolectamos</h2>
-        <ul class="mt-2 list-disc space-y-1 pl-5 text-moss">
+        <h2 class="font-display text-2xl text-ink">2. Qué datos recolectamos</h2>
+        <ul class="mt-4 list-disc space-y-2 pl-5 text-sand marker:text-gold/60">
           <li>Datos de cuenta: nombre, correo electrónico, teléfono y contraseña (guardada siempre cifrada).</li>
           <li>Datos de pedidos: dirección de entrega, teléfono de contacto y las notas que agregues al pagar.</li>
           <li>Historial de compras asociado a tu cuenta.</li>
@@ -36,13 +35,13 @@
       </div>
 
       <div>
-        <h2 class="text-lg font-semibold">3. Cookies que usamos</h2>
-        <p class="mt-2 text-moss">
-          Este sitio usa una sola cookie: una cookie técnica de sesión (<code class="text-clay">connect.sid</code>)
+        <h2 class="font-display text-2xl text-ink">3. Cookies que usamos</h2>
+        <p class="mt-4 text-sand">
+          Este sitio usa una sola cookie: una cookie técnica de sesión (<code class="admin-code">connect.sid</code>)
           que nos permite mantenerte con la sesión iniciada y recordar lo que llevas en el carrito
           mientras compras. Dura hasta 7 días o hasta que cierres sesión.
         </p>
-        <p class="mt-2 text-moss">
+        <p class="mt-4 text-sand">
           Es una cookie estrictamente necesaria para que la tienda funcione: no hace seguimiento,
           no es publicitaria y no la compartimos con terceros con fines de mercadeo. Por eso no
           pedimos un consentimiento aparte para usarla, tal como lo permiten tanto la normativa
@@ -55,19 +54,19 @@
       </div>
 
       <div>
-        <h2 class="text-lg font-semibold">4. Para qué usamos tus datos</h2>
-        <ul class="mt-2 list-disc space-y-1 pl-5 text-moss">
+        <h2 class="font-display text-2xl text-ink">4. Para qué usamos tus datos</h2>
+        <ul class="mt-4 list-disc space-y-2 pl-5 text-sand marker:text-gold/60">
           <li>Crear y administrar tu cuenta, y permitirte ver tu historial de pedidos.</li>
           <li>Procesar y entregar los pedidos que realices.</li>
           <li>Enviarte la confirmación de tu pedido por WhatsApp, únicamente si esa opción está activada.</li>
           <li>Responder tus solicitudes cuando nos escribas.</li>
         </ul>
-        <p class="mt-2 text-moss">No vendemos ni compartimos tus datos con terceros para fines publicitarios.</p>
+        <p class="mt-4 text-sand">No vendemos ni compartimos tus datos con terceros para fines publicitarios.</p>
       </div>
 
       <div>
-        <h2 class="text-lg font-semibold">5. Con quién compartimos datos técnicamente</h2>
-        <p class="mt-2 text-moss">
+        <h2 class="font-display text-2xl text-ink">5. Con quién compartimos datos técnicamente</h2>
+        <p class="mt-4 text-sand">
           Para que la tienda funcione, algunos datos pasan por proveedores de infraestructura que
           actúan como encargados del tratamiento: hosting (Vercel), base de datos (Neon) y, si
           activamos el envío de confirmaciones, la plataforma de mensajería (Twilio/WhatsApp).
@@ -76,8 +75,8 @@
       </div>
 
       <div>
-        <h2 class="text-lg font-semibold">6. Cómo protegemos tus datos</h2>
-        <ul class="mt-2 list-disc space-y-1 pl-5 text-moss">
+        <h2 class="font-display text-2xl text-ink">6. Cómo protegemos tus datos</h2>
+        <ul class="mt-4 list-disc space-y-2 pl-5 text-sand marker:text-gold/60">
           <li>Las contraseñas se guardan cifradas (hash), nunca en texto plano.</li>
           <li>Toda la comunicación con el sitio viaja cifrada por HTTPS.</li>
           <li>El acceso al panel de administrador está restringido y protegido con límite de intentos.</li>
@@ -85,19 +84,19 @@
       </div>
 
       <div>
-        <h2 class="text-lg font-semibold">7. Tus derechos</h2>
-        <p class="mt-2 text-moss">
+        <h2 class="font-display text-2xl text-ink">7. Tus derechos</h2>
+        <p class="mt-4 text-sand">
           Como titular de tus datos, en cualquier momento puedes solicitarnos: conocer qué datos
           tenemos sobre ti, actualizarlos o corregirlos, pedir que los eliminemos, y revocar la
           autorización que nos diste para tratarlos. Escríbenos a
-          <a href="mailto:<%= contactEmail %>" class="text-clay hover:underline"><%= contactEmail %></a>
+          <a href="mailto:<%= contactEmail %>" class="text-gold hover:underline"><%= contactEmail %></a>
           y atenderemos tu solicitud dentro de los plazos que establece la ley.
         </p>
       </div>
 
       <div>
-        <h2 class="text-lg font-semibold">8. Cambios a esta política</h2>
-        <p class="mt-2 text-moss">
+        <h2 class="font-display text-2xl text-ink">8. Cambios a esta política</h2>
+        <p class="mt-4 text-sand">
           Si actualizamos esta política de forma sustancial, lo indicaremos en esta misma página
           con la fecha de la última actualización.
         </p>

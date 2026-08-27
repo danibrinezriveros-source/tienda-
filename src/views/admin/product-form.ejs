@@ -4,65 +4,92 @@
 <body>
 <%- include('../partials/admin-nav', { active: 'productos' }) %>
 
-  <a href="/admin/productos" class="text-sm text-moss hover:text-ink">&larr; Catálogo</a>
-  <h1 class="mt-3 text-3xl font-bold"><%= product ? 'Editar producto' : 'Nuevo producto' %></h1>
+  <a href="/admin/productos" class="text-[10px] uppercase tracking-wander text-sandDim transition-colors hover:text-ink">← Catálogo</a>
+  <h1 class="admin-title mt-5"><%= product ? 'Editar producto' : 'Nuevo producto' %></h1>
 
   <% if (error) { %>
-    <p class="mt-4 max-w-xl rounded-lg border border-danger/40 bg-danger/10 px-4 py-3 text-sm text-danger"><%= error %></p>
+    <p class="admin-note admin-note-danger mt-6 max-w-2xl" role="alert"><%= error %></p>
   <% } %>
 
-  <form action="<%= product ? `/admin/productos/${product.id}/editar` : '/admin/productos/nuevo' %>" method="POST" enctype="multipart/form-data" class="mt-8 max-w-xl space-y-5">
-    <div>
-      <label class="mb-1 block text-sm text-moss">Nombre</label>
-      <input type="text" name="name" required value="<%= product ? product.name : '' %>" class="input-field" />
-    </div>
-    <div>
-      <label class="mb-1 block text-sm text-moss">Descripción</label>
-      <textarea name="description" rows="3" class="input-field"><%= product ? product.description : '' %></textarea>
-    </div>
-    <div class="grid grid-cols-2 gap-4">
+  <form action="<%= product ? `/admin/productos/${product.id}/editar` : '/admin/productos/nuevo' %>"
+        method="POST" enctype="multipart/form-data" class="mt-10 max-w-2xl">
+
+    <div class="admin-panel space-y-6 p-6">
       <div>
-        <label class="mb-1 block text-sm text-moss">Precio</label>
-        <input type="number" step="0.01" name="price" required value="<%= product ? product.price : '' %>" class="input-field" />
+        <label for="name" class="admin-label">Nombre</label>
+        <input id="name" type="text" name="name" required value="<%= product ? product.name : '' %>" class="admin-field" />
       </div>
       <div>
-        <label class="mb-1 block text-sm text-moss">Stock</label>
-        <input type="number" name="stock" required value="<%= product ? product.stock : 0 %>" class="input-field" />
+        <label for="description" class="admin-label">Descripción</label>
+        <textarea id="description" name="description" rows="3" class="admin-field resize-y"><%= product ? product.description : '' %></textarea>
+      </div>
+      <div class="grid grid-cols-2 gap-5">
+        <div>
+          <label for="price" class="admin-label">Precio</label>
+          <input id="price" type="number" step="0.01" min="0" name="price" required value="<%= product ? product.price : '' %>" class="admin-field" />
+        </div>
+        <div>
+          <label for="stock" class="admin-label">Stock</label>
+          <input id="stock" type="number" min="0" name="stock" required value="<%= product ? product.stock : 0 %>" class="admin-field" />
+        </div>
+      </div>
+      <div class="grid grid-cols-1 gap-5 sm:grid-cols-2">
+        <div>
+          <label for="category" class="admin-label">Categoría</label>
+          <input id="category" type="text" name="category" required value="<%= product ? product.category : '' %>" class="admin-field" />
+          <p class="mt-2 text-xs leading-relaxed text-sandDim">
+            La categoría decide en qué ecosistema aparece la planta en la tienda.
+          </p>
+        </div>
+        <div>
+          <label for="tags" class="admin-label">Etiquetas</label>
+          <input id="tags" type="text" name="tags" value="<%= product ? product.tags : '' %>"
+                 placeholder="principiante,poca-luz,pet-friendly" class="admin-field" />
+          <p class="mt-2 text-xs leading-relaxed text-sandDim">
+            Separadas por coma. Alimentan el asistente de compra y la ficha de cuidado.
+          </p>
+        </div>
       </div>
     </div>
-    <div class="grid grid-cols-2 gap-4">
-      <div>
-        <label class="mb-1 block text-sm text-moss">Categoría</label>
-        <input type="text" name="category" required value="<%= product ? product.category : '' %>" class="input-field" />
-      </div>
-      <div>
-        <label class="mb-1 block text-sm text-moss">Etiquetas (separadas por coma)</label>
-        <input type="text" name="tags" value="<%= product ? product.tags : '' %>" placeholder="rapido,economico,exterior" class="input-field" />
-      </div>
-    </div>
-    <div>
-      <label class="mb-1 block text-sm text-moss">Foto del producto</label>
+
+    <div class="admin-panel mt-6 space-y-6 p-6">
+      <h2 class="text-[10px] uppercase tracking-wander text-sandDim">Imagen</h2>
+
       <% if (product && product.image_url) { %>
-        <div class="mb-3 h-36 w-36 overflow-hidden rounded-xl border border-line bg-surface2">
-          <img src="<%= product.image_url %>" alt="" class="h-full w-full object-cover" />
+        <div class="h-32 w-32 overflow-hidden rounded-sm border border-line bg-surface2">
+          <img src="<%= product.image_url %>" alt="Foto actual de <%= product.name %>" class="h-full w-full object-cover" />
         </div>
       <% } %>
-      <input type="file" name="image" accept="image/*" class="w-full text-sm text-moss file:mr-4 file:rounded-full file:border-0 file:bg-leaf file:px-4 file:py-2 file:text-sm file:font-semibold file:text-cream" />
-      <p class="mt-1.5 text-xs text-moss">Sube una foto desde tu computador o celular (JPG o PNG, máx. 5&nbsp;MB). Si subes una, reemplaza la URL de abajo.</p>
-    </div>
-    <div>
-      <label class="mb-1 block text-sm text-moss">O pega la URL de una imagen</label>
-      <input type="url" name="image_url" value="<%= product ? (product.image_url || '') : '' %>" class="input-field" />
+
+      <div>
+        <label for="image" class="admin-label">Subir una foto</label>
+        <input id="image" type="file" name="image" accept="image/*" class="admin-file" />
+        <p class="mt-2 text-xs leading-relaxed text-sandDim">
+          Desde el computador o el celular (JPG o PNG, máx. 5&nbsp;MB). Si subes una, reemplaza la URL de abajo.
+        </p>
+      </div>
+
+      <div>
+        <label for="image_url" class="admin-label">O pegar la URL de una imagen</label>
+        <input id="image_url" type="url" name="image_url" value="<%= product ? (product.image_url || '') : '' %>" class="admin-field" />
+        <p class="mt-2 text-xs leading-relaxed text-sandDim">
+          Sin foto, la tienda dibuja una ilustración según la categoría de la planta.
+        </p>
+      </div>
     </div>
 
     <% if (product) { %>
-      <label class="flex items-center gap-2 text-sm text-moss">
-        <input type="checkbox" name="active" <%= product.active ? 'checked' : '' %> class="rounded border-line bg-surface2" />
-        Producto visible en la tienda
+      <label class="mt-6 flex items-center gap-3 text-sm text-sand">
+        <input type="checkbox" name="active" <%= product.active ? 'checked' : '' %>
+               class="h-4 w-4 rounded-sm border border-line bg-surface2 accent-gold" />
+        Visible en la tienda
       </label>
     <% } %>
 
-    <button type="submit" class="btn-primary">Guardar producto</button>
+    <div class="mt-8 flex flex-wrap items-center gap-5">
+      <button type="submit" class="admin-btn">Guardar producto</button>
+      <a href="/admin/productos" class="text-[10px] uppercase tracking-wander text-sandDim transition-colors hover:text-ink">Cancelar</a>
+    </div>
   </form>
 
 <%- include('../partials/admin-close') %>

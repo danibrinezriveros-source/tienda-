@@ -4,47 +4,99 @@
 <body>
   <%- include('partials/header') %>
 
-  <section class="mx-auto max-w-6xl px-6 py-14">
-    <a href="/" class="text-sm text-moss hover:text-ink">&larr; Volver al catálogo</a>
+  <%
+    // Los chips de cuidado se derivan de las tags que ya existen en la base de
+    // datos; no se inventa una taxonomía nueva para esta página.
+    var tags = (product.tags || '').split(',').map(function (t) { return t.trim().toLowerCase(); }).filter(Boolean);
+    var READINGS = {
+      'poca-luz':     { label: 'Luz', value: 'Tolera poca luz', note: 'Sobrevive lejos de una ventana.' },
+      'exterior':     { label: 'Ubicación', value: 'Exterior', note: 'Quiere estar afuera, no en una sala.' },
+      'pet-friendly': { label: 'Con mascotas', value: 'Segura', note: 'No es tóxica para perros ni gatos.' },
+      'principiante': { label: 'Dificultad', value: 'Para empezar', note: 'Perdona los descuidos.' },
+      'economico':    { label: 'Precio', value: 'Económica', note: 'De las más accesibles del catálogo.' },
+      'accesorio':    { label: 'Tipo', value: 'Accesorio', note: 'No es una planta: es lo que la sostiene.' }
+    };
+    var readings = tags.map(function (t) { return READINGS[t]; }).filter(Boolean);
+    var biomeName = { 'interior': 'La selva', 'palmeras': 'La selva', 'exterior': 'El jardín',
+      'ornamentales': 'El jardín', 'suculentas': 'El desierto', 'aromáticas': 'El huerto',
+      'árboles': 'El bosque', 'macetas y accesorios': 'El taller' }[(product.category || '').trim().toLowerCase()];
+    var biomeKey = { 'La selva': 'selva', 'El jardín': 'jardin', 'El desierto': 'desierto',
+      'El huerto': 'huerto', 'El bosque': 'bosque', 'El taller': 'taller' }[biomeName];
+  %>
 
-    <div class="mt-6 grid grid-cols-1 gap-12 md:grid-cols-2">
-      <div class="aspect-square overflow-hidden rounded-2xl border border-line bg-surface2">
-        <%- include('partials/product-image', { image_url: product.image_url, name: product.name }) %>
-      </div>
+  <article class="pt-28">
+    <!-- El retrato manda: la planta ocupa la primera pantalla, no el botón -->
+    <header class="relative mx-auto max-w-5xl px-6 sm:px-10">
+      <a href="<%= biomeKey ? '/#' + biomeKey : '/' %>" class="quiet-link text-[11px] uppercase tracking-wander">
+        ← <%= biomeName || 'Volver al mundo' %>
+      </a>
 
-      <div>
-        <span class="label-eyebrow"><%= product.category %></span>
-        <h1 class="mt-3 text-3xl font-bold"><%= product.name %></h1>
-        <p class="mt-4 font-mono text-3xl text-clay">$<%= Number(product.price).toFixed(2) %></p>
-        <p class="mt-6 leading-relaxed text-moss"><%= product.description %></p>
-
-        <% const careTags = (product.tags || '').split(',').map(t => t.trim()).filter(Boolean); %>
-        <% if (careTags.length > 0) { %>
-          <div class="mt-5 flex flex-wrap gap-2">
-            <% careTags.forEach(t => { %>
-              <span class="tag-chip"><%- include('partials/icon', { name: 'leaf', cls: 'h-3 w-3 text-leaf' }) %> <%= t %></span>
-            <% }) %>
-          </div>
-        <% } %>
-
-        <div class="mt-6">
-          <% if (product.stock > 0) { %>
-            <span class="status-pill bg-ok/10 text-ok"><span class="h-1.5 w-1.5 rounded-full bg-ok"></span> <%= product.stock %> unidades disponibles</span>
-          <% } else { %>
-            <span class="status-pill bg-danger/10 text-danger"><span class="h-1.5 w-1.5 rounded-full bg-danger"></span> Agotado por ahora</span>
-          <% } %>
+      <div class="mt-10 grid gap-10 sm:grid-cols-[1.1fr_1fr] sm:items-end">
+        <div class="specimen-portrait">
+          <%- include('partials/product-image', { image_url: product.image_url, name: product.name, category: product.category, pid: product.id }) %>
         </div>
 
+        <div class="pb-2">
+          <h1 class="font-display text-5xl leading-[1.05] text-ink sm:text-6xl"><%= product.name %></h1>
+          <p class="mt-5 max-w-sm text-base font-light leading-relaxed text-sand"><%= product.description %></p>
+          <p class="mt-8 font-display text-3xl text-gold">
+            $<%= Number(product.price).toLocaleString('es-CO', { maximumFractionDigits: 0 }) %>
+          </p>
+          <p class="mt-2 text-[11px] uppercase tracking-wander text-sandDim">
+            <% if (product.stock > 0) { %>
+              <%= product.stock %> <%= product.stock === 1 ? 'ejemplar disponible' : 'ejemplares disponibles' %>
+            <% } else { %>
+              Agotada por ahora
+            <% } %>
+          </p>
+        </div>
+      </div>
+    </header>
+
+    <!-- Ficha botánica: lo que hay que saber antes de llevársela -->
+    <% if (readings.length > 0) { %>
+      <section class="mx-auto mt-20 max-w-5xl px-6 sm:px-10">
+        <h2 class="text-[11px] uppercase tracking-wander text-sandDim">Cómo vive</h2>
+        <dl class="mt-8 grid gap-px sm:grid-cols-2">
+          <% readings.forEach(function (r) { %>
+            <div class="border-b border-line/70 py-6 sm:pr-10">
+              <dt class="text-[10px] uppercase tracking-wander text-sandDim"><%= r.label %></dt>
+              <dd class="mt-2 font-display text-2xl text-ink"><%= r.value %></dd>
+              <dd class="mt-1 text-sm text-sandDim"><%= r.note %></dd>
+            </div>
+          <% }) %>
+        </dl>
+      </section>
+    <% } %>
+
+    <!-- La compra existe, pero no es la protagonista -->
+    <section class="mx-auto mt-16 max-w-5xl px-6 pb-24 sm:px-10">
+      <div class="border-t border-line pt-10">
         <% if (product.stock > 0) { %>
-          <form action="/carrito/agregar" method="POST" class="mt-8 flex items-center gap-4">
+          <form action="/carrito/agregar" method="POST" class="flex flex-wrap items-end gap-8">
             <input type="hidden" name="productId" value="<%= product.id %>" />
-            <input type="number" name="quantity" value="1" min="1" max="<%= product.stock %>" class="input-field !w-24" />
-            <button type="submit" class="btn-primary">Agregar al carrito</button>
+            <div class="w-24">
+              <label for="quantity" class="mb-2 block text-[10px] uppercase tracking-wander text-sandDim">Cantidad</label>
+              <input id="quantity" type="number" name="quantity" value="1" min="1" max="<%= product.stock %>" class="field" />
+            </div>
+            <button type="submit" class="action-solid">Llevarla</button>
+            <p class="text-sm text-sandDim">Confirmamos el pedido por WhatsApp antes de despachar.</p>
           </form>
+        <% } else { %>
+          <p class="text-sm text-sand">
+            Esta planta está agotada.
+            <a href="/asistente" class="text-gold hover:underline">Busca una parecida con el asistente</a>.
+          </p>
         <% } %>
       </div>
-    </div>
-  </section>
+
+      <p class="mt-10 text-sm text-sandDim">
+        ¿Dudas de cuidado? Lee las
+        <a href="/guias" class="text-gold hover:underline">guías</a>
+        antes de decidir.
+      </p>
+    </section>
+  </article>
 
   <%- include('partials/footer') %>
 </body>

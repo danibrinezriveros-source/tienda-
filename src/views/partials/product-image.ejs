@@ -1,9 +1,9 @@
-<% if (image_url) { %>
+<% if (typeof image_url !== 'undefined' && image_url) { %>
   <img src="<%= image_url %>" alt="<%= name %>" class="h-full w-full object-cover <%= typeof imgClass !== 'undefined' ? imgClass : '' %>" />
 <% } else { %>
-  <div class="flex h-full w-full items-center justify-center bg-canopy">
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="h-10 w-10 text-leaf/40" fill="currentColor">
-      <path d="M12 2c-4.5 3-7 6.8-7 10.8C5 17.3 8.1 21 12 21s7-3.7 7-8.2C19 8.8 16.5 5 12 2zm0 3.4c2.9 2.4 4.5 5 4.5 7.4 0 3-2 5.4-4.5 5.4S7.5 15.8 7.5 12.8c0-2.4 1.6-5 4.5-7.4z"/>
-    </svg>
-  </div>
+  <%- include('plant', {
+    category: typeof category !== 'undefined' ? category : '',
+    pid: typeof pid !== 'undefined' ? pid : 0,
+    name: typeof name !== 'undefined' ? name : 'Planta'
+  }) %>
 <% } %>

@@ -4,30 +4,44 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        night: '#12160f',      // fondo principal, verde-negro elegante
-        cream: '#faf6ec',      // blanco cálido — texto/superficies claras sobre fondo oscuro
-        surface: '#1a1e15',    // paneles / tarjetas
-        surface2: '#232920',   // paneles elevados, hover, chips
-        line: 'rgba(244,241,230,0.12)', // bordes sutiles sobre fondo oscuro
-        ink: '#f5f2e8',        // texto principal (claro, sobre fondo oscuro)
-        moss: '#a3ab97',       // texto secundario
-        leaf: '#5c9161',       // verde bosque (acento primario, aclarado para contraste)
-        leaf2: '#7ec684',      // verde claro (hover / glow)
-        clay: '#e2894f',       // terracota (acento secundario, precios)
-        ok: '#5cbf6b',
-        warn: '#e0a542',
-        danger: '#e2685a'
+        // — Arbórea: una selva que contiene una tienda —
+        // Estratos de profundidad, de lo más lejano a lo más cercano.
+        night: '#0b120e',      // fondo de página / fondo del vivero (negro suave verdoso)
+        deep: '#101c16',       // vegetación de fondo
+        canopy: '#17291f',     // masa de árboles
+        understory: '#26402e', // verde musgo — vegetación media
+        leaf: '#3f6a48',       // verde hoja — vegetación cercana
+        leafLit: '#6d9a69',    // hoja tocada por la luz
+        earth: '#3a2f23',      // tierra / troncos
+        earthLit: '#5b4936',   // corteza iluminada
+
+        // Superficies y texto
+        surface: '#131f19',    // paneles (ficha, panel de exploración)
+        surface2: '#1b2b23',   // panel elevado, input, chip
+        line: 'rgba(226,220,203,0.14)',
+        ink: '#f0ede2',        // blanco cálido — texto principal
+        sand: '#d9d1bd',       // beige natural — texto secundario
+        sandDim: '#9a927f',    // texto terciario
+        gold: '#c8a86a',       // luz / acento de descubrimiento
+        goldDim: '#a08a4f',
+
+        ok: '#7aa86f',
+        warn: '#c9a24e',
+        danger: '#b8695c'
       },
       fontFamily: {
-        display: ['"Inter"', 'sans-serif'],
-        body: ['"Inter"', 'sans-serif'],
-        mono: ['"IBM Plex Mono"', 'monospace']
+        display: ['"Cormorant Garamond"', 'Georgia', 'serif'],
+        body: ['"Jost"', 'system-ui', 'sans-serif'],
+        mono: ['"Jost"', 'system-ui', 'sans-serif']
       },
-      backgroundImage: {
-        canopy: 'radial-gradient(circle at 50% 0%, rgba(92,145,97,0.18), transparent 60%)'
+      letterSpacing: {
+        wander: '0.34em'
+      },
+      transitionTimingFunction: {
+        camera: 'cubic-bezier(0.22, 1, 0.36, 1)'
       },
       boxShadow: {
-        glow: '0 0 0 1px rgba(92,145,97,0.4), 0 0 24px rgba(92,145,97,0.22)'
+        glow: '0 0 0 1px rgba(200,168,106,0.35), 0 0 34px -6px rgba(200,168,106,0.3)'
       }
     }
   },

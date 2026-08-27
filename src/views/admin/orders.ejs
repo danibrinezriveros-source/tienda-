@@ -4,19 +4,16 @@
 <body>
 <%- include('../partials/admin-nav', { active: 'pedidos' }) %>
 
-  <span class="label-eyebrow">Pedidos</span>
-  <h1 class="mt-2 text-3xl font-bold">Gestión de pedidos</h1>
+  <h1 class="admin-title">Pedidos</h1>
 
-  <div class="mt-6 inline-flex rounded-full border border-line bg-surface p-1">
-    <a href="/admin/pedidos?vista=entrantes" class="rounded-full px-5 py-2 text-sm <%= view === 'entrantes' ? 'bg-leaf text-cream' : 'text-moss hover:text-ink' %>">
-      Entrantes
-    </a>
-    <a href="/admin/pedidos?vista=salientes" class="rounded-full px-5 py-2 text-sm <%= view === 'salientes' ? 'bg-leaf text-cream' : 'text-moss hover:text-ink' %>">
-      Salientes
-    </a>
+  <div class="mt-8 flex gap-8 border-b border-line">
+    <a href="/admin/pedidos?vista=entrantes" class="admin-tab"
+       <%= view === 'entrantes' ? 'aria-current="page"' : '' %>>Entrantes</a>
+    <a href="/admin/pedidos?vista=salientes" class="admin-tab"
+       <%= view === 'salientes' ? 'aria-current="page"' : '' %>>Salientes</a>
   </div>
 
-  <p class="mt-4 text-sm text-moss">
+  <p class="mt-5 text-sm text-sandDim">
     <% if (view === 'entrantes') { %>
       Pedidos nuevos esperando confirmación.
     <% } else { %>
@@ -24,23 +21,41 @@
     <% } %>
   </p>
 
-  <div class="mt-6 divide-y divide-line rounded-2xl border border-line bg-surface">
-    <% orders.forEach(o => { %>
-      <a href="/admin/pedidos/<%= o.id %>" class="flex flex-wrap items-center justify-between gap-3 p-5 hover:bg-surface2">
-        <div>
-          <p class="font-medium">#<%= o.id %> — <%= o.customer_name %></p>
-          <p class="text-sm text-moss"><%= o.customer_phone %> · <%= new Date(o.created_at).toLocaleString('es-CO') %></p>
-        </div>
-        <div class="flex items-center gap-4">
-          <span class="font-mono text-clay">$<%= Number(o.total).toFixed(2) %></span>
-          <span class="status-pill bg-surface2 text-moss"><%= o.status %></span>
-        </div>
-      </a>
-    <% }) %>
+  <div class="admin-panel mt-6 overflow-x-auto">
     <% if (orders.length === 0) { %>
-      <p class="p-8 text-center text-moss">No hay pedidos en esta vista.</p>
+      <p class="px-5 py-16 text-center text-sm text-sandDim">No hay pedidos en esta vista.</p>
+    <% } else { %>
+      <table class="admin-table">
+        <caption class="sr-only">Pedidos <%= view %></caption>
+        <thead>
+          <tr>
+            <th scope="col">Pedido</th>
+            <th scope="col">Cliente</th>
+            <th scope="col" class="hidden lg:table-cell">Contacto</th>
+            <th scope="col">Fecha</th>
+            <th scope="col" class="!text-right">Total</th>
+            <th scope="col">Estado</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% orders.forEach(function (o) { %>
+            <tr>
+              <td class="num !text-left">
+                <a href="/admin/pedidos/<%= o.id %>" class="text-ink hover:text-gold">n.º <%= o.id %></a>
+              </td>
+              <td class="whitespace-nowrap text-ink"><%= o.customer_name %></td>
+              <td class="hidden whitespace-nowrap lg:table-cell"><%= o.customer_phone %></td>
+              <td class="whitespace-nowrap"><%= new Date(o.created_at).toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric' }) %></td>
+              <td class="num">$<%= Number(o.total).toLocaleString('es-CO', { maximumFractionDigits: 0 }) %></td>
+              <td><%- include('../partials/order-status', { status: o.status }) %></td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
     <% } %>
   </div>
+
+  <p class="mt-5 text-xs text-sandDim"><%= orders.length %> <%= orders.length === 1 ? 'pedido' : 'pedidos' %> en esta vista.</p>
 
 <%- include('../partials/admin-close') %>
 </body>

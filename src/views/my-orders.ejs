@@ -4,24 +4,30 @@
 <body>
   <%- include('partials/header') %>
 
-  <section class="mx-auto max-w-4xl px-6 py-14">
-    <span class="label-eyebrow">Historial</span>
-    <h1 class="mt-2 text-3xl font-bold">Mis pedidos</h1>
+  <section class="mx-auto max-w-3xl px-6 pb-24 pt-32 sm:px-10">
+    <h1 class="font-display text-5xl text-ink sm:text-6xl">Mis pedidos</h1>
 
     <% if (orders.length === 0) { %>
-      <p class="mt-8 text-moss">Aún no tienes pedidos.</p>
+      <p class="mt-8 text-sm leading-relaxed text-sand">
+        Aún no tienes pedidos.
+        <a href="/" class="text-gold hover:underline">Empieza por el mundo</a>.
+      </p>
     <% } else { %>
-      <div class="mt-8 divide-y divide-line rounded-2xl border border-line bg-surface">
-        <% orders.forEach(o => { %>
-          <a href="/mis-pedidos/<%= o.id %>" class="flex items-center justify-between p-5 hover:bg-surface2">
-            <div>
-              <p class="font-medium">Pedido #<%= o.id %></p>
-              <p class="text-sm text-moss"><%= new Date(o.created_at).toLocaleDateString('es-CO', { year: 'numeric', month: 'long', day: 'numeric' }) %></p>
-            </div>
-            <div class="flex items-center gap-4">
-              <span class="font-mono text-clay">$<%= Number(o.total).toFixed(2) %></span>
-              <span class="status-pill bg-surface2 text-moss"><%= o.status %></span>
-            </div>
+      <div class="mt-12">
+        <% orders.forEach(function (o) { %>
+          <a href="/mis-pedidos/<%= o.id %>" class="group flex items-baseline gap-6 border-b border-line/70 py-6 transition-colors duration-500 hover:border-gold/40">
+            <span class="min-w-0 flex-1">
+              <span class="block font-display text-2xl text-ink transition-colors duration-500 group-hover:text-gold">
+                Pedido n.º <%= o.id %>
+              </span>
+              <span class="mt-1 block text-[11px] uppercase tracking-wander text-sandDim">
+                <%= new Date(o.created_at).toLocaleDateString('es-CO', { year: 'numeric', month: 'long', day: 'numeric' }) %>
+                · <%= o.status %>
+              </span>
+            </span>
+            <span class="shrink-0 text-sm text-sand">
+              $<%= Number(o.total).toLocaleString('es-CO', { maximumFractionDigits: 0 }) %>
+            </span>
           </a>
         <% }) %>
       </div>

@@ -3,3 +3,11 @@ node_modules/
 src/public/css/output.css
 src/public/uploads/
 .DS_Store
+
+# Herramienta de diseño (Impeccable): se versiona la configuración del
+# proyecto (.impeccable/config.json) pero no lo local ni lo transitorio.
+.claude/skills/
+.claude/settings.local.json
+.impeccable/config.local.json
+.impeccable/hook.cache.json
+.impeccable/questions/

@@ -3,11 +3,11 @@
 <head><%- include('partials/head', { title: 'Error' }) %></head>
 <body>
   <%- include('partials/header') %>
-  <section class="mx-auto max-w-lg px-6 py-32 text-center">
-    <span class="label-eyebrow">Error 500</span>
-    <h1 class="mt-3 text-3xl font-bold">Algo salió mal</h1>
-    <p class="mt-3 text-moss"><%= message %></p>
-    <a href="/" class="btn-primary mt-8 inline-flex">Volver al inicio</a>
+  <section class="mx-auto max-w-lg px-6 pb-32 pt-44 sm:px-10">
+    <p class="text-[10px] uppercase tracking-wander text-sandDim">Error 500</p>
+    <h1 class="mt-6 font-display text-5xl leading-[1.05] text-ink">Algo salió mal</h1>
+    <p class="mt-5 text-sm leading-relaxed text-sand"><%= message %></p>
+    <a href="/" class="action mt-10">Volver al mundo</a>
   </section>
   <%- include('partials/footer') %>
 </body>

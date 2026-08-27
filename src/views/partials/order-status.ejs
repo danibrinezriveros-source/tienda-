@@ -1,0 +1,15 @@
+<%
+  // El estado de un pedido se lee de un vistazo o no sirve: cada uno lleva su
+  // color y su etiqueta legible. Los valores son los que ya guarda la base de
+  // datos; aquí solo se traducen a lenguaje visible.
+  var STATUS = {
+    pendiente:      { label: 'Pendiente',       tone: 'badge-warn' },
+    confirmado:     { label: 'Confirmado',      tone: 'badge-info' },
+    en_preparacion: { label: 'En preparación',  tone: 'badge-info' },
+    enviado:        { label: 'Enviado',         tone: 'badge-info' },
+    entregado:      { label: 'Entregado',       tone: 'badge-ok' },
+    cancelado:      { label: 'Cancelado',       tone: 'badge-danger' }
+  };
+  var raw = (typeof status !== 'undefined' && status) ? String(status) : '';
+  var s = STATUS[raw] || { label: raw || 'Sin estado', tone: 'badge-mute' };
+%><span class="badge <%= s.tone %>"><%= s.label %></span>

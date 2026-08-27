@@ -1,22 +1,57 @@
-<div class="flex min-h-screen bg-night">
-  <aside class="hidden w-64 flex-shrink-0 border-r border-line bg-surface md:block">
-    <div class="flex items-center gap-2 px-6 py-6">
-      <span class="h-2 w-2 rounded-full bg-leaf shadow-glow"></span>
-      <span class="font-display text-lg font-bold tracking-widest">Arborea</span>
-      <span class="label-eyebrow ml-auto">Admin</span>
+<%
+  var sections = [
+    { key: 'dashboard', href: '/admin', label: 'Resumen' },
+    { key: 'productos', href: '/admin/productos', label: 'Catálogo' },
+    { key: 'pedidos', href: '/admin/pedidos?vista=entrantes', label: 'Pedidos' },
+    { key: 'ajustes', href: '/admin/ajustes', label: 'Ajustes / WhatsApp' }
+  ];
+%>
+<div class="admin-shell">
+  <aside class="admin-side">
+    <div class="flex items-center gap-3 px-6 py-6">
+      <span class="h-1.5 w-1.5 rounded-full bg-gold" aria-hidden="true"></span>
+      <span class="font-display text-base tracking-[0.32em] text-ink">ARBÓREA</span>
+      <span class="ml-auto text-[10px] uppercase tracking-wander text-sandDim">Admin</span>
     </div>
-    <nav class="mt-4 flex flex-col gap-1 px-3 text-sm">
-      <a href="/admin" class="rounded-lg px-4 py-2.5 text-moss hover:bg-surface2 hover:text-ink <%= active === 'dashboard' ? 'bg-surface2 text-ink' : '' %>">Resumen</a>
-      <a href="/admin/productos" class="rounded-lg px-4 py-2.5 text-moss hover:bg-surface2 hover:text-ink <%= active === 'productos' ? 'bg-surface2 text-ink' : '' %>">Catálogo</a>
-      <a href="/admin/pedidos?vista=entrantes" class="rounded-lg px-4 py-2.5 text-moss hover:bg-surface2 hover:text-ink <%= active === 'pedidos' ? 'bg-surface2 text-ink' : '' %>">Pedidos</a>
-      <a href="/admin/ajustes" class="rounded-lg px-4 py-2.5 text-moss hover:bg-surface2 hover:text-ink <%= active === 'ajustes' ? 'bg-surface2 text-ink' : '' %>">Ajustes / WhatsApp</a>
+
+    <nav class="mt-4 flex flex-col gap-1 px-3" aria-label="Secciones del panel">
+      <% sections.forEach(function (s) { %>
+        <a href="<%= s.href %>" class="admin-link"
+           <%= active === s.key ? 'aria-current="page"' : '' %>><%= s.label %></a>
+      <% }) %>
     </nav>
-    <div class="absolute bottom-0 w-64 border-t border-line p-4">
-      <a href="/" class="block px-4 py-2 text-xs text-moss hover:text-ink">← Ver tienda pública</a>
-      <form action="/salir" method="POST">
-        <button class="w-full rounded-lg border border-line px-4 py-2 text-xs text-moss hover:border-leaf hover:text-clay">Cerrar sesión</button>
+
+    <!-- mt-auto en vez de position:absolute — así el pie queda dentro de la
+         barra en lugar de anclarse a la ventana. -->
+    <div class="mt-auto border-t border-line p-4">
+      <a href="/" class="admin-link !px-4 !text-xs">← Ver la tienda</a>
+      <form action="/salir" method="POST" class="mt-2 px-1">
+        <button class="admin-btn-ghost w-full">Cerrar sesión</button>
       </form>
     </div>
   </aside>
 
-  <main class="flex-1 px-6 py-8 md:px-10 md:py-10">
+  <!-- En móvil la barra lateral no cabe, pero la navegación no puede
+       desaparecer: se convierte en una fila desplazable. -->
+  <div class="min-w-0 flex-1">
+    <div class="sticky top-0 z-40 border-b border-line bg-night/95 backdrop-blur-md md:hidden">
+      <div class="flex items-center justify-between px-5 pt-4">
+        <a href="/admin" class="flex items-center gap-2.5">
+          <span class="h-1.5 w-1.5 rounded-full bg-gold" aria-hidden="true"></span>
+          <span class="font-display text-sm tracking-[0.3em] text-ink">ARBÓREA</span>
+          <span class="text-[10px] uppercase tracking-wander text-sandDim">Admin</span>
+        </a>
+        <form action="/salir" method="POST">
+          <button class="text-[10px] uppercase tracking-wander text-sandDim transition-colors hover:text-ink">Salir</button>
+        </form>
+      </div>
+      <nav class="mt-3 flex gap-6 overflow-x-auto px-5" aria-label="Secciones del panel">
+        <% sections.forEach(function (s) { %>
+          <a href="<%= s.href %>" class="admin-tab"
+             <%= active === s.key ? 'aria-current="page"' : '' %>><%= s.label %></a>
+        <% }) %>
+        <a href="/" class="admin-tab">Ver la tienda</a>
+      </nav>
+    </div>
+
+    <main class="admin-main">

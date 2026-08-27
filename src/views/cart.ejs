@@ -4,39 +4,45 @@
 <body>
   <%- include('partials/header') %>
 
-  <section class="mx-auto max-w-3xl px-6 py-14">
-    <span class="label-eyebrow">Tu carrito</span>
-    <h1 class="mt-2 text-3xl font-bold">Resumen de compra</h1>
+  <section class="mx-auto max-w-3xl px-6 pb-24 pt-32 sm:px-10">
+    <h1 class="font-display text-5xl text-ink sm:text-6xl">Lo que te llevas</h1>
 
     <% if (cart.length === 0) { %>
-      <div class="mt-10 rounded-2xl border border-line bg-surface p-10 text-center">
-        <p class="text-moss">Tu carrito está vacío.</p>
-        <a href="/" class="btn-primary mt-6 inline-flex">Ver catálogo</a>
-      </div>
+      <p class="mt-8 text-sm leading-relaxed text-sand">
+        Todavía no has recogido nada.
+        <a href="/" class="text-gold hover:underline">Vuelve al mundo</a> y acércate a una planta.
+      </p>
     <% } else { %>
-      <div class="mt-8 divide-y divide-line rounded-2xl border border-line bg-surface">
-        <% cart.forEach(item => { %>
-          <div class="flex items-center justify-between gap-4 p-5">
-            <div>
-              <p class="font-medium"><%= item.name %></p>
-              <p class="text-sm text-moss">Cantidad: <%= item.quantity %></p>
-            </div>
-            <div class="flex items-center gap-4">
-              <span class="font-mono text-clay">$<%= (item.price * item.quantity).toFixed(2) %></span>
-              <form action="/carrito/quitar/<%= item.productId %>" method="POST">
-                <button class="text-xs text-moss hover:text-danger">Quitar</button>
-              </form>
-            </div>
+      <div class="mt-12">
+        <% cart.forEach(function (item) { %>
+          <div class="flex items-baseline gap-6 border-b border-line/70 py-6">
+            <span class="min-w-0 flex-1">
+              <span class="block font-display text-2xl text-ink"><%= item.name %></span>
+              <span class="mt-1 block text-[11px] uppercase tracking-wander text-sandDim">
+                <%= item.quantity %> × $<%= Number(item.price).toLocaleString('es-CO', { maximumFractionDigits: 0 }) %>
+              </span>
+            </span>
+            <span class="shrink-0 text-sm text-sand">
+              $<%= (item.price * item.quantity).toLocaleString('es-CO', { maximumFractionDigits: 0 }) %>
+            </span>
+            <form action="/carrito/quitar/<%= item.productId %>" method="POST" class="shrink-0">
+              <button class="text-[10px] uppercase tracking-wander text-sandDim transition-colors duration-500 hover:text-danger">Quitar</button>
+            </form>
           </div>
         <% }) %>
       </div>
 
-      <div class="mt-6 flex items-center justify-between rounded-2xl border border-line bg-surface2 p-6">
-        <span class="text-moss">Total</span>
-        <span class="font-mono text-2xl font-semibold text-clay">$<%= total.toFixed(2) %></span>
+      <div class="mt-10 flex items-end justify-between border-t border-line pt-8">
+        <span class="text-[11px] uppercase tracking-wander text-sandDim">Total</span>
+        <span class="font-display text-4xl text-gold">
+          $<%= total.toLocaleString('es-CO', { maximumFractionDigits: 0 }) %>
+        </span>
       </div>
 
-      <a href="/checkout" class="btn-primary mt-8 flex w-full justify-center">Continuar al pago</a>
+      <div class="mt-12 flex flex-wrap items-center gap-8">
+        <a href="/checkout" class="action-solid">Continuar</a>
+        <a href="/" class="quiet-link text-[11px] uppercase tracking-wander">Seguir explorando</a>
+      </div>
     <% } %>
   </section>
 

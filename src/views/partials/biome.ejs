@@ -1,0 +1,213 @@
+<%
+  // Una isla isométrica: el ecosistema visto en perspectiva 2:1, con sus
+  // plantas habitándolo. Los productos se dibujan como sprites anclados al
+  // suelo y ordenados por profundidad, para que los de adelante tapen a los
+  // de atrás igual que en un diorama real.
+  var b = biome;
+  var g = b.ground;
+
+  var TW = 110, TH = 55;              // ancho/alto de tile (isometría 2:1)
+  var OX = 600, OY = 205;             // vértice superior de la isla
+  var N = 6;                          // isla de 6×6 tiles
+
+  function iso(gx, gy, h) {
+    return {
+      x: OX + (gx - gy) * (TW / 2),
+      y: OY + (gx + gy) * (TH / 2) - (h || 0)
+    };
+  }
+  function pt(p) { return p.x.toFixed(1) + ' ' + p.y.toFixed(1); }
+
+  var top = iso(0, 0), right = iso(N, 0), bottom = iso(N, N), left = iso(0, N);
+
+  // Huecos donde puede crecer algo, ordenados de fondo a frente.
+  // Si cambia la cantidad, actualizar SLOTS_PER_ISLAND en src/config/biomes.js.
+  var slots = [
+    { gx: 0.7, gy: 1.4, s: 0.9 },
+    { gx: 2.2, gy: 0.5, s: 1.04 },
+    { gx: 4.4, gy: 0.7, s: 0.86 },
+    { gx: 1.1, gy: 3.5, s: 0.94 },
+    { gx: 3.2, gy: 2.2, s: 1.16 },
+    { gx: 5.4, gy: 2.0, s: 0.88 },
+    { gx: 2.0, gy: 5.1, s: 0.9 },
+    { gx: 4.3, gy: 4.0, s: 1.0 },
+    { gx: 5.3, gy: 5.3, s: 0.78 }
+  ].sort(function (a, c) { return (a.gx + a.gy) - (c.gx + c.gy); });
+
+  var living = slots
+    .map(function (slot, i) { return b.products[i] ? { slot: slot, p: b.products[i] } : null; })
+    .filter(Boolean);
+
+  var seed = b.key.length * 7919 + 13;
+  function rnd() { seed = (seed * 1103515245 + 12345) % 2147483648; return seed / 2147483648; }
+  function span(a, c) { return a + rnd() * (c - a); }
+  function money(v) { return '$' + Number(v).toLocaleString('es-CO', { maximumFractionDigits: 0 }); }
+%>
+<svg class="iso-stage" viewBox="196 66 808 706" preserveAspectRatio="xMidYMid meet" role="group"
+     aria-label="Mapa de <%= b.name %>">
+  <defs>
+    <linearGradient id="iso-top-<%= b.key %>" x1="0.2" y1="0" x2="0.8" y2="1">
+      <stop offset="0%" stop-color="<%= g.topLit %>" />
+      <stop offset="100%" stop-color="<%= g.top %>" />
+    </linearGradient>
+    <linearGradient id="iso-rock-<%= b.key %>" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="<%= g.rockLit %>" />
+      <stop offset="100%" stop-color="<%= b.sky %>" />
+    </linearGradient>
+    <radialGradient id="iso-sun-<%= b.key %>" cx="0.5" cy="0.1" r="0.7">
+      <stop offset="0%" stop-color="#f0e6c2" stop-opacity="<%= (b.warm || 0.2).toFixed(2) %>" />
+      <stop offset="100%" stop-color="#f0e6c2" stop-opacity="0" />
+    </radialGradient>
+    <radialGradient id="iso-water-<%= b.key %>" cx="0.4" cy="0.35" r="0.7">
+      <stop offset="0%" stop-color="#4d8f92" />
+      <stop offset="100%" stop-color="#1d4247" />
+    </radialGradient>
+    <clipPath id="iso-clip-<%= b.key %>">
+      <path d="M<%= pt(top) %> L<%= pt(right) %> L<%= pt(bottom) %> L<%= pt(left) %> Z" />
+    </clipPath>
+  </defs>
+
+  <rect x="196" y="66" width="808" height="706" fill="url(#iso-sun-<%= b.key %>)" />
+
+  <!-- Roca: la isla tiene espesor, no es una lámina -->
+  <path d="M<%= pt(left) %> L<%= pt(bottom) %> L600 736 L318 501 Z" fill="<%= g.edge %>" />
+  <path d="M<%= pt(right) %> L<%= pt(bottom) %> L600 736 L884 498 Z" fill="url(#iso-rock-<%= b.key %>)" />
+  <path d="M<%= pt(left) %> L318 501 L336 470 L<%= pt(left) %> Z" fill="<%= g.rock %>" opacity="0.7" />
+
+  <!-- Superficie -->
+  <path d="M<%= pt(top) %> L<%= pt(right) %> L<%= pt(bottom) %> L<%= pt(left) %> Z"
+        fill="url(#iso-top-<%= b.key %>)" />
+
+  <g clip-path="url(#iso-clip-<%= b.key %>)">
+    <!-- Manchas de terreno: el suelo no es un color plano -->
+    <% for (var i = 0; i < 9; i++) {
+         var pp = iso(span(0.2, 5.8), span(0.2, 5.8), 0);
+         var rr = span(48, 128); %>
+      <ellipse cx="<%= pp.x.toFixed(1) %>" cy="<%= pp.y.toFixed(1) %>"
+               rx="<%= rr.toFixed(1) %>" ry="<%= (rr / 2).toFixed(1) %>"
+               fill="<%= i % 2 ? g.topLit : g.edge %>" opacity="<%= span(0.14, 0.3).toFixed(2) %>" />
+    <% } %>
+
+    <!-- El accidente propio de cada ecosistema -->
+    <% if (b.feature === 'water') { var w = iso(4.9, 1.2, 0); %>
+      <ellipse cx="<%= w.x.toFixed(1) %>" cy="<%= w.y.toFixed(1) %>" rx="104" ry="52" fill="<%= g.edge %>" />
+      <ellipse cx="<%= w.x.toFixed(1) %>" cy="<%= (w.y + 3).toFixed(1) %>" rx="94" ry="45"
+               fill="url(#iso-water-<%= b.key %>)" />
+      <ellipse class="iso-shimmer" cx="<%= (w.x - 24).toFixed(1) %>" cy="<%= (w.y - 8).toFixed(1) %>"
+               rx="34" ry="10" fill="#cfe9e4" opacity="0.28" />
+
+    <% } else if (b.feature === 'beds') { %>
+      <% for (var bd = 0; bd < 3; bd++) {
+           var b0 = iso(0.7, 1.1 + bd * 1.7, 0), b1 = iso(5.3, 1.1 + bd * 1.7, 0); %>
+        <path d="M<%= pt(b0) %> L<%= pt(b1) %> L<%= (b1.x).toFixed(1) %> <%= (b1.y + 15).toFixed(1) %>
+                 L<%= (b0.x).toFixed(1) %> <%= (b0.y + 15).toFixed(1) %> Z"
+              fill="<%= g.rock %>" opacity="0.5" />
+        <path d="M<%= pt(b0) %> L<%= pt(b1) %>" stroke="<%= g.rockLit %>" stroke-width="7" opacity="0.6" />
+      <% } %>
+
+    <% } else if (b.feature === 'dunes') { %>
+      <% for (var dn = 0; dn < 5; dn++) {
+           var dp = iso(span(0.4, 5.6), span(0.4, 5.6), 0), dr = span(70, 150); %>
+        <ellipse cx="<%= dp.x.toFixed(1) %>" cy="<%= dp.y.toFixed(1) %>"
+                 rx="<%= dr.toFixed(1) %>" ry="<%= (dr / 2.6).toFixed(1) %>"
+                 fill="<%= g.topLit %>" opacity="0.4" />
+      <% } %>
+      <% for (var ck = 0; ck < 7; ck++) {
+           var c0 = iso(span(0.5, 5.5), span(0.5, 5.5), 0); %>
+        <path d="M<%= (c0.x - 26).toFixed(1) %> <%= c0.y.toFixed(1) %> l 14 -6 l 16 7 l 13 -5"
+              stroke="<%= g.edge %>" stroke-width="2.5" fill="none" opacity="0.5" />
+      <% } %>
+
+    <% } else if (b.feature === 'rows') { %>
+      <% for (var rw = 0; rw < 5; rw++) {
+           var r0 = iso(0.6 + rw * 1.1, 0.6, 0), r1 = iso(0.6 + rw * 1.1, 5.4, 0); %>
+        <path d="M<%= pt(r0) %> L<%= pt(r1) %>" stroke="<%= g.rock %>" stroke-width="16" opacity="0.42" />
+        <path d="M<%= pt(r0) %> L<%= pt(r1) %>" stroke="<%= g.rockLit %>" stroke-width="4" opacity="0.5" />
+      <% } %>
+
+    <% } else if (b.feature === 'mist') { %>
+      <% for (var ms = 0; ms < 4; ms++) {
+           var m0 = iso(span(0.5, 5.5), span(0.5, 5.5), 0); %>
+        <ellipse class="iso-shimmer" cx="<%= m0.x.toFixed(1) %>" cy="<%= m0.y.toFixed(1) %>"
+                 rx="<%= span(120, 210).toFixed(0) %>" ry="<%= span(22, 40).toFixed(0) %>"
+                 fill="#cfe9e4" opacity="0.09" style="animation-delay: <%= ms %>s" />
+      <% } %>
+
+    <% } else if (b.feature === 'deck') { var dk0 = iso(0.5, 0.5, 0), dk1 = iso(5.5, 0.5, 0),
+                                           dk2 = iso(5.5, 5.5, 0), dk3 = iso(0.5, 5.5, 0); %>
+      <path d="M<%= pt(dk0) %> L<%= pt(dk1) %> L<%= pt(dk2) %> L<%= pt(dk3) %> Z"
+            fill="<%= g.rock %>" opacity="0.55" />
+      <% for (var pl = 1; pl < 8; pl++) {
+           var p0 = iso(0.5 + pl * 0.62, 0.5, 0), p1 = iso(0.5 + pl * 0.62, 5.5, 0); %>
+        <path d="M<%= pt(p0) %> L<%= pt(p1) %>" stroke="<%= g.rockLit %>" stroke-width="2.5" opacity="0.45" />
+      <% } %>
+    <% } %>
+
+    <!-- Sendero: la huella de que alguien pasa por aquí -->
+    <% if (b.feature !== 'deck') { %>
+      <% for (var s2 = 0; s2 < 8; s2++) {
+           var sp = iso(0.6 + s2 * 0.62, 5.4 - s2 * 0.42, 0); %>
+        <ellipse cx="<%= sp.x.toFixed(1) %>" cy="<%= sp.y.toFixed(1) %>"
+                 rx="<%= span(22, 34).toFixed(1) %>" ry="<%= span(11, 16).toFixed(1) %>"
+                 fill="<%= g.rockLit %>" opacity="0.42" />
+      <% } %>
+    <% } %>
+
+    <!-- Piedras -->
+    <% for (var r2 = 0; r2 < 5; r2++) {
+         var rp = iso(span(0.4, 5.6), span(0.4, 5.6), 0);
+         var rs = span(14, 26); %>
+      <g>
+        <ellipse cx="<%= rp.x.toFixed(1) %>" cy="<%= (rp.y + 4).toFixed(1) %>"
+                 rx="<%= (rs * 1.15).toFixed(1) %>" ry="<%= (rs * 0.5).toFixed(1) %>" fill="#000" opacity="0.25" />
+        <path d="M<%= (rp.x - rs).toFixed(1) %> <%= rp.y.toFixed(1) %>
+                 q <%= (rs * 0.4).toFixed(1) %> -<%= (rs * 0.95).toFixed(1) %> <%= rs.toFixed(1) %> -<%= (rs * 0.8).toFixed(1) %>
+                 q <%= (rs * 0.7).toFixed(1) %> <%= (rs * 0.15).toFixed(1) %> <%= rs.toFixed(1) %> <%= (rs * 0.8).toFixed(1) %> Z"
+              fill="<%= g.rockLit %>" />
+      </g>
+    <% } %>
+  </g>
+
+  <!-- Habitantes: cada planta es un producto que vive aquí -->
+  <% living.forEach(function (item) {
+       var slot = item.slot, p = item.p;
+       var ground = iso(slot.gx, slot.gy, 0);
+       var H = 146 * slot.s;
+       var spriteX = ground.x - H / 2;
+       var spriteY = ground.y - H * 0.95;
+  %>
+    <a href="/producto/<%= p.id %>" class="iso-plant" aria-label="<%= p.name %>, <%= money(p.price) %>">
+      <ellipse cx="<%= ground.x.toFixed(1) %>" cy="<%= ground.y.toFixed(1) %>"
+               rx="<%= (H * 0.26).toFixed(1) %>" ry="<%= (H * 0.11).toFixed(1) %>"
+               fill="<%= g.edge %>" opacity="0.55" />
+      <circle class="iso-halo" cx="<%= ground.x.toFixed(1) %>" cy="<%= (ground.y - H * 0.4).toFixed(1) %>"
+              r="<%= (H * 0.58).toFixed(1) %>" fill="#c8a86a" />
+      <g class="iso-lift">
+        <svg x="<%= spriteX.toFixed(1) %>" y="<%= spriteY.toFixed(1) %>"
+             width="<%= H.toFixed(1) %>" height="<%= H.toFixed(1) %>"
+             viewBox="0 0 200 200" overflow="visible">
+          <%- include('plant', { category: p.category, pid: p.id, name: p.name, bare: true }) %>
+        </svg>
+      </g>
+      <circle class="iso-pin" cx="<%= ground.x.toFixed(1) %>"
+              cy="<%= (spriteY - 14).toFixed(1) %>" r="4" fill="#c8a86a" />
+      <g transform="translate(<%= ground.x.toFixed(1) %>, <%= (spriteY - 30).toFixed(1) %>)">
+        <g class="iso-tag">
+          <text text-anchor="middle" class="iso-tag-name"><%= p.name %></text>
+          <text text-anchor="middle" y="26" class="iso-tag-meta"><%= money(p.price) %><%= p.stock > 0 ? '' : ' · agotada' %></text>
+        </g>
+      </g>
+    </a>
+  <% }) %>
+
+  <!-- Bruma y luciérnagas: el aire del bioma -->
+  <g class="iso-air" aria-hidden="true">
+    <ellipse cx="420" cy="600" rx="300" ry="40" fill="#cfe9e4" opacity="0.05" />
+    <ellipse cx="820" cy="650" rx="260" ry="34" fill="#cfe9e4" opacity="0.04" />
+    <% for (var fl = 0; fl < 12; fl++) { %>
+      <circle class="iso-firefly" cx="<%= span(240, 960).toFixed(0) %>" cy="<%= span(180, 620).toFixed(0) %>"
+              r="<%= span(1.6, 3).toFixed(1) %>" fill="#e8dcae"
+              style="animation-delay: <%= (fl * 0.7).toFixed(1) %>s" />
+    <% } %>
+  </g>
+</svg>
