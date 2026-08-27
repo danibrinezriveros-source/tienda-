@@ -184,7 +184,9 @@
 
   .approach-hud {
     @apply relative z-10 w-full px-6 pb-14 pt-24 sm:px-10 sm:pb-16;
-    text-shadow: 0 1px 16px rgba(0, 0, 0, 0.75);
+    /* La misma sombra con la que ya se sostiene el texto sobre la escena
+       (.inhabitant-name), para no inventar un segundo negro. */
+    text-shadow: 0 2px 14px rgba(0, 0, 0, 0.85);
   }
   /* El rótulo del bioma y sus variedades ocupan el mismo sitio: lo primero se
      aparta cuando llega lo segundo, igual que la maleza del primer plano. */
