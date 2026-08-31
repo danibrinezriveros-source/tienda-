@@ -12,6 +12,7 @@
     <% } %>
 
     <form action="/registrarse" method="POST" class="mt-12 space-y-8">
+<%- include('./partials/csrf') %>
       <div>
         <label for="name" class="mb-2 block text-[10px] uppercase tracking-wander text-sandDim">Nombre completo</label>
         <input id="name" type="text" name="name" required autocomplete="name" value="<%= form.name || '' %>" class="field" />

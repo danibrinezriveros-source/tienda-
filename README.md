@@ -17,7 +17,12 @@ un vivero: no solo vende, también educa con guías de cuidado y una página "So
 - **`/sobre-arborea`** — misión, valores y compromiso del vivero.
 - **Asistente de compra personalizado** (por reglas, sin costo ni API externa): 3 preguntas
   rápidas → recomendaciones ordenadas por afinidad con una frase explicando el porqué.
-- Registro/login de cliente y checkout con historial de "Mis pedidos".
+- Carrito con cantidades editables, que se pone al día con la tienda cada vez que se
+  abre: si algo se agotó o cambió de precio mientras esperaba, se dice ahí y no dentro
+  del checkout.
+- **Checkout sin cuenta**: se pide con nombre, teléfono, dirección, ciudad y departamento.
+  El pedido se confirma por WhatsApp, así que el registro es opcional; quien tiene cuenta
+  entra y se ahorra escribir sus datos, y conserva el historial de "Mis pedidos".
 
 **Administrador** (`/admin/ingresar`, protegido con contraseña)
 - **Cargar catálogo**: alta/edición manual de productos o **importación masiva por CSV**.
@@ -79,6 +84,18 @@ npm run dev          # reinicia el servidor al guardar cambios (requiere nodemon
    número (con código de país) que debe recibir las confirmaciones. Desde ese momento cada
    pedido nuevo se enviará por WhatsApp de verdad; antes de configurar Twilio, el sistema
    simplemente lo simula en consola.
+
+## Anunciarse en Google y TikTok
+
+El sitio publica lo que necesitan las plataformas de anuncios: `robots.txt`,
+`sitemap.xml`, feeds de catálogo en `/feeds/google.xml` y `/feeds/tiktok.csv`,
+datos estructurados con precio y disponibilidad, páginas de contacto, términos y
+envíos, y los píxeles de Google Ads y TikTok detrás de un aviso de cookies.
+
+Nada de eso se activa solo: cada pieza depende de una variable de entorno, y sin
+identificador configurado el script no se carga y su dominio ni siquiera se abre
+en la política de seguridad. El orden para ponerlo en marcha está en
+[MARKETING.md](MARKETING.md), y las variables en `.env.example`.
 
 ## Formato del CSV para carga masiva de catálogo
 
@@ -145,11 +162,56 @@ invocación puede caer en una instancia distinta y la memoria no se comparte.
 concurrente, usa la connection string "pooled" de tu proveedor (por ejemplo, en Neon el
 host `...-pooler...`, en Supabase el puerto `6543`) para no agotar las conexiones de Postgres.
 
-## Notas de seguridad para producción
+## Seguridad
 
-- Cambia `SESSION_SECRET` y las contraseñas de ejemplo antes de publicar el sitio.
-- Sirve el sitio detrás de HTTPS (así las cookies de sesión pueden ir con `secure: true`, ya
-  configurado automáticamente cuando `NODE_ENV=production`). `app.set('trust proxy', 1)` está
-  activado para que esto funcione correctamente detrás del proxy de Vercel.
+Lo que ya está puesto, y por qué, para que nadie lo quite por error.
+
+**Identidad y sesión**
+- `SESSION_SECRET` es obligatoria en producción y debe tener 32 caracteres o más: la app
+  **se niega a arrancar** sin ella. Antes había un valor por defecto escrito en el código, es
+  decir, público, y con él se puede firmar la cookie de cualquiera.
+- La cookie de sesión se llama `__Host-arborea.sid` en producción. Ese prefijo obliga al
+  navegador a aceptarla solo desde este mismo origen y por HTTPS, así que un subdominio
+  comprometido no puede sobrescribirla para fijar una sesión.
+- El ID de sesión se regenera al ingresar, al registrarse y al cambiar la contraseña.
+- La sesión del panel caduca a las **12 horas** desde que se autenticó, aparte de la cookie.
+- Contraseñas con bcrypt de coste 12, mínimo 10 caracteres (12 para el panel).
+  Se pueden cambiar desde el sitio: clientes en `/cuenta/contrasena`, administrador en
+  Ajustes. `db:init` exige un `ADMIN_PASSWORD` propio de 12 caracteres o más.
+
+**Escrituras**
+- Todo formulario que escribe algo lleva un token CSRF (`src/middleware/csrf.js`) y el
+  servidor rechaza con 403 lo que llegue sin él. Los formularios con archivo verifican el
+  token justo después de multer, y solo esas tres rutas pueden recibir `multipart/form-data`.
+- Límite de peticiones global, y más estrecho en ingreso (5 intentos / 30 min en el panel),
+  registro, checkout y cambio de contraseña.
+- La importación por CSV valida el archivo entero antes de escribir y lo inserta dentro de
+  una transacción: o entra completo, o no entra nada.
+- Retirar un producto lo marca inactivo; no borra la fila, para no perder el historial de
+  pedidos ni chocar con la clave foránea.
+
+**Contenido**
+- Cabeceras por `helmet`: CSP con nonce (sin `unsafe-inline` en scripts), `frame-ancestors
+  'none'`, `form-action 'self'`, HSTS de dos años, `Permissions-Policy` restrictiva.
+- El JSON-LD se serializa con `jsonForScript` (`src/utils/seo.js`), que escapa `<`, `>` y `&`
+  para que un nombre de producto no pueda cerrar la etiqueta `<script>`.
+- Las fotos subidas se validan por los bytes del archivo, no por lo que diga el formulario;
+  se acepta JPG, PNG, WEBP y GIF, y **no** SVG (puede llevar `<script>` dentro).
+- Las URLs de foto pegadas a mano solo se aceptan si son `http(s)` o una ruta interna.
+
+**Infraestructura**
+- TLS verificado contra la base de datos (`rejectUnauthorized: true`). Si tu proveedor usa
+  una autoridad propia, pásale el certificado por `DATABASE_CA_CERT`; no desactives la
+  verificación.
+- Sirve el sitio detrás de HTTPS. `app.set('trust proxy', 1)` está activado para que las
+  cookies `secure` funcionen tras el proxy de Vercel.
 - Las sesiones se guardan en PostgreSQL (`connect-pg-simple`), no en memoria, así que
-  sobreviven a reinicios/escalado horizontal de la función.
+  sobreviven a reinicios y escalado horizontal.
+
+**Lo que todavía no está**
+- No hay recuperación de contraseña por correo: un cliente que la olvide necesita que se la
+  restablezcan a mano. Requiere un servicio de envío de correo.
+- No hay segundo factor en el panel.
+- No hay registro de auditoría de las acciones del administrador.
+- El conteo de los límites de peticiones vive en memoria del proceso; en Vercel cada
+  instancia lleva el suyo. Para un límite global haría falta almacenarlo en Postgres o Redis.

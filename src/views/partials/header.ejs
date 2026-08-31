@@ -31,6 +31,7 @@
 
       <% if (currentUser && currentUser.role === 'user') { %>
         <form action="/salir" method="POST" class="hidden md:block">
+<%- include('./csrf') %>
           <button class="text-[11px] uppercase tracking-wander text-sand transition-colors duration-500 hover:text-ink">Salir</button>
         </form>
       <% } else { %>
@@ -67,6 +68,7 @@
     <div class="border-t border-line px-6 py-5">
       <% if (currentUser && currentUser.role === 'user') { %>
         <form action="/salir" method="POST">
+<%- include('./csrf') %>
           <button class="action">Salir</button>
         </form>
       <% } else { %>

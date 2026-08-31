@@ -1,0 +1,24 @@
+<%
+  // El aviso solo existe cuando hay algo que consentir. Sin pixel configurado
+  // la tienda no instala nada de terceros y preguntar sería teatro.
+  //
+  // Nace oculto y con `hidden`: si el visitante ya decidió, measure.js nunca lo
+  // muestra y no hay parpadeo. Por eso el contenedor no lleva utilidad de
+  // display — se la comería el atributo `hidden`.
+%>
+<% if (site.needsConsent) { %>
+  <div id="consent-banner" hidden class="fixed inset-x-0 bottom-0 z-[60] border-t border-line bg-night/95 backdrop-blur-md">
+    <div class="mx-auto flex max-w-4xl flex-col gap-6 px-6 py-7 sm:flex-row sm:items-center sm:justify-between sm:px-10">
+      <p class="max-w-xl text-sm leading-relaxed text-sand">
+        Usamos cookies de medición para entender qué plantas busca la gente y saber si
+        vale la pena seguir invirtiendo en dar a conocer el vivero. Puedes decir que no
+        y la tienda funciona igual.
+        <a href="/privacidad" class="text-gold hover:underline">Cómo tratamos tus datos</a>.
+      </p>
+      <div class="flex shrink-0 items-center gap-4">
+        <button type="button" id="consent-reject" class="action">Solo lo necesario</button>
+        <button type="button" id="consent-accept" class="action-solid">Aceptar</button>
+      </div>
+    </div>
+  </div>
+<% } %>

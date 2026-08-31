@@ -33,6 +33,8 @@ CREATE TABLE IF NOT EXISTS orders (
   customer_phone VARCHAR(30),
   customer_email VARCHAR(150),
   address        TEXT,
+  city           VARCHAR(120),
+  region         VARCHAR(120),   -- departamento; el envío se cotiza por WhatsApp y esto es lo que decide la tarifa
   status         VARCHAR(20) NOT NULL DEFAULT 'pendiente'
                  CHECK (status IN ('pendiente','confirmado','en_preparacion','enviado','entregado','cancelado')),
   total          NUMERIC(12,2) NOT NULL DEFAULT 0,

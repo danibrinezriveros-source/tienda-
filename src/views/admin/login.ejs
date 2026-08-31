@@ -16,6 +16,7 @@
     <% } %>
 
     <form action="/admin/ingresar" method="POST" class="mt-10 space-y-6">
+<%- include('../partials/csrf') %>
       <div>
         <label for="email" class="admin-label">Correo</label>
         <input id="email" type="email" name="email" required autocomplete="email" class="admin-field" />

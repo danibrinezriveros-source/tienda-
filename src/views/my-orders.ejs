@@ -5,7 +5,10 @@
   <%- include('partials/header') %>
 
   <section class="mx-auto max-w-3xl px-6 pb-24 pt-32 sm:px-10">
-    <h1 class="font-display text-5xl text-ink sm:text-6xl">Mis pedidos</h1>
+    <div class="flex flex-wrap items-baseline justify-between gap-x-8 gap-y-3">
+      <h1 class="font-display text-5xl text-ink sm:text-6xl">Mis pedidos</h1>
+      <a href="/cuenta/contrasena" class="quiet-link text-[10px] uppercase tracking-wander">Cambiar contraseña</a>
+    </div>
 
     <% if (orders.length === 0) { %>
       <p class="mt-8 text-sm leading-relaxed text-sand">
@@ -26,7 +29,7 @@
               </span>
             </span>
             <span class="shrink-0 text-sm text-sand">
-              $<%= Number(o.total).toLocaleString('es-CO', { maximumFractionDigits: 0 }) %>
+              <%= money(o.total) %>
             </span>
           </a>
         <% }) %>

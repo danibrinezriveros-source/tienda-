@@ -11,6 +11,7 @@
     </p>
 
     <form action="/asistente" method="POST" class="mt-16 space-y-14">
+<%- include('./partials/csrf') %>
       <fieldset>
         <legend class="text-[10px] uppercase tracking-wander text-sandDim">Tu presupuesto</legend>
         <div class="mt-5 flex flex-wrap gap-3">
@@ -68,7 +69,7 @@
                   <span class="mt-1 block text-sm text-sandDim"><%= r.why %></span>
                 </span>
                 <span class="shrink-0 text-sm text-sand">
-                  $<%= Number(r.price).toLocaleString('es-CO', { maximumFractionDigits: 0 }) %>
+                  <%= money(r.price) %>
                 </span>
               </a>
             <% }) %>

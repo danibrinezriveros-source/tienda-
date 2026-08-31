@@ -12,6 +12,7 @@
     <% } %>
 
     <form action="/ingresar" method="POST" class="mt-12 space-y-8">
+<%- include('./partials/csrf') %>
       <div>
         <label for="email" class="mb-2 block text-[10px] uppercase tracking-wander text-sandDim">Correo</label>
         <input id="email" type="email" name="email" required autocomplete="email" class="field" />

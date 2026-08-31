@@ -8,34 +8,104 @@
     <h1 class="font-display text-5xl text-ink sm:text-6xl">Dónde te la dejamos</h1>
     <p class="mt-5 max-w-md text-sm leading-relaxed text-sand">
       Confirmamos el pedido por WhatsApp antes de despachar, así que el teléfono importa
-      más que cualquier otro dato.
+      más que cualquier otro dato. El envío se cotiza en esa misma conversación.
     </p>
 
-    <div class="mt-12 flex items-end justify-between border-y border-line py-6">
-      <span class="text-[11px] uppercase tracking-wander text-sandDim">Total a pagar</span>
-      <span class="font-display text-3xl text-gold">
-        $<%= total.toLocaleString('es-CO', { maximumFractionDigits: 0 }) %>
-      </span>
+    <% if (error) { %>
+      <p class="notice mt-10 text-sm leading-relaxed text-warn" role="alert"><%= error %></p>
+    <% } %>
+
+    <div class="mt-12 border-y border-line py-6">
+      <% cart.forEach(function (item) { %>
+        <div class="flex items-baseline justify-between gap-6 py-1.5">
+          <span class="min-w-0 text-sm text-sand">
+            <%= item.name %>
+            <span class="text-sandDim">× <%= item.quantity %></span>
+          </span>
+          <span class="shrink-0 text-sm text-sandDim"><%= money(item.price * item.quantity) %></span>
+        </div>
+      <% }) %>
+      <div class="mt-5 flex items-end justify-between border-t border-line/70 pt-5">
+        <span class="text-[11px] uppercase tracking-wander text-sandDim">Total en plantas</span>
+        <span class="font-display text-3xl text-gold"><%= money(total) %></span>
+      </div>
     </div>
 
     <form action="/checkout" method="POST" class="mt-12 space-y-10">
+<%- include('./partials/csrf') %>
+      <%
+        // Pedir sin cuenta. Este vivero confirma cada pedido por WhatsApp, así
+        // que la contraseña no protegía nada del pedido: solo se interponía.
+        // Quien ya entró no vuelve a escribir su nombre ni su correo.
+      %>
+      <% if (!currentUser) { %>
+        <div>
+          <label for="name" class="mb-2 block text-[10px] uppercase tracking-wander text-sandDim">
+            Tu nombre
+          </label>
+          <input id="name" type="text" name="name" required autocomplete="name"
+                 value="<%= form.name || '' %>" class="field" />
+        </div>
+        <div>
+          <label for="email" class="mb-2 block text-[10px] uppercase tracking-wander text-sandDim">
+            Correo <span class="normal-case tracking-normal">(opcional)</span>
+          </label>
+          <input id="email" type="email" name="email" autocomplete="email"
+                 value="<%= form.email || '' %>" class="field" />
+        </div>
+        <p class="!mt-4 text-[11px] uppercase tracking-wander text-sandDim">
+          ¿Ya tienes cuenta? <a href="/ingresar" class="text-gold hover:underline">Entra</a> y llenamos esto por ti.
+        </p>
+      <% } %>
+
       <div>
         <label for="phone" class="mb-2 block text-[10px] uppercase tracking-wander text-sandDim">
           Teléfono de contacto
         </label>
-        <input id="phone" type="tel" name="phone" required class="field" placeholder="Ej: 3001234567" />
+        <input id="phone" type="tel" name="phone" required autocomplete="tel"
+               value="<%= form.phone || '' %>" class="field" placeholder="Ej: 3001234567" />
       </div>
+
       <div>
         <label for="address" class="mb-2 block text-[10px] uppercase tracking-wander text-sandDim">
           Dirección de entrega
         </label>
-        <textarea id="address" name="address" required rows="3" class="field resize-none"></textarea>
+        <textarea id="address" name="address" required rows="3" autocomplete="street-address"
+                  class="field resize-none"><%= form.address || '' %></textarea>
       </div>
+
+      <%
+        // A dónde va el paquete decide la transportadora y la tarifa, y esa era
+        // justo la primera pregunta de cada chat de WhatsApp. El departamento va
+        // en lista cerrada para que llegue escrito igual siempre; la ciudad es
+        // libre porque en Colombia son más de mil.
+      %>
+      <div class="grid gap-10 sm:grid-cols-2">
+        <div>
+          <label for="city" class="mb-2 block text-[10px] uppercase tracking-wander text-sandDim">
+            Ciudad o municipio
+          </label>
+          <input id="city" type="text" name="city" required autocomplete="address-level2"
+                 value="<%= form.city || '' %>" class="field" />
+        </div>
+        <div>
+          <label for="region" class="mb-2 block text-[10px] uppercase tracking-wander text-sandDim">
+            Departamento
+          </label>
+          <select id="region" name="region" required autocomplete="address-level1" class="field">
+            <option value="" <%= form.region ? '' : 'selected' %> disabled>Elige uno…</option>
+            <% regions.forEach(function (r) { %>
+              <option value="<%= r %>" <%= form.region === r ? 'selected' : '' %>><%= r %></option>
+            <% }) %>
+          </select>
+        </div>
+      </div>
+
       <div>
         <label for="notes" class="mb-2 block text-[10px] uppercase tracking-wander text-sandDim">
           Notas <span class="normal-case tracking-normal">(opcional)</span>
         </label>
-        <textarea id="notes" name="notes" rows="2" class="field resize-none"></textarea>
+        <textarea id="notes" name="notes" rows="2" class="field resize-none"><%= form.notes || '' %></textarea>
       </div>
 
       <div class="flex flex-wrap items-center gap-8 pt-2">

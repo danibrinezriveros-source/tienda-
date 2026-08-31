@@ -5,6 +5,9 @@ const { CARE_GUIDES } = require('../config/careGuides');
 const { buildBiomes } = require('../config/biomes');
 const approach = require('../config/approach');
 const { toId } = require('../utils/ids');
+const { productJsonLd, breadcrumbJsonLd, absolute } = require('../utils/seo');
+const track = require('../utils/track');
+const { reconcile, collect } = require('../utils/cart');
 
 router.get('/', async (req, res, next) => {
   try {
@@ -85,6 +88,21 @@ router.get('/bioma/:key/:frame.svg', (req, res) => {
   res.send(list[i]);
 });
 
+// Las tres páginas que un revisor de Google Ads o de TikTok Ads busca antes
+// de aprobar la cuenta: quién vende, bajo qué condiciones y qué pasa si el
+// pedido sale mal. Sin ellas la tienda no llega a la etapa de anunciarse.
+router.get('/contacto', (req, res) => {
+  res.render('contacto');
+});
+
+router.get('/terminos', (req, res) => {
+  res.render('terminos');
+});
+
+router.get('/envios-y-devoluciones', (req, res) => {
+  res.render('envios-y-devoluciones');
+});
+
 router.get('/privacidad', (req, res) => {
   res.render('privacidad', { contactEmail: process.env.ADMIN_EMAIL || 'contacto@arborea.com' });
 });
@@ -95,7 +113,28 @@ router.get('/producto/:id', async (req, res, next) => {
     if (id === null) return res.status(404).render('404');
     const { rows } = await pool.query('SELECT * FROM products WHERE id = $1 AND active = TRUE', [id]);
     if (!rows[0]) return res.status(404).render('404');
-    res.render('product', { product: rows[0] });
+    const product = rows[0];
+
+    // La ficha es el destino natural de un anuncio de Shopping, así que tiene
+    // que poder describirse sola: precio y disponibilidad legibles por máquina
+    // —y coincidentes con el feed, o Merchant Center suspende el producto— y
+    // una vista previa con la foto real en vez de la imagen genérica del sitio.
+    res.locals.jsonLd = res.locals.jsonLd.concat([
+      productJsonLd(product),
+      breadcrumbJsonLd([
+        { name: 'Arbórea', path: '/' },
+        { name: product.category || 'Catálogo', path: '/?category=' + encodeURIComponent(product.category || '') },
+        { name: product.name, path: '/producto/' + product.id }
+      ])
+    ]);
+    res.locals.trackEvents = [track.viewItem(product)];
+
+    res.render('product', {
+      product,
+      metaDescription: (product.description || '').slice(0, 300) || undefined,
+      metaImage: absolute(product.image_url) || undefined,
+      metaType: 'product'
+    });
   } catch (err) {
     next(err);
   }
@@ -132,6 +171,11 @@ router.post('/carrito/agregar', async (req, res, next) => {
         quantity: Math.min(requested, product.stock)
       });
     }
+    // Se declara lo que realmente entró al carrito, no lo que se pidió: si el
+    // stock recortó la cantidad, el evento reporta la cantidad recortada.
+    const added = req.session.cart.find((i) => i.productId === productId);
+    track.queue(req, track.addToCart(product, added ? added.quantity : 1));
+
     res.redirect('/carrito');
   } catch (err) {
     next(err);
@@ -144,10 +188,59 @@ router.post('/carrito/quitar/:productId', (req, res) => {
   res.redirect('/carrito');
 });
 
-router.get('/carrito', (req, res) => {
-  const cart = req.session.cart || [];
-  const total = cart.reduce((sum, i) => sum + i.price * i.quantity, 0);
-  res.render('cart', { cart, total });
+// Cambiar de opinión sobre la cantidad no debería costar un viaje de vuelta a
+// la ficha. Antes el carrito solo sabía quitar la línea entera: para pasar de
+// una planta a dos había que borrarla y volver a buscarla en el mundo.
+router.post('/carrito/cantidad/:productId', async (req, res, next) => {
+  try {
+    const productId = toId(req.params.productId);
+    if (productId === null) return res.redirect('/carrito');
+
+    const cart = req.session.cart || [];
+    const line = cart.find((i) => i.productId === productId);
+    if (!line) return res.redirect('/carrito');
+
+    // Los botones mandan un paso (−1 / +1) y el campo numérico manda la
+    // cantidad entera. Los dos terminan en el mismo sitio.
+    const step = parseInt(req.body.delta, 10);
+    const exact = parseInt(req.body.quantity, 10);
+    const wanted = Number.isFinite(step)
+      ? line.quantity + step
+      : Number.isFinite(exact)
+        ? exact
+        : line.quantity;
+
+    if (wanted <= 0) {
+      req.session.cart = cart.filter((i) => i.productId !== productId);
+      return res.redirect('/carrito');
+    }
+
+    // El tope sigue siendo el stock y sale de la base de datos, no del campo:
+    // lo que llega en el formulario es una intención del cliente, no un hecho.
+    const { rows } = await pool.query(
+      'SELECT stock FROM products WHERE id = $1 AND active = TRUE',
+      [productId]
+    );
+    const stock = rows[0] ? rows[0].stock : 0;
+    line.quantity = Math.max(1, Math.min(wanted, stock));
+
+    res.redirect('/carrito');
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.get('/carrito', async (req, res, next) => {
+  try {
+    // Cada vez que se abre, el carrito se pone al día con la tienda: lo que
+    // cambió se dice en voz alta, no se corrige a escondidas.
+    const { lines, total, changes } = await reconcile(req);
+    const notices = collect(req).concat(changes);
+    if (lines.length) res.locals.trackEvents = [track.fromCart('view_cart', lines)];
+    res.render('cart', { cart: lines, total, notices });
+  } catch (err) {
+    next(err);
+  }
 });
 
 module.exports = router;

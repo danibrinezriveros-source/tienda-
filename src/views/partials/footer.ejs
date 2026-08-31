@@ -39,11 +39,15 @@
       </div>
 
       <div>
-        <p class="text-[10px] uppercase tracking-wander text-sandDim">Tu cuenta</p>
+        <p class="text-[10px] uppercase tracking-wander text-sandDim">La tienda</p>
+        <%# Un revisor de Google Ads o TikTok busca estos cuatro enlaces en el %>
+        <%# pie antes que ninguna otra cosa; si no los encuentra, rechaza. %>
         <nav class="mt-6 flex flex-col gap-3 text-sm">
-          <a href="/mis-pedidos" class="quiet-link">Mis pedidos</a>
-          <a href="/registrarse" class="quiet-link">Crear cuenta</a>
+          <a href="/contacto" class="quiet-link">Contacto</a>
+          <a href="/envios-y-devoluciones" class="quiet-link">Envíos y devoluciones</a>
+          <a href="/terminos" class="quiet-link">Términos y condiciones</a>
           <a href="/privacidad" class="quiet-link">Privacidad</a>
+          <a href="/mis-pedidos" class="quiet-link">Mis pedidos</a>
           <a href="/admin/ingresar" class="quiet-link">Administrador</a>
         </nav>
       </div>
@@ -54,7 +58,11 @@
         <span class="h-1 w-1 rounded-full bg-ok" aria-hidden="true"></span>
         Catálogo actualizado
       </span>
-      <span class="normal-case tracking-normal">© <%= new Date().getFullYear() %> Arbórea</span>
+      <span class="normal-case tracking-normal">
+        © <%= new Date().getFullYear() %> <%= site.legalName || site.name %><% if (site.taxId) { %> · NIT <%= site.taxId %><% } %><% if (site.city) { %> · <%= site.city %><% } %>
+      </span>
     </div>
   </div>
 </footer>
+
+<%- include('consent') %>

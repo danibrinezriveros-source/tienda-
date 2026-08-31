@@ -26,6 +26,7 @@
     <div class="mt-auto border-t border-line p-4">
       <a href="/" class="admin-link !px-4 !text-xs">← Ver la tienda</a>
       <form action="/salir" method="POST" class="mt-2 px-1">
+<%- include('./csrf') %>
         <button class="admin-btn-ghost w-full">Cerrar sesión</button>
       </form>
     </div>
@@ -42,6 +43,7 @@
           <span class="text-[10px] uppercase tracking-wander text-sandDim">Admin</span>
         </a>
         <form action="/salir" method="POST">
+<%- include('./csrf') %>
           <button class="text-[10px] uppercase tracking-wander text-sandDim transition-colors hover:text-ink">Salir</button>
         </form>
       </div>

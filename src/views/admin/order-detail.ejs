@@ -32,8 +32,8 @@
               <tr>
                 <td class="text-ink"><%= i.product_name %></td>
                 <td class="num"><%= i.quantity %></td>
-                <td class="num">$<%= Number(i.unit_price).toLocaleString('es-CO', { maximumFractionDigits: 0 }) %></td>
-                <td class="num">$<%= (i.unit_price * i.quantity).toLocaleString('es-CO', { maximumFractionDigits: 0 }) %></td>
+                <td class="num"><%= money(i.unit_price) %></td>
+                <td class="num"><%= money(i.unit_price * i.quantity) %></td>
               </tr>
             <% }) %>
           </tbody>
@@ -41,7 +41,7 @@
             <tr class="border-t border-line">
               <td colspan="3" class="text-[10px] uppercase tracking-wander text-sandDim">Total</td>
               <td class="num font-display text-xl text-gold">
-                $<%= Number(order.total).toLocaleString('es-CO', { maximumFractionDigits: 0 }) %>
+                <%= money(order.total) %>
               </td>
             </tr>
           </tfoot>
@@ -63,11 +63,22 @@
           </div>
           <div>
             <dt class="sr-only">Correo</dt>
-            <dd class="break-all text-sandDim"><%= order.customer_email %></dd>
+            <%# Un pedido sin cuenta puede llegar sin correo: se confirma por %>
+            <%# WhatsApp igual, pero conviene verlo de un vistazo. %>
+            <dd class="break-all text-sandDim">
+              <%= order.customer_email || (order.user_id ? '—' : 'Pedido sin cuenta') %>
+            </dd>
           </div>
           <div class="border-t border-line pt-3">
             <dt class="text-[10px] uppercase tracking-wander text-sandDim">Dirección</dt>
-            <dd class="mt-1.5 leading-relaxed text-sand"><%= order.address %></dd>
+            <dd class="mt-1.5 leading-relaxed text-sand">
+              <%= order.address %>
+              <%# A dónde va decide transportadora y tarifa: es lo primero que se %>
+              <%# necesita saber para cotizar el envío por WhatsApp. %>
+              <% if (order.city || order.region) { %>
+                <span class="block text-ink"><%= [order.city, order.region].filter(Boolean).join(', ') %></span>
+              <% } %>
+            </dd>
           </div>
           <% if (order.notes) { %>
             <div class="border-t border-line pt-3">
@@ -81,6 +92,7 @@
       <div class="admin-panel p-5">
         <h2 class="text-[10px] uppercase tracking-wander text-sandDim">Cambiar estado</h2>
         <form action="/admin/pedidos/<%= order.id %>/estado" method="POST" class="mt-4 space-y-4">
+<%- include('../partials/csrf') %>
           <label for="status" class="sr-only">Nuevo estado</label>
           <select id="status" name="status" class="admin-field">
             <% [

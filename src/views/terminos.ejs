@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="es">
+<head><%- include('partials/head', { title: 'Términos y condiciones' }) %></head>
+<body>
+  <%- include('partials/header') %>
+
+  <section class="mx-auto max-w-2xl px-6 pb-24 pt-32 sm:px-10">
+    <h1 class="font-display text-5xl leading-[1.05] text-ink sm:text-6xl">Términos y condiciones</h1>
+    <p class="mt-5 text-[11px] uppercase tracking-wander text-sandDim">
+      Última actualización: <%= new Date().toLocaleDateString('es-CO', { year: 'numeric', month: 'long', day: 'numeric' }) %>
+    </p>
+
+    <% if (!site.isPublic) { %>
+      <div class="admin-note admin-note-warn mt-10">
+        Texto base redactado como punto de partida, no como asesoría legal. Revísalo con un
+        abogado antes de operar con clientes reales y antes de solicitar una cuenta de anuncios:
+        las plataformas contrastan lo que dice esta página con lo que hace la tienda.
+      </div>
+    <% } %>
+
+    <div class="mt-14 space-y-12 text-sm leading-relaxed">
+      <div>
+        <h2 class="font-display text-2xl text-ink">1. Quién opera esta tienda</h2>
+        <p class="mt-4 text-sand">
+          <%= site.legalName || site.name %><% if (site.taxId) { %>, identificada con NIT <%= site.taxId %><% } %>
+          opera <%= site.name %><% if (site.city) { %> desde <%= site.city %><% } %>. Los datos de contacto
+          están en <a href="/contacto" class="text-gold hover:underline">contacto</a>. Al usar el sitio
+          o hacer un pedido aceptas estas condiciones.
+        </p>
+      </div>
+
+      <div>
+        <h2 class="font-display text-2xl text-ink">2. Precios y disponibilidad</h2>
+        <p class="mt-4 text-sand">
+          Los precios están en <%= site.currency %> e incluyen los impuestos aplicables, salvo que la
+          ficha diga lo contrario. El costo de envío se informa aparte antes de pagar.
+        </p>
+        <p class="mt-4 text-sand">
+          El catálogo es de plantas vivas y el inventario cambia. Si un producto se agota entre el
+          momento en que lo agregas al carrito y el momento en que confirmamos el pedido, te lo
+          decimos y no se cobra. Nos reservamos el derecho de corregir errores evidentes de precio
+          o descripción antes de despachar, avisándote siempre primero.
+        </p>
+      </div>
+
+      <div>
+        <h2 class="font-display text-2xl text-ink">3. Cómo se cierra una compra</h2>
+        <p class="mt-4 text-sand">
+          Enviar el formulario de pago genera un pedido en estado <em>pendiente</em>: es una solicitud,
+          no una venta cerrada. La venta queda perfeccionada cuando confirmamos el pedido contigo por
+          WhatsApp y acordamos el pago y la entrega. Hasta ese momento cualquiera de las dos partes
+          puede desistir sin costo.
+        </p>
+      </div>
+
+      <div>
+        <h2 class="font-display text-2xl text-ink">4. Envíos, cambios y devoluciones</h2>
+        <p class="mt-4 text-sand">
+          Las condiciones de entrega, la garantía y el derecho de retracto están detallados en
+          <a href="/envios-y-devoluciones" class="text-gold hover:underline">envíos y devoluciones</a>,
+          que forma parte de estos términos.
+        </p>
+      </div>
+
+      <div>
+        <h2 class="font-display text-2xl text-ink">5. Tu cuenta</h2>
+        <p class="mt-4 text-sand">
+          Eres responsable de la veracidad de los datos que registras y de mantener tu contraseña
+          en reserva. Si detectamos un uso fraudulento —pedidos falsos, datos de terceros sin
+          autorización, intentos de vulnerar el sitio— podemos suspender la cuenta y cancelar los
+          pedidos asociados.
+        </p>
+      </div>
+
+      <div>
+        <h2 class="font-display text-2xl text-ink">6. Contenido del sitio</h2>
+        <p class="mt-4 text-sand">
+          Los textos, las guías de cuidado, las fotografías y la identidad visual de <%= site.name %>
+          son nuestros. Puedes citarlos dando crédito y enlazando a la fuente, pero no reproducirlos
+          para uso comercial sin permiso escrito.
+        </p>
+        <p class="mt-4 text-sand">
+          Las guías de cuidado y las recomendaciones del asistente son orientación general basada en
+          el comportamiento típico de cada especie. No sustituyen el criterio de quien conoce tu
+          espacio, ni garantizan un resultado.
+        </p>
+      </div>
+
+      <div>
+        <h2 class="font-display text-2xl text-ink">7. Datos personales</h2>
+        <p class="mt-4 text-sand">
+          El tratamiento de tus datos se rige por la
+          <a href="/privacidad" class="text-gold hover:underline">política de tratamiento de datos personales</a>,
+          conforme a la Ley 1581 de 2012.
+        </p>
+      </div>
+
+      <div>
+        <h2 class="font-display text-2xl text-ink">8. Cambios en estos términos</h2>
+        <p class="mt-4 text-sand">
+          Podemos actualizar este documento. La versión vigente es la publicada en esta página, con la
+          fecha que aparece arriba. Los pedidos ya confirmados se rigen por la versión que estaba
+          publicada el día en que los confirmamos.
+        </p>
+      </div>
+
+      <div>
+        <h2 class="font-display text-2xl text-ink">9. Ley aplicable</h2>
+        <p class="mt-4 text-sand">
+          Estos términos se rigen por la ley colombiana, en particular por la Ley 1480 de 2011
+          (Estatuto del Consumidor). Cualquier reclamo puede presentarse primero por nuestros canales
+          de <a href="/contacto" class="text-gold hover:underline">contacto</a> y, si no queda
+          resuelto, ante la Superintendencia de Industria y Comercio.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <%- include('partials/footer') %>
+</body>
+</html>

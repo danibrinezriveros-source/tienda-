@@ -8,12 +8,14 @@
     <h1 class="font-display text-5xl leading-[1.05] text-ink">Política de tratamiento de datos personales</h1>
     <p class="mt-5 text-[11px] uppercase tracking-wander text-sandDim">Última actualización: <%= new Date().toLocaleDateString('es-CO', { year: 'numeric', month: 'long', day: 'numeric' }) %></p>
 
+    <% if (!site.isPublic) { %>
     <div class="admin-note admin-note-warn mt-10">
       Este texto es una base general redactada como punto de partida, no una asesoría legal.
       Antes de operar la tienda con clientes reales, revísalo con un abogado para confirmar que
       cumple la Ley 1581 de 2012 y el Decreto 1377 de 2013 en tu caso específico (por ejemplo, si
       el volumen de datos que manejas te obliga a inscribirte en el RNBD de la SIC).
     </div>
+    <% } %>
 
     <div class="mt-14 space-y-12 text-sm leading-relaxed">
       <div>
@@ -37,20 +39,44 @@
       <div>
         <h2 class="font-display text-2xl text-ink">3. Cookies que usamos</h2>
         <p class="mt-4 text-sand">
-          Este sitio usa una sola cookie: una cookie técnica de sesión (<code class="admin-code">connect.sid</code>)
-          que nos permite mantenerte con la sesión iniciada y recordar lo que llevas en el carrito
-          mientras compras. Dura hasta 7 días o hasta que cierres sesión.
+          <strong class="text-ink">Cookie técnica.</strong> Una sola: la cookie de sesión
+          (<code class="admin-code">__Host-arborea.sid</code>) que te mantiene con la sesión iniciada y
+          recuerda lo que llevas en el carrito. Dura hasta 7 días o hasta que cierres sesión.
+          Es estrictamente necesaria para que la tienda funcione: no hace seguimiento, no es
+          publicitaria y no la compartimos. Solo guarda un identificador aleatorio — tu cuenta y
+          tu carrito viven en nuestra base de datos, no en tu navegador. Por eso no pedimos un
+          consentimiento aparte para usarla, como lo permiten tanto la normativa colombiana como
+          el RGPD europeo para cookies de este tipo.
+        </p>
+<% if (site.needsConsent) { %>
+        <p class="mt-4 text-sand">
+          <strong class="text-ink">Cookies de medición y publicidad.</strong> Si las aceptas,
+          instalamos las cookies de <%= site.usesGoogle ? 'Google (Analytics y Ads)' : '' %><%= site.usesGoogle && site.usesTiktok ? ' y ' : '' %><%= site.usesTiktok ? 'TikTok' : '' %>.
+          Nos sirven para saber qué plantas busca la gente y si vale la pena seguir invirtiendo en
+          dar a conocer el vivero. Registran las páginas que visitas, los productos que miras y si
+          terminas un pedido.
         </p>
         <p class="mt-4 text-sand">
-          Es una cookie estrictamente necesaria para que la tienda funcione: no hace seguimiento,
-          no es publicitaria y no la compartimos con terceros con fines de mercadeo. Por eso no
-          pedimos un consentimiento aparte para usarla, tal como lo permiten tanto la normativa
-          colombiana como el RGPD europeo para cookies de este tipo. Solo guarda un identificador
-          aleatorio: los datos reales (tu cuenta, tu carrito) viven en nuestra base de datos, no en
-          tu navegador. No usamos cookies de analítica ni de publicidad — si eso cambia en el
-          futuro, actualizaremos esta sección y pediremos tu consentimiento explícito antes de
-          activarlas.
+          Estas cookies <strong class="text-ink">no se instalan hasta que las aceptas</strong>: si
+          no has decidido o dijiste que no, el navegador ni siquiera contacta a esos servidores.
+          Aceptarlas implica que esos datos de navegación se comparten con
+          <%= site.usesGoogle ? 'Google LLC' : '' %><%= site.usesGoogle && site.usesTiktok ? ' y ' : '' %><%= site.usesTiktok ? 'TikTok Pte. Ltd.' : '' %>,
+          que los tratan como responsables independientes bajo sus propias políticas y pueden
+          transferirlos fuera de Colombia.
         </p>
+        <p class="mt-4 text-sand">
+          Puedes cambiar de opinión cuando quieras:
+          <button type="button" id="consent-reset" class="text-gold underline hover:no-underline">
+            revisar mi decisión sobre cookies
+          </button>.
+          Rechazarlas no limita nada de la tienda.
+        </p>
+<% } else { %>
+        <p class="mt-4 text-sand">
+          No usamos cookies de analítica ni de publicidad. Si eso cambia, actualizaremos esta
+          sección y pediremos tu consentimiento explícito antes de activarlas.
+        </p>
+<% } %>
       </div>
 
       <div>
@@ -60,8 +86,20 @@
           <li>Procesar y entregar los pedidos que realices.</li>
           <li>Enviarte la confirmación de tu pedido por WhatsApp, únicamente si esa opción está activada.</li>
           <li>Responder tus solicitudes cuando nos escribas.</li>
+<% if (site.needsConsent) { %>
+          <li>Medir el rendimiento de nuestros anuncios y mostrar publicidad de Arbórea, solo si aceptaste las cookies de medición.</li>
+<% } %>
         </ul>
-        <p class="mt-4 text-sand">No vendemos ni compartimos tus datos con terceros para fines publicitarios.</p>
+        <p class="mt-4 text-sand">
+          Nunca vendemos tus datos.
+<% if (site.needsConsent) { %>
+          Los datos de navegación que se comparten con las plataformas de publicidad se comparten
+          únicamente con tu consentimiento y solo para lo descrito en el punto 3; los datos de tu
+          cuenta y de tus pedidos jamás salen de aquí con fines publicitarios.
+<% } else { %>
+          Tampoco los compartimos con terceros para fines publicitarios.
+<% } %>
+        </p>
       </div>
 
       <div>
@@ -72,6 +110,15 @@
           activamos el envío de confirmaciones, la plataforma de mensajería (Twilio/WhatsApp).
           Ninguno de ellos usa tus datos para fines distintos a operar este sitio.
         </p>
+<% if (site.needsConsent) { %>
+        <p class="mt-4 text-sand">
+          Aparte de esos encargados, si aceptas las cookies de medición tus datos de navegación
+          llegan a
+          <%= site.usesGoogle ? 'Google LLC' : '' %><%= site.usesGoogle && site.usesTiktok ? ' y ' : '' %><%= site.usesTiktok ? 'TikTok Pte. Ltd.' : '' %>,
+          que no actúan como encargados sino como responsables independientes: los tratan bajo sus
+          propias políticas de privacidad y pueden transferirlos fuera del país.
+        </p>
+<% } %>
       </div>
 
       <div>
