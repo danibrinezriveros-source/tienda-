@@ -4,6 +4,21 @@ const path = require('path');
 const bcrypt = require('bcryptjs');
 const { pool } = require('../src/db');
 
+// `--solo-esquema` deja el script en lo único que es seguro correr contra una
+// base que ya tiene clientes: crear las tablas y columnas que falten. Ni siembra
+// el catálogo de ejemplo ni crea la cuenta de administrador.
+//
+// Existe por lo que pasa si no está. Este archivo empezó siendo el arranque de
+// una tienda vacía, donde ocho plantas de muestra y un admin recién creado son
+// exactamente lo que se quiere. Pero es también el que aplica las migraciones,
+// y ahí el mismo comportamiento es un accidente esperando: apuntarlo a
+// producción para añadir una columna e insertarle de paso un catálogo inventado
+// que un cliente puede ver y hasta pedir.
+//
+// Todo lo que hace en este modo es idempotente —`IF NOT EXISTS` de principio a
+// fin—, así que correrlo dos veces no cambia nada.
+const SOLO_ESQUEMA = process.argv.slice(2).includes('--solo-esquema');
+
 async function run() {
   const schema = fs.readFileSync(path.join(__dirname, 'schema.sql'), 'utf8');
   console.log('→ Creando tablas...');
@@ -25,6 +40,24 @@ async function run() {
   // Códigos de recuperación, como hashes separados por coma. Son aleatorios y
   // largos, así que sha256 basta: no hay diccionario que probar contra ellos.
   await pool.query('ALTER TABLE users ADD COLUMN IF NOT EXISTS totp_recovery TEXT');
+
+  if (SOLO_ESQUEMA) {
+    const { rows } = await pool.query(
+      `SELECT
+         (SELECT COUNT(*) FROM information_schema.tables
+           WHERE table_schema = 'public')::int AS tablas,
+         (SELECT COUNT(*) FROM products)::int   AS productos,
+         (SELECT COUNT(*) FROM users)::int      AS usuarios`
+    );
+    console.log('✔ Esquema al día. No se tocó ningún dato.');
+    console.log(
+      `  ${rows[0].tablas} tablas · ${rows[0].productos} productos · ${rows[0].usuarios} usuarios`
+    );
+    console.log('  (sin --solo-esquema se crearía la cuenta admin y, si el catálogo');
+    console.log('   estuviera vacío, el catálogo de ejemplo)');
+    await pool.end();
+    return;
+  }
 
   const adminEmail = process.env.ADMIN_EMAIL || 'admin@arborea.com';
   const adminPassword = process.env.ADMIN_PASSWORD || '';

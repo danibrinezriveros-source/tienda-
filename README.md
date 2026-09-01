@@ -202,6 +202,28 @@ Lo que ya está puesto, y por qué, para que nadie lo quite por error.
   se acepta JPG, PNG, WEBP y GIF, y **no** SVG (puede llevar `<script>` dentro).
 - Las URLs de foto pegadas a mano solo se aceptan si son `http(s)` o una ruta interna.
 
+**Migrar una base que ya tiene clientes**
+
+`npm run db:init` es el arranque de una tienda vacía: crea las tablas, la cuenta de
+administrador y —si el catálogo está vacío— ocho plantas de ejemplo. Contra producción eso
+último es un accidente esperando, así que para migrar se usa:
+
+```bash
+npm run db:migrar        # = node db/init.js --solo-esquema
+```
+
+Crea solo las tablas y columnas que falten. No siembra el catálogo, no crea la cuenta de
+administrador, no pide `ADMIN_PASSWORD`. Todo es `IF NOT EXISTS`, así que correrlo dos
+veces no cambia nada. Al terminar imprime cuántas tablas, productos y usuarios hay, para
+confirmar de un vistazo que apuntaste a la base que creías.
+
+Contra una base remota hay que pasar `NODE_ENV=production`: sin esa variable la conexión no
+usa TLS y Neon o Supabase la rechazan — parece un error de red y no lo es.
+
+```bash
+NODE_ENV=production DATABASE_URL='...' npm run db:migrar
+```
+
 **Infraestructura**
 - TLS verificado contra la base de datos (`rejectUnauthorized: true`). Si tu proveedor usa
   una autoridad propia, pásale el certificado por `DATABASE_CA_CERT`; no desactives la

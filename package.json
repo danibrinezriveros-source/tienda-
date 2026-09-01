@@ -8,7 +8,8 @@
     "dev": "nodemon src/server.js",
     "build:css": "tailwindcss -i ./src/public/css/input.css -o ./src/public/css/output.css --minify",
     "watch:css": "tailwindcss -i ./src/public/css/input.css -o ./src/public/css/output.css --watch",
-    "db:init": "node db/init.js"
+    "db:init": "node db/init.js",
+    "db:migrar": "node db/init.js --solo-esquema"
   },
   "dependencies": {
     "@vercel/blob": "^2.8.0",
