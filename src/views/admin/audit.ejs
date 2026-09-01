@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="es">
+<head><%- include('../partials/head', { title: 'Registro de actividad' }) %></head>
+<body>
+<%- include('../partials/admin-nav', { active: 'registro' }) %>
+
+  <h1 class="admin-title">Registro de actividad</h1>
+  <p class="mt-4 max-w-2xl text-sm leading-relaxed text-sandDim">
+    Todo lo que se hace desde el panel queda anotado aquí, incluidos los intentos de ingreso
+    que fallaron. Sirve para responder lo que solo se pregunta después: quién cambió ese
+    precio, cuándo, y desde dónde entró alguien a las tres de la mañana.
+    Se conservan <%= retentionDays %> días.
+  </p>
+
+  <% if (!entries.length) { %>
+    <p class="admin-note mt-8 max-w-2xl">
+      Todavía no hay nada anotado. Aparecerá a partir del próximo ingreso al panel.
+    </p>
+  <% } else { %>
+
+    <div class="mt-10 overflow-x-auto">
+      <table class="admin-table">
+        <thead>
+          <tr>
+            <th>Cuándo</th>
+            <th>Quién</th>
+            <th>Qué</th>
+            <th>Sobre</th>
+            <th>Desde</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% entries.forEach(function (e) { %>
+            <tr>
+              <td class="whitespace-nowrap text-sandDim">
+                <%= new Date(e.created_at).toLocaleString('es-CO', { dateStyle: 'short', timeStyle: 'short' }) %>
+              </td>
+              <td class="text-sandDim"><%= e.actor %></td>
+              <td>
+                <%# Los ingresos fallidos se marcan: uno suelto es ruido, veinte %>
+                <%# seguidos desde una dirección desconocida es un aviso. %>
+                <% var alerta = e.action === 'ingreso_fallido' || e.action === 'ingreso_2fa_fallido'; %>
+                <span class="<%= alerta ? 'text-danger' : 'text-ink' %>">
+                  <%= labels[e.action] || e.action %>
+                </span>
+                <% if (e.detail) { %>
+                  <span class="block text-xs text-sandDim"><%= e.detail %></span>
+                <% } %>
+              </td>
+              <td class="text-sandDim"><%= e.target || '—' %></td>
+              <td class="whitespace-nowrap font-mono text-xs text-sandDim"><%= e.ip || '—' %></td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="mt-8 flex items-center justify-between gap-6 text-[10px] uppercase tracking-wander">
+      <span class="text-sandDim"><%= total %> anotaciones</span>
+      <span class="flex gap-6">
+        <% if (page > 1) { %>
+          <a href="/admin/registro?pagina=<%= page - 1 %>" class="text-gold hover:underline">← Más recientes</a>
+        <% } %>
+        <% if (page * perPage < total) { %>
+          <a href="/admin/registro?pagina=<%= page + 1 %>" class="text-gold hover:underline">Más antiguas →</a>
+        <% } %>
+      </span>
+    </div>
+
+  <% } %>
+
+<%- include('../partials/admin-close') %>
+</body>
+</html>

@@ -18,6 +18,16 @@
         "start"
       ],
       "port": 3010
+    },
+    {
+      "name": "en-regla",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "--prefix",
+        "../en-regla",
+        "start"
+      ],
+      "port": 4000
     }
   ]
 }

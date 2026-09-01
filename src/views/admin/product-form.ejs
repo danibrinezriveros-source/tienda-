@@ -13,6 +13,7 @@
 
   <form action="<%= product ? `/admin/productos/${product.id}/editar` : '/admin/productos/nuevo' %>"
         method="POST" enctype="multipart/form-data" class="mt-10 max-w-2xl">
+<%- include('../partials/csrf') %>
 
     <div class="admin-panel space-y-6 p-6">
       <div>

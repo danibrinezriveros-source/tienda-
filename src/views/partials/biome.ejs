@@ -40,9 +40,7 @@
 
   var seed = b.key.length * 7919 + 13;
   function rnd() { seed = (seed * 1103515245 + 12345) % 2147483648; return seed / 2147483648; }
-  function span(a, c) { return a + rnd() * (c - a); }
-  function money(v) { return '$' + Number(v).toLocaleString('es-CO', { maximumFractionDigits: 0 }); }
-%>
+  function span(a, c) { return a + rnd() * (c - a); }%>
 <svg class="iso-stage" viewBox="196 66 808 706" preserveAspectRatio="xMidYMid meet" role="group"
      aria-label="Mapa de <%= b.name %>">
   <defs>
@@ -50,14 +48,47 @@
       <stop offset="0%" stop-color="<%= g.topLit %>" />
       <stop offset="100%" stop-color="<%= g.top %>" />
     </linearGradient>
+    <%
+      // Las dos caras del corte son tierra, no dos materiales distintos: la
+      // izquierda recibe la luz cenital y la derecha queda en sombra. Antes la
+      // izquierda iba pintada con el color de borde del césped y, plana sobre
+      // el negro, parecía un panel de vidrio verde apoyado bajo la isla.
+    %>
     <linearGradient id="iso-rock-<%= b.key %>" x1="0" y1="0" x2="0" y2="1">
       <stop offset="0%" stop-color="<%= g.rockLit %>" />
       <stop offset="100%" stop-color="<%= b.sky %>" />
     </linearGradient>
-    <radialGradient id="iso-sun-<%= b.key %>" cx="0.5" cy="0.1" r="0.7">
+    <linearGradient id="iso-rock-dim-<%= b.key %>" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="<%= g.rock %>" />
+      <stop offset="70%" stop-color="<%= b.sky %>" />
+      <stop offset="100%" stop-color="#0b120e" />
+    </linearGradient>
+    <%
+      // El aire del bioma. Antes esto era un rectángulo del tamaño de la caja
+      // con un degradado encima: su filo se veía contra el negro de la página
+      // y la isla quedaba dentro de una ventana pegada. Ahora la luz son
+      // elipses que se apagan en su propio borde, así que la escena no tiene
+      // marco — el ecosistema flota en el mismo negro que el resto del sitio.
+    %>
+    <radialGradient id="iso-sun-<%= b.key %>">
       <stop offset="0%" stop-color="#f0e6c2" stop-opacity="<%= (b.warm || 0.2).toFixed(2) %>" />
+      <stop offset="55%" stop-color="#f0e6c2" stop-opacity="<%= ((b.warm || 0.2) * 0.35).toFixed(3) %>" />
       <stop offset="100%" stop-color="#f0e6c2" stop-opacity="0" />
     </radialGradient>
+    <radialGradient id="iso-air-<%= b.key %>">
+      <stop offset="0%" stop-color="<%= g.topLit %>" stop-opacity="0.30" />
+      <stop offset="60%" stop-color="<%= b.sky %>" stop-opacity="0.35" />
+      <stop offset="100%" stop-color="<%= b.sky %>" stop-opacity="0" />
+    </radialGradient>
+    <%
+      // La isla no termina: se hunde. Sin esto la roca acababa en un pico y el
+      // conjunto parecía una pieza recortada y apoyada sobre la página.
+    %>
+    <linearGradient id="iso-sink-<%= b.key %>" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#0b120e" stop-opacity="0" />
+      <stop offset="55%" stop-color="#0b120e" stop-opacity="0.72" />
+      <stop offset="100%" stop-color="#0b120e" stop-opacity="1" />
+    </linearGradient>
     <radialGradient id="iso-water-<%= b.key %>" cx="0.4" cy="0.35" r="0.7">
       <stop offset="0%" stop-color="#4d8f92" />
       <stop offset="100%" stop-color="#1d4247" />
@@ -67,7 +98,14 @@
     </clipPath>
   </defs>
 
-  <rect x="196" y="66" width="808" height="706" fill="url(#iso-sun-<%= b.key %>)" />
+  <%
+    // Los radios están calculados para morir dentro del viewBox (196..1004 en
+    // x, 66..772 en y). Si se pasan, el recorte de la caja les corta el
+    // degradado y vuelve a aparecer el filo rectangular que esto venía a
+    // quitar.
+  %>
+  <ellipse cx="600" cy="420" rx="388" ry="326" fill="url(#iso-air-<%= b.key %>)" />
+  <ellipse cx="600" cy="200" rx="382" ry="128" fill="url(#iso-sun-<%= b.key %>)" />
 
   <!-- La isla entera es la puerta del ecosistema: pulsar el suelo lleva al
        índice filtrado por lo que crece aquí. Va antes que los habitantes, así
@@ -75,10 +113,22 @@
   <a href="<%= b.href %>" class="iso-ground"
      aria-label="Ver las <%= b.total %> <%= b.total === 1 ? 'especie' : 'especies' %> <%= b.of %>">
 
-  <!-- Roca: la isla tiene espesor, no es una lámina -->
-  <path d="M<%= pt(left) %> L<%= pt(bottom) %> L600 736 L318 501 Z" fill="<%= g.edge %>" />
-  <path d="M<%= pt(right) %> L<%= pt(bottom) %> L600 736 L884 498 Z" fill="url(#iso-rock-<%= b.key %>)" />
+  <!-- Roca: la isla tiene espesor, no es una lámina. El pico llega hasta 690 y
+       el degradado de abajo se lo come: lo que se ve es una isla que se hunde
+       en la penumbra, no un bloque recortado. -->
+  <path d="M<%= pt(left) %> L<%= pt(bottom) %> L600 690 L318 501 Z" fill="url(#iso-rock-<%= b.key %>)" />
+  <path d="M<%= pt(right) %> L<%= pt(bottom) %> L600 690 L884 498 Z" fill="url(#iso-rock-dim-<%= b.key %>)" />
   <path d="M<%= pt(left) %> L318 501 L336 470 L<%= pt(left) %> Z" fill="<%= g.rock %>" opacity="0.7" />
+
+  <%
+    // La franja de tierra bajo el césped. Un corte de terreno no pasa de verde
+    // a roca de golpe: primero hay un dedo de mantillo, y es lo que hace que
+    // el borde superior se lea como suelo y no como el filo de una lámina.
+  %>
+  <path d="M<%= pt(left) %> L<%= pt(bottom) %> L600 557 L270 392 Z"
+        fill="<%= g.edge %>" opacity="0.95" />
+  <path d="M<%= pt(right) %> L<%= pt(bottom) %> L600 557 L930 392 Z"
+        fill="<%= g.edge %>" opacity="0.7" />
 
   <!-- Superficie -->
   <path d="M<%= pt(top) %> L<%= pt(right) %> L<%= pt(bottom) %> L<%= pt(left) %> Z"
@@ -180,6 +230,14 @@
         fill="#c8a86a" />
   </a>
 
+  <%
+    // La penumbra en la que se hunde la base. Va después de la roca y antes de
+    // los habitantes: apaga la piedra sin tocar el suelo donde crecen (la
+    // superficie termina en y=535 y esto empieza a pesar a partir de 570).
+  %>
+  <rect x="196" y="545" width="808" height="227" fill="url(#iso-sink-<%= b.key %>)"
+        pointer-events="none" aria-hidden="true" />
+
   <!-- Habitantes: cada planta es un producto que vive aquí -->
   <% living.forEach(function (item) {
        var slot = item.slot, p = item.p;
@@ -187,19 +245,48 @@
        var H = 146 * slot.s;
        var spriteX = ground.x - H / 2;
        var spriteY = ground.y - H * 0.95;
+
+       // Qué tan cerca está esta planta de la cámara: 0 al fondo, 1 al frente.
+       // El orden de dibujo ya las tapaba entre sí, pero todas tenían el mismo
+       // contraste y la isla se leía plana. Con perspectiva atmosférica —lo de
+       // atrás más apagado, lo de adelante más nítido— seis metros de isla se
+       // notan.
+       var depth = (slot.gx + slot.gy) / (2 * N);
+       var near = 0.82 + 0.18 * depth;                 // contraste
+       var tuftSeed = [-0.34, 0.02, 0.3];
   %>
     <a href="/producto/<%= p.id %>" class="iso-plant" aria-label="<%= p.name %>, <%= money(p.price) %>">
+      <%
+        // Dos sombras: una ancha y difusa que asienta la planta en el terreno,
+        // y un contacto oscuro justo en la base. Sin la segunda, el sprite
+        // levitaba un par de píxeles sobre el suelo.
+      %>
       <ellipse cx="<%= ground.x.toFixed(1) %>" cy="<%= ground.y.toFixed(1) %>"
-               rx="<%= (H * 0.26).toFixed(1) %>" ry="<%= (H * 0.11).toFixed(1) %>"
-               fill="<%= g.edge %>" opacity="0.55" />
+               rx="<%= (H * 0.3).toFixed(1) %>" ry="<%= (H * 0.125).toFixed(1) %>"
+               fill="<%= g.edge %>" opacity="<%= (0.34 + 0.24 * depth).toFixed(2) %>" />
+      <ellipse cx="<%= ground.x.toFixed(1) %>" cy="<%= (ground.y + 1).toFixed(1) %>"
+               rx="<%= (H * 0.15).toFixed(1) %>" ry="<%= (H * 0.055).toFixed(1) %>"
+               fill="#000" opacity="<%= (0.16 + 0.2 * depth).toFixed(2) %>" />
+      <%
+        // Tres briznas donde el tallo toca la tierra. Es poco, y es justo lo
+        // que separa una planta plantada de una calcomanía encima del suelo.
+      %>
+      <% tuftSeed.forEach(function (t) { %>
+        <path d="M<%= (ground.x + H * t * 0.22).toFixed(1) %> <%= (ground.y + 2).toFixed(1) %>
+                 q <%= (H * t * 0.06).toFixed(1) %> -<%= (H * 0.09).toFixed(1) %> <%= (H * t * 0.14).toFixed(1) %> -<%= (H * 0.13).toFixed(1) %>"
+              stroke="<%= g.topLit %>" stroke-width="<%= (H * 0.017).toFixed(1) %>" stroke-linecap="round"
+              fill="none" opacity="<%= (0.4 + 0.3 * depth).toFixed(2) %>" />
+      <% }) %>
       <circle class="iso-halo" cx="<%= ground.x.toFixed(1) %>" cy="<%= (ground.y - H * 0.4).toFixed(1) %>"
               r="<%= (H * 0.58).toFixed(1) %>" fill="#c8a86a" />
       <g class="iso-lift">
-        <svg x="<%= spriteX.toFixed(1) %>" y="<%= spriteY.toFixed(1) %>"
-             width="<%= H.toFixed(1) %>" height="<%= H.toFixed(1) %>"
-             viewBox="0 0 200 200" overflow="visible">
-          <%- include('plant', { category: p.category, pid: p.id, name: p.name, bare: true }) %>
-        </svg>
+        <g class="iso-depth" opacity="<%= near.toFixed(2) %>">
+          <svg x="<%= spriteX.toFixed(1) %>" y="<%= spriteY.toFixed(1) %>"
+               width="<%= H.toFixed(1) %>" height="<%= H.toFixed(1) %>"
+               viewBox="0 0 200 200" overflow="visible">
+            <%- include('plant', { category: p.category, pid: p.id, name: p.name, bare: true }) %>
+          </svg>
+        </g>
       </g>
       <circle class="iso-pin" cx="<%= ground.x.toFixed(1) %>"
               cy="<%= (spriteY - 14).toFixed(1) %>" r="4" fill="#c8a86a" />
@@ -214,10 +301,16 @@
 
   <!-- Bruma y luciérnagas: el aire del bioma -->
   <g class="iso-air" aria-hidden="true">
-    <ellipse cx="420" cy="600" rx="300" ry="40" fill="#cfe9e4" opacity="0.05" />
-    <ellipse cx="820" cy="650" rx="260" ry="34" fill="#cfe9e4" opacity="0.04" />
+    <%
+      // Bruma y luciérnagas van sobre el terreno, no bajo él. Estaban puestas a
+      // y=600 y y=650 — por debajo de la superficie, que termina en 535— así
+      // que flotaban en el vacío como dos charcos colgados del aire y un
+      // enjambre de puntos fuera de la isla.
+    %>
+    <ellipse cx="470" cy="415" rx="252" ry="46" fill="#cfe9e4" opacity="0.05" />
+    <ellipse cx="740" cy="470" rx="200" ry="34" fill="#cfe9e4" opacity="0.04" />
     <% for (var fl = 0; fl < 12; fl++) { %>
-      <circle class="iso-firefly" cx="<%= span(240, 960).toFixed(0) %>" cy="<%= span(180, 620).toFixed(0) %>"
+      <circle class="iso-firefly" cx="<%= span(300, 900).toFixed(0) %>" cy="<%= span(170, 500).toFixed(0) %>"
               r="<%= span(1.6, 3).toFixed(1) %>" fill="#e8dcae"
               style="animation-delay: <%= (fl * 0.7).toFixed(1) %>s" />
     <% } %>

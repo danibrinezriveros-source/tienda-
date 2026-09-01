@@ -1,4 +1,5 @@
 const { pool } = require('../db');
+const { money } = require('../utils/money');
 
 /**
  * Servicio de notificaciones por WhatsApp.
@@ -37,12 +38,19 @@ async function sendOrderConfirmation(order, items) {
   }
 
   const itemsText = items.map((i) => `• ${i.quantity}x ${i.product_name}`).join('\n');
+  // El mensaje es lo que se lee antes de llamar al cliente, así que lleva lo
+  // que hace falta para cotizar el envío en esa misma conversación: a dónde va
+  // y a qué número se responde.
+  const place = [order.address, [order.city, order.region].filter(Boolean).join(', ')]
+    .filter(Boolean)
+    .join('\n');
   const message =
     `Nuevo pedido #${order.id} confirmado\n` +
     `Cliente: ${order.customer_name}\n` +
-    `Teléfono: ${order.customer_phone || 'N/A'}\n\n` +
-    `${itemsText}\n\n` +
-    `Total: $${Number(order.total).toFixed(2)}`;
+    `Teléfono: ${order.customer_phone || 'N/A'}\n` +
+    (place ? `Entrega:\n${place}\n` : '') +
+    `\n${itemsText}\n\n` +
+    `Total en plantas: ${money(order.total)} (falta cotizar el envío)`;
 
   if (!isTwilioConfigured()) {
     // Modo simulado: no hay credenciales de Twilio todavía.

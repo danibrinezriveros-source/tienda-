@@ -5,9 +5,7 @@
   // final el bioma se abre en las variedades que crecen ahí.
   // Cuál bioma toca se decide en el servidor, en cada visita.
   var b = biome;
-  var varieties = b.products.slice(0, 6);
-  function money(v) { return '$' + Number(v).toLocaleString('es-CO', { maximumFractionDigits: 0 }); }
-%>
+  var varieties = b.products.slice(0, 6);%>
 <section id="entrada" class="approach" data-approach
          data-frames="<%= shots.count %>" data-src="<%= shots.base %>"
          <% if (shots.list) { %>data-list="<%= JSON.stringify(shots.list) %>"<% } %>

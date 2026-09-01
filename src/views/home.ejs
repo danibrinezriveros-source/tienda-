@@ -81,43 +81,50 @@
       <div class="world-track mt-12" id="world-track" tabindex="0"
            aria-label="Mapa de ecosistemas — desplázate de lado para recorrerlo">
         <% world.forEach(function (bm, bi) { %>
+          <%
+            // El ecosistema es una vista, no una lámina que haya que recorrer:
+            // en pantalla ancha la isla se ajusta a la altura disponible y el
+            // rótulo se posa encima, como en la entrada. Apilado —nombre, isla,
+            // pie— la isla medía 1.177 px y no cabía entera en ningún portátil:
+            // se veía el letrero, luego negro, y la isla llegaba a trozos.
+          %>
           <article id="bioma-<%= bm.key %>" class="world-panel" data-biome="<%= bi %>"
                    aria-label="<%= bm.name %>">
-            <div class="mx-auto max-w-6xl px-6 sm:px-10">
-              <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-                <div>
-                  <span class="stratum-index">
-                    Ecosistema <%= String(bi + 1).padStart(2, '0') %> de <%= world.length %> · <%= bm.total %> especies
-                  </span>
-                  <h2 class="mt-3 font-display text-4xl text-ink sm:text-5xl"><%= bm.name %></h2>
-                  <p class="mt-3 max-w-sm text-sm leading-relaxed text-sand"><%= bm.line %></p>
-                </div>
+            <div class="world-stage">
+              <div class="world-lead">
+                <span class="stratum-index">
+                  Ecosistema <%= String(bi + 1).padStart(2, '0') %> de <%= world.length %> · <%= bm.total %> especies
+                </span>
+                <h2 class="stratum-name mt-3"><%= bm.name %></h2>
+                <p class="stratum-line"><%= bm.line %></p>
                 <% if (bi === 0) { %>
-                  <p class="max-w-[15rem] text-[11px] uppercase leading-relaxed tracking-wander text-sandDim">
+                  <p class="mt-5 max-w-[15rem] text-[11px] uppercase leading-relaxed tracking-wander text-sandDim">
                     Acércate a una planta para saber quién es. Pulsa la isla para verlas todas.
                   </p>
                 <% } %>
               </div>
 
-              <div class="iso-world mt-8">
+              <div class="iso-world" data-island>
                 <%- include('partials/biome', { biome: bm }) %>
               </div>
 
-              <p class="mt-6 text-sm text-sandDim">
-                <% if (bm.total > bm.shown) { %>
-                  Aquí crecen <%= bm.total %> especies; la isla muestra <%= bm.shown %>.
-                <% } else { %>
-                  Aquí crecen <%= bm.total %>
-                  <%= bm.total === 1 ? 'especie' : 'especies' %>, todas a la vista.
-                <% } %>
-                <% bm.categories.forEach(function (cat, ci) { %><a href="/?category=<%= encodeURIComponent(cat) %>" class="text-gold hover:underline"><%= cat %></a><%= ci < bm.categories.length - 1 ? ' · ' : '' %><% }) %>
-              </p>
+              <div class="world-foot">
+                <p class="text-sm text-sandDim">
+                  <% if (bm.total > bm.shown) { %>
+                    Aquí crecen <%= bm.total %> especies; la isla muestra <%= bm.shown %>.
+                  <% } else { %>
+                    Aquí crecen <%= bm.total %>
+                    <%= bm.total === 1 ? 'especie' : 'especies' %>, todas a la vista.
+                  <% } %>
+                  <% bm.categories.forEach(function (cat, ci) { %><a href="/?category=<%= encodeURIComponent(cat) %>" class="text-gold hover:underline"><%= cat %></a><%= ci < bm.categories.length - 1 ? ' · ' : '' %><% }) %>
+                </p>
 
-              <!-- La isla ya es pulsable; esto lo dice en voz alta, y da un
-                   destino al teclado sin tener que atravesar las plantas. -->
-              <a href="<%= bm.href %>" class="action mt-8">
-                Entrar <%= bm.into %>
-              </a>
+                <!-- La isla ya es pulsable; esto lo dice en voz alta, y da un
+                     destino al teclado sin tener que atravesar las plantas. -->
+                <a href="<%= bm.href %>" class="action mt-5">
+                  Entrar <%= bm.into %>
+                </a>
+              </div>
             </div>
           </article>
         <% }) %>
@@ -173,7 +180,7 @@
                 <span class="mt-1 block truncate text-sm text-sandDim"><%= p.description %></span>
               </span>
               <span class="shrink-0 text-right">
-                <span class="block text-sm text-sand">$<%= Number(p.price).toLocaleString('es-CO', { maximumFractionDigits: 0 }) %></span>
+                <span class="block text-sm text-sand"><%= money(p.price) %></span>
                 <% if (p.stock <= 0) { %>
                   <span class="mt-1 block text-[10px] uppercase tracking-wander text-sandDim">Agotada</span>
                 <% } %>

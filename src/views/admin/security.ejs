@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="es">
+<head><%- include('../partials/head', { title: 'Seguridad' }) %></head>
+<body>
+<%- include('../partials/admin-nav', { active: 'seguridad' }) %>
+
+  <h1 class="admin-title">Segundo factor</h1>
+  <p class="mt-4 max-w-2xl text-sm leading-relaxed text-sandDim">
+    Con esto activado, una contraseña robada ya no basta para entrar al panel: hace falta
+    además el código que cambia cada treinta segundos en tu teléfono.
+  </p>
+
+  <% if (ok) { %>
+    <p class="admin-note admin-note-ok mt-6 max-w-2xl" role="status">
+      <%= { activado: 'Segundo factor activado. Guarda los códigos de recuperación de abajo antes de cerrar esta página.',
+            desactivado: 'Segundo factor desactivado. El panel vuelve a protegerse solo con la contraseña.',
+            codigos: 'Códigos de recuperación nuevos. Los anteriores dejaron de servir.' }[ok] || 'Listo.' %>
+    </p>
+  <% } %>
+
+  <% if (error) { %>
+    <p class="admin-note admin-note-warn mt-6 max-w-2xl" role="alert"><%= error %></p>
+  <% } %>
+
+  <%# Los códigos solo existen en pantalla este instante: en la base de datos %>
+  <%# quedan sus hashes, así que ni el propio panel puede volver a mostrarlos. %>
+  <% if (freshCodes) { %>
+    <div class="admin-panel mt-8 max-w-2xl border-gold/40 p-6">
+      <h2 class="font-display text-2xl text-ink">Cópialos ahora</h2>
+      <p class="mt-3 text-sm leading-relaxed text-sandDim">
+        Son tu forma de entrar si pierdes el teléfono. Cada uno sirve una sola vez y esta es
+        la única vez que se muestran — guárdalos donde guardas las cosas importantes, no en
+        el mismo teléfono que genera los códigos.
+      </p>
+      <ul class="mt-6 grid grid-cols-2 gap-x-8 gap-y-3 font-mono text-sm text-ink">
+        <% freshCodes.forEach(function (c) { %>
+          <li><%= c %></li>
+        <% }) %>
+      </ul>
+    </div>
+  <% } %>
+
+  <% if (enabled) { %>
+
+    <div class="admin-panel mt-8 max-w-2xl p-6">
+      <div class="flex flex-wrap items-center justify-between gap-4">
+        <div>
+          <p class="text-sm text-ink">Estado</p>
+          <p class="mt-1 text-xs text-sandDim">Te pedimos el código cada vez que entras</p>
+        </div>
+        <span class="badge badge-ok">Activado</span>
+      </div>
+      <p class="mt-6 border-t border-line pt-6 text-sm text-sandDim">
+        Te quedan <strong class="text-ink"><%= recoveryLeft %></strong>
+        <%= recoveryLeft === 1 ? 'código de recuperación' : 'códigos de recuperación' %> sin usar.
+        <% if (recoveryLeft <= 2) { %>
+          <span class="text-danger">Quedan pocos: genera unos nuevos.</span>
+        <% } %>
+      </p>
+    </div>
+
+    <h2 class="admin-title mt-16">Códigos de recuperación nuevos</h2>
+    <p class="mt-4 max-w-2xl text-sm leading-relaxed text-sandDim">
+      Genera un juego nuevo si se te acaban o si crees que alguien vio los anteriores.
+      Los viejos dejan de servir en ese momento.
+    </p>
+    <form action="/admin/seguridad/codigos" method="POST" class="admin-panel mt-6 max-w-2xl space-y-6 p-6">
+<%- include('../partials/csrf') %>
+      <div>
+        <label for="codes_password" class="admin-label">Tu contraseña</label>
+        <input id="codes_password" type="password" name="password" required
+               autocomplete="current-password" class="admin-field" />
+      </div>
+      <button type="submit" class="admin-btn">Generar códigos nuevos</button>
+    </form>
+
+    <h2 class="admin-title mt-16">Desactivar</h2>
+    <p class="mt-4 max-w-2xl text-sm leading-relaxed text-sandDim">
+      Bajar esta defensa cuesta lo mismo que ponerla: la contraseña y un código vigente.
+      Una sesión que quedó abierta no basta.
+    </p>
+    <form action="/admin/seguridad/desactivar" method="POST" class="admin-panel mt-6 max-w-2xl space-y-6 p-6">
+<%- include('../partials/csrf') %>
+      <div>
+        <label for="off_password" class="admin-label">Tu contraseña</label>
+        <input id="off_password" type="password" name="password" required
+               autocomplete="current-password" class="admin-field" />
+      </div>
+      <div>
+        <label for="off_code" class="admin-label">Código del teléfono</label>
+        <input id="off_code" type="text" name="code" required inputmode="numeric"
+               autocomplete="one-time-code" maxlength="6" class="admin-field font-mono" />
+      </div>
+      <button type="submit" class="admin-btn-ghost">Desactivar el segundo factor</button>
+    </form>
+
+  <% } else if (setup) { %>
+
+    <div class="admin-panel mt-8 max-w-2xl p-6">
+      <div class="flex flex-wrap items-center justify-between gap-4">
+        <div>
+          <p class="text-sm text-ink">Estado</p>
+          <p class="mt-1 text-xs text-sandDim">El panel se protege solo con la contraseña</p>
+        </div>
+        <span class="badge badge-mute">Desactivado</span>
+      </div>
+    </div>
+
+    <h2 class="admin-title mt-16">Activarlo</h2>
+
+    <div class="admin-panel mt-6 max-w-2xl p-6">
+      <ol class="space-y-8">
+        <li>
+          <p class="text-sm text-ink">1 · Abre tu aplicación de autenticación</p>
+          <p class="mt-2 text-xs leading-relaxed text-sandDim">
+            Google Authenticator, Authy, 1Password, Bitwarden o el gestor de contraseñas de tu
+            teléfono. Cualquiera sirve: todas hablan el mismo estándar.
+          </p>
+        </li>
+        <li>
+          <p class="text-sm text-ink">2 · Escanea este código</p>
+          <%# El QR se dibuja en el servidor. Pedírselo a un servicio externo %>
+          <%# sería enviarle a un tercero el secreto del segundo factor. %>
+          <div class="mt-4 inline-block rounded bg-white p-3"><%- setup.qr %></div>
+          <p class="mt-4 text-xs leading-relaxed text-sandDim">
+            ¿No puedes escanear? Escribe esta clave a mano en la aplicación:
+          </p>
+          <p class="mt-2 break-all font-mono text-xs text-ink"><%= setup.secret %></p>
+        </li>
+        <li>
+          <p class="text-sm text-ink">3 · Confirma que funciona</p>
+          <p class="mt-2 text-xs leading-relaxed text-sandDim">
+            Escribe el código que muestra la aplicación. Sin esta comprobación podrías quedar
+            fuera del panel con una llave que el teléfono nunca guardó bien.
+          </p>
+          <form action="/admin/seguridad/activar" method="POST" class="mt-5 flex flex-wrap items-end gap-4">
+<%- include('../partials/csrf') %>
+            <div>
+              <label for="code" class="admin-label">Código de seis cifras</label>
+              <input id="code" type="text" name="code" required inputmode="numeric"
+                     autocomplete="one-time-code" maxlength="6"
+                     class="admin-field max-w-[10rem] font-mono tracking-[0.3em]" />
+            </div>
+            <button type="submit" class="admin-btn">Activar</button>
+          </form>
+        </li>
+      </ol>
+    </div>
+
+  <% } %>
+
+<%- include('../partials/admin-close') %>
+</body>
+</html>

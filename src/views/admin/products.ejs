@@ -9,8 +9,32 @@
     <a href="/admin/productos/nuevo" class="admin-btn">Nuevo producto</a>
   </div>
 
-  <% if (ok) { %>
-    <p class="admin-note admin-note-ok mt-6" role="status">Cambios guardados correctamente.</p>
+  <%
+    // El aviso se arma aquí a partir de un código conocido, nunca imprimiendo
+    // lo que venga en la URL: así una dirección manipulada no puede poner texto
+    // ajeno dentro del panel.
+    var AVISOS = {
+      creado: ['ok', 'Producto creado.'],
+      actualizado: ['ok', 'Cambios guardados correctamente.'],
+      retirado: ['ok', 'Producto retirado del catálogo. Sigue en el historial de pedidos y puedes volver a activarlo desde Editar.'],
+      sin_archivo: ['warn', 'No llegó ningún archivo.'],
+      csv_archivo_invalido: ['warn', 'No pudimos leer ese archivo: debe ser un CSV de menos de 2 MB.']
+    };
+    var aviso = AVISOS[ok] || null;
+    if (!aviso && typeof ok === 'string') {
+      var m = ok.match(/^importados_([0-9]{1,5})$/);
+      if (m) aviso = ['ok', 'Se importaron ' + m[1] + ' productos.'];
+      var f = ok.match(/^csv_fila_([0-9]{1,5})_(sin_nombre|precio_invalido|stock_invalido)$/);
+      if (f) {
+        var motivo = { sin_nombre: 'no tiene nombre', precio_invalido: 'tiene un precio inválido', stock_invalido: 'tiene un stock inválido' }[f[2]];
+        aviso = ['warn', 'No se importó nada: la fila ' + f[1] + ' del archivo ' + motivo + '. Corrígela y vuelve a subirlo.'];
+      }
+      var t = ok.match(/^csv_demasiadas_filas_([0-9]{1,6})$/);
+      if (t) aviso = ['warn', 'El archivo supera las ' + t[1] + ' filas permitidas por importación.'];
+    }
+  %>
+  <% if (aviso) { %>
+    <p class="admin-note admin-note-<%= aviso[0] %> mt-6" role="status"><%= aviso[1] %></p>
   <% } %>
 
   <details class="admin-panel mt-8 p-6">
@@ -21,6 +45,7 @@
     </p>
     <form action="/admin/productos/importar" method="POST" enctype="multipart/form-data"
           class="mt-5 flex flex-wrap items-center gap-4">
+<%- include('../partials/csrf') %>
       <label for="csv" class="sr-only">Archivo CSV</label>
       <input id="csv" type="file" name="csv" accept=".csv" required class="admin-file max-w-sm" />
       <button type="submit" class="admin-btn-ghost">Importar</button>
@@ -53,7 +78,7 @@
                 <a href="/admin/productos/<%= p.id %>/editar" class="hover:text-gold"><%= p.name %></a>
               </td>
               <td class="hidden whitespace-nowrap lg:table-cell"><%= p.category %></td>
-              <td class="num">$<%= Number(p.price).toLocaleString('es-CO', { maximumFractionDigits: 0 }) %></td>
+              <td class="num"><%= money(p.price) %></td>
               <td class="num <%= p.stock <= 0 ? 'is-alert' : '' %>"><%= p.stock %></td>
               <td>
                 <% if (p.active) { %>
@@ -65,8 +90,9 @@
               <td class="whitespace-nowrap text-right">
                 <a href="/admin/productos/<%= p.id %>/editar" class="text-[10px] uppercase tracking-wander text-gold hover:underline">Editar</a>
                 <form action="/admin/productos/<%= p.id %>/eliminar" method="POST" class="ml-4 inline"
-                      data-confirm="¿Eliminar «<%= p.name %>»? Esta acción no se puede deshacer.">
-                  <button class="text-[10px] uppercase tracking-wander text-sandDim transition-colors hover:text-danger">Eliminar</button>
+                      data-confirm="¿Retirar «<%= p.name %>» del catálogo? Deja de verse en la tienda y en los anuncios; los pedidos que ya lo incluyen no cambian.">
+<%- include('../partials/csrf') %>
+                  <button class="text-[10px] uppercase tracking-wander text-sandDim transition-colors hover:text-danger">Retirar</button>
                 </form>
               </td>
             </tr>

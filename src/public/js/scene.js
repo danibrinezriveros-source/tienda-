@@ -154,6 +154,53 @@
 
     mark(0);
 
+    // ——— El paso de un ecosistema a otro ———
+    // El carril ya llevaba de una isla a la siguiente, pero entre las dos no
+    // ocurría nada: seis láminas pasando de lado. Aquí el scroll manda sobre la
+    // escena — la isla que se va se aleja y se apaga, la que llega entra desde
+    // el fondo — y el desplazamiento lateral se lee como una cámara que recorre
+    // el mundo. No hay animación propia: si el dedo se detiene, la cámara se
+    // queda donde la dejaron.
+    if (!reduced.matches) {
+      var islands = panels.map(function (p) { return p.querySelector('[data-island]'); });
+      var ticking = false;
+
+      function pan() {
+        ticking = false;
+        var width = track.clientWidth;
+        if (!width) return;
+        var mid = track.scrollLeft + width / 2;
+
+        panels.forEach(function (p, pi) {
+          var centre = p.offsetLeft - track.offsetLeft + p.clientWidth / 2;
+          // Cuánto le falta a este ecosistema para estar de frente: 0 en el
+          // centro, 1 cuando ya es el vecino de al lado.
+          var off = Math.max(-1, Math.min(1, (centre - mid) / width));
+          var away = Math.abs(off);
+
+          p.style.opacity = (1 - away * 0.72).toFixed(3);
+          var island = islands[pi];
+          if (island) {
+            island.style.transform =
+              'translate3d(' + (off * -9).toFixed(2) + '%, 0, 0) scale(' +
+              (1 - away * 0.07).toFixed(3) + ')';
+          }
+        });
+      }
+
+      track.addEventListener(
+        'scroll',
+        function () {
+          if (ticking) return;
+          ticking = true;
+          window.requestAnimationFrame(pan);
+        },
+        { passive: true }
+      );
+      window.addEventListener('resize', pan, { passive: true });
+      pan();
+    }
+
     // Un enlace directo (/#bioma-desierto) debe abrir en ese ecosistema.
     var hash = window.location.hash;
     if (hash) {

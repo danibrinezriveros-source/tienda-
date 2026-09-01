@@ -27,11 +27,34 @@ function requireLogin(req, res, next) {
   next();
 }
 
+// Vida máxima de una sesión de administrador, contada desde que se autenticó y
+// no desde la última visita. La cookie del cliente dura una semana porque un
+// carrito abandonado no le hace daño a nadie; el panel, en cambio, ve todos los
+// pedidos y los datos personales de todos los clientes, y una sesión olvidada
+// en un portátil ajeno no debería seguir abierta al día siguiente.
+const ADMIN_SESSION_MAX_AGE = 1000 * 60 * 60 * 12; // 12 horas
+
 function requireAdmin(req, res, next) {
-  if (!req.session.user || req.session.user.role !== 'admin') {
+  const user = req.session.user;
+  if (!user || user.role !== 'admin') {
     return res.redirect('/admin/ingresar');
   }
+
+  // Una sesión de admin sin marca de nacimiento es anterior a esta regla, o
+  // llegó por un camino que no pasó por el formulario de ingreso. En los dos
+  // casos se vuelve a pedir la contraseña.
+  const born = req.session.adminSince;
+  if (!born || Date.now() - born > ADMIN_SESSION_MAX_AGE) {
+    return req.session.regenerate(() => res.redirect('/admin/ingresar'));
+  }
+
   next();
 }
 
-module.exports = { attachUser, requireLogin, requireAdmin, regenerateSession };
+module.exports = {
+  attachUser,
+  requireLogin,
+  requireAdmin,
+  regenerateSession,
+  ADMIN_SESSION_MAX_AGE
+};

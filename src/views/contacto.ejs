@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="es">
+<head><%- include('partials/head', { title: 'Contacto' }) %></head>
+<body>
+  <%- include('partials/header') %>
+
+  <%
+    // Esta página existe por una razón muy concreta: ni Google Ads ni TikTok
+    // Ads aprueban una tienda que no dice quién la atiende ni cómo llegar a un
+    // humano. Cada dato que falte aquí es un motivo de rechazo.
+    var canales = [];
+    if (site.whatsapp) canales.push({ etiqueta: 'WhatsApp', valor: site.whatsapp, href: 'https://wa.me/' + site.whatsapp.replace(/[^0-9]/g, '') });
+    if (site.phone) canales.push({ etiqueta: 'Teléfono', valor: site.phone, href: 'tel:' + site.phone.replace(/[^0-9+]/g, '') });
+    if (site.email) canales.push({ etiqueta: 'Correo', valor: site.email, href: 'mailto:' + site.email });
+    var direccion = [site.street, site.city, site.region].filter(Boolean).join(', ');
+  %>
+
+  <section class="mx-auto max-w-2xl px-6 pb-24 pt-32 sm:px-10">
+    <h1 class="font-display text-5xl leading-[1.05] text-ink sm:text-6xl">Quién está del otro lado</h1>
+    <p class="mt-6 max-w-lg text-base font-light leading-relaxed text-sand">
+      Cada pedido lo confirma una persona antes de despachar. Si algo no cuadra —una planta
+      que llegó mal, una duda de cuidado, un envío que se demora— escríbenos y te
+      respondemos por el mismo canal.
+    </p>
+
+    <% if (!canales.length) { %>
+      <div class="admin-note admin-note-warn mt-10">
+        Falta configurar los datos de contacto del negocio (<code class="admin-code">BUSINESS_EMAIL</code>,
+        <code class="admin-code">BUSINESS_PHONE</code>, <code class="admin-code">BUSINESS_WHATSAPP</code>).
+        Sin ellos, Google Ads y TikTok Ads rechazan la cuenta.
+      </div>
+    <% } else { %>
+      <dl class="mt-14 space-y-px">
+        <% canales.forEach(function (c) { %>
+          <div class="border-b border-line/70 py-6">
+            <dt class="text-[10px] uppercase tracking-wander text-sandDim"><%= c.etiqueta %></dt>
+            <dd class="mt-2 font-display text-2xl">
+              <a href="<%= c.href %>" class="text-ink transition-colors duration-500 hover:text-gold"><%= c.valor %></a>
+            </dd>
+          </div>
+        <% }) %>
+
+        <% if (site.hours) { %>
+          <div class="border-b border-line/70 py-6">
+            <dt class="text-[10px] uppercase tracking-wander text-sandDim">Horario de atención</dt>
+            <dd class="mt-2 text-sm leading-relaxed text-sand"><%= site.hours %></dd>
+          </div>
+        <% } %>
+
+        <% if (direccion) { %>
+          <div class="border-b border-line/70 py-6">
+            <dt class="text-[10px] uppercase tracking-wander text-sandDim">Dónde estamos</dt>
+            <dd class="mt-2 text-sm leading-relaxed text-sand">
+              <%= direccion %><% if (site.postalCode) { %> · <%= site.postalCode %><% } %>
+            </dd>
+          </div>
+        <% } %>
+      </dl>
+    <% } %>
+
+    <% if (site.legalName || site.taxId) { %>
+      <div class="mt-14 border-t border-line pt-10">
+        <p class="text-[10px] uppercase tracking-wander text-sandDim">Datos del responsable</p>
+        <p class="mt-4 text-sm leading-relaxed text-sand">
+          <% if (site.legalName) { %><%= site.legalName %><% } %><% if (site.taxId) { %> · NIT <%= site.taxId %><% } %>
+        </p>
+      </div>
+    <% } %>
+
+    <p class="mt-14 text-sm leading-relaxed text-sandDim">
+      Antes de escribir, mira si la respuesta ya está en las
+      <a href="/guias" class="text-gold hover:underline">guías de cuidado</a> o en
+      <a href="/envios-y-devoluciones" class="text-gold hover:underline">envíos y devoluciones</a>.
+    </p>
+  </section>
+
+  <%- include('partials/footer') %>
+</body>
+</html>

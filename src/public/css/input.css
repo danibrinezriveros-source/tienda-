@@ -267,6 +267,13 @@
   .world-panel {
     @apply w-full shrink-0 grow-0 snap-center;
     flex-basis: 100%;
+    /* El paso entre ecosistemas lo dibuja el scroll (scene.js); avisar al
+       compositor evita que la isla parpadee al recorrer el mundo. */
+    will-change: opacity;
+  }
+  .world-panel [data-island] {
+    transform-origin: 50% 55%;
+    will-change: transform;
   }
 
   .world-menu {
@@ -290,9 +297,45 @@
            disabled:pointer-events-none disabled:opacity-25;
   }
 
+  /* En un teléfono el ecosistema se lee apilado: rótulo, isla, pie. Ahí la
+     pantalla es alta y estrecha, y superponer texto sobre una isla de 300 px
+     solo taparía las plantas. */
+  .world-stage {
+    @apply relative mx-auto w-full max-w-6xl px-6 sm:px-10;
+  }
+  .world-lead { @apply mb-6; }
+  .world-foot { @apply mt-6; }
+
   .iso-world {
     @apply relative w-full overflow-hidden rounded-sm;
     aspect-ratio: 808 / 706;
+  }
+
+  /* De tablet en adelante manda la altura: la isla se ajusta a lo que queda de
+     pantalla y el rótulo se posa sobre el cielo vacío de la esquina, como el
+     de la entrada. Así un ecosistema es una sola vista y no un scroll. */
+  @media (min-width: 768px) {
+    .world-stage {
+      @apply flex items-center justify-center;
+      height: min(82svh, 880px);
+    }
+    .iso-world {
+      @apply h-full w-auto;
+      max-width: 100%;
+    }
+    /* El rótulo no debe robarle el clic a la isla que tiene detrás: solo sus
+       propios enlaces reciben el puntero. */
+    .world-lead,
+    .world-foot {
+      @apply pointer-events-none absolute left-6 z-10 m-0 max-w-xs sm:left-10;
+    }
+    .world-lead { @apply top-0; }
+    .world-foot { @apply bottom-0; }
+    .world-lead a,
+    .world-foot a { @apply pointer-events-auto; }
+    .world-foot p {
+      text-shadow: 0 2px 18px rgba(0, 0, 0, 0.9);
+    }
   }
   .iso-stage {
     @apply block h-full w-full;
@@ -328,6 +371,13 @@
   .iso-plant:focus-visible .iso-lift {
     transform: translateY(-14px);
   }
+  /* La perspectiva atmosférica se levanta al acercarse: la planta que miras
+     recupera todo su color, como si te agacharas a verla. */
+  .iso-depth { transition: opacity 700ms theme('transitionTimingFunction.camera'); }
+  .iso-plant:hover .iso-depth,
+  .iso-plant:focus-visible .iso-depth,
+  .iso-plant.is-open .iso-depth { opacity: 1; }
+
   .iso-halo {
     opacity: 0;
     transition: opacity 700ms theme('transitionTimingFunction.camera');
@@ -407,6 +457,46 @@
            text-sm text-ink placeholder:text-sandDim
            focus:border-gold focus:outline-none focus:ring-0;
   }
+  /* ——— Cantidad ———
+     Corregir cuántas te llevas es una decisión pequeña y no debe pesar como un
+     botón: dos pasos discretos a los lados de la cifra. La cifra va en versales
+     de ancho fijo para que no baile al pasar de 9 a 10. */
+  .qty {
+    @apply inline-flex shrink-0 items-center gap-1 rounded-full border border-line px-1 py-1;
+  }
+  .qty-step {
+    @apply flex h-7 w-7 items-center justify-center rounded-full text-sm leading-none text-sand
+           transition-colors duration-300 hover:bg-surface2 hover:text-ink
+           disabled:pointer-events-none disabled:opacity-30;
+  }
+  .qty-value {
+    @apply w-9 border-0 bg-transparent p-0 text-center text-sm text-ink
+           focus:outline-none focus:ring-0;
+    font-variant-numeric: lining-nums tabular-nums;
+    -moz-appearance: textfield;
+  }
+  .qty-value::-webkit-outer-spin-button,
+  .qty-value::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+
+  /* ——— Aviso ———
+     Lo que cambió en la tienda mientras el cliente decidía. No es un error suyo,
+     así que no se pinta como uno: una nota al margen, con la luz de advertencia
+     solo en el filo. */
+  .notice {
+    @apply rounded-sm border border-line bg-surface p-6;
+    box-shadow: inset 2px 0 0 theme('colors.warn');
+  }
+
+  /* La lista de departamentos la dibuja el sistema operativo, no la hoja de
+     estilos: sin esto se abre un menú blanco en medio de la penumbra. */
+  select.field {
+    @apply cursor-pointer;
+    color-scheme: dark;
+  }
+
   .action {
     @apply inline-flex items-center gap-3 border-b border-gold/50 pb-1 text-[11px]
            uppercase tracking-wander text-gold transition-colors duration-500

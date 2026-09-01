@@ -7,7 +7,9 @@
   <h1 class="admin-title">Notificaciones por WhatsApp</h1>
 
   <% if (ok) { %>
-    <p class="admin-note admin-note-ok mt-6 max-w-2xl" role="status">Ajustes guardados.</p>
+    <p class="admin-note admin-note-ok mt-6 max-w-2xl" role="status">
+      <%= ok === 'contrasena' ? 'Contraseña actualizada. Las demás sesiones abiertas con la anterior ya no sirven.' : 'Ajustes guardados.' %>
+    </p>
   <% } %>
 
   <div class="admin-panel mt-10 max-w-2xl p-6">
@@ -37,6 +39,7 @@
   </div>
 
   <form action="/admin/ajustes" method="POST" class="admin-panel mt-6 max-w-2xl space-y-7 p-6">
+<%- include('../partials/csrf') %>
     <label class="flex items-center justify-between gap-6">
       <span class="text-sm text-ink">Enviar confirmación de pedidos por WhatsApp</span>
       <span class="relative inline-flex h-6 w-11 shrink-0 items-center">
@@ -57,6 +60,38 @@
     </div>
 
     <button type="submit" class="admin-btn">Guardar ajustes</button>
+  </form>
+
+  <h2 class="admin-title mt-20">Contraseña del panel</h2>
+  <p class="mt-4 max-w-2xl text-sm leading-relaxed text-sandDim">
+    Detrás de esta contraseña están el catálogo, todos los pedidos y los datos personales de
+    quienes compraron. Cámbiala si alguna vez la escribiste en un chat, la compartiste para una
+    prueba o la repetiste en otro servicio.
+  </p>
+
+  <% if (passwordError) { %>
+    <p class="admin-note admin-note-warn mt-6 max-w-2xl" role="alert"><%= passwordError %></p>
+  <% } %>
+
+  <form action="/admin/contrasena" method="POST" class="admin-panel mt-6 max-w-2xl space-y-7 p-6">
+<%- include('../partials/csrf') %>
+    <div>
+      <label for="current_password" class="admin-label">Contraseña actual</label>
+      <input id="current_password" type="password" name="current_password" required
+             autocomplete="current-password" class="admin-field" />
+    </div>
+    <div class="border-t border-line pt-6">
+      <label for="new_password" class="admin-label">Nueva contraseña</label>
+      <input id="new_password" type="password" name="new_password" required minlength="12"
+             autocomplete="new-password" class="admin-field" />
+      <p class="mt-2 text-xs text-sandDim">Mínimo 12 caracteres. Una frase larga es más segura que un símbolo raro.</p>
+    </div>
+    <div>
+      <label for="confirm_password" class="admin-label">Repite la nueva contraseña</label>
+      <input id="confirm_password" type="password" name="confirm_password" required minlength="12"
+             autocomplete="new-password" class="admin-field" />
+    </div>
+    <button type="submit" class="admin-btn">Cambiar contraseña</button>
   </form>
 
 <%- include('../partials/admin-close') %>

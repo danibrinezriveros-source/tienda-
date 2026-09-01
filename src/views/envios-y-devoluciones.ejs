@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="es">
+<head><%- include('partials/head', { title: 'Envíos y devoluciones' }) %></head>
+<body>
+  <%- include('partials/header') %>
+
+  <section class="mx-auto max-w-2xl px-6 pb-24 pt-32 sm:px-10">
+    <h1 class="font-display text-5xl leading-[1.05] text-ink sm:text-6xl">Cómo llega y qué pasa si no llega bien</h1>
+    <p class="mt-6 max-w-lg text-base font-light leading-relaxed text-sand">
+      Una planta no es un objeto: viaja viva. Estas son las condiciones reales del envío
+      y lo que hacemos cuando algo sale mal en el camino.
+    </p>
+
+    <% if (!site.isPublic) { %>
+      <div class="admin-note admin-note-warn mt-10">
+        Texto base. Ajusta los tiempos, el costo y la cobertura reales en las variables
+        <code class="admin-code">SHIPPING_DAYS</code>, <code class="admin-code">SHIPPING_COST_TEXT</code>,
+        <code class="admin-code">SHIPPING_AREA</code> y <code class="admin-code">RETURN_DAYS</code>,
+        y revisa el texto con un abogado antes de anunciar: Google Ads y TikTok Ads
+        contrastan lo que prometes aquí con lo que realmente entregas.
+      </div>
+    <% } %>
+
+    <div class="mt-14 space-y-12 text-sm leading-relaxed">
+      <div>
+        <h2 class="font-display text-2xl text-ink">Cuánto tarda</h2>
+        <p class="mt-4 text-sand">
+          El despacho ocurre después de que confirmamos el pedido contigo por WhatsApp.
+          Desde ese momento, la entrega toma <strong class="text-ink"><%= site.shippingDays %></strong>.
+          Si una planta necesita más tiempo de preparación —por tamaño o por temporada— te lo
+          decimos en esa misma conversación, antes de cobrar.
+        </p>
+      </div>
+
+      <div>
+        <h2 class="font-display text-2xl text-ink">A dónde llegamos</h2>
+        <p class="mt-4 text-sand">
+          Enviamos a <strong class="text-ink"><%= site.shippingArea %></strong>.
+          Si tu dirección queda fuera de cobertura te avisamos al confirmar y no se cobra nada.
+        </p>
+      </div>
+
+      <div>
+        <h2 class="font-display text-2xl text-ink">Cuánto cuesta el envío</h2>
+        <p class="mt-4 text-sand">
+          <%= site.shippingCost %>. El precio que ves en la ficha de cada planta es el precio del
+          producto: el costo de envío se suma aparte y lo conoces completo antes de pagar.
+        </p>
+      </div>
+
+      <div>
+        <h2 class="font-display text-2xl text-ink">Si llega dañada</h2>
+        <p class="mt-4 text-sand">
+          Escríbenos dentro de las 48 horas siguientes a la entrega con una foto de la planta
+          y del empaque. Si el daño ocurrió en el transporte, reponemos la planta o devolvemos
+          el dinero — tú eliges. No pedimos que la devuelvas: moverla otra vez solo la maltrata más.
+        </p>
+      </div>
+
+      <div>
+        <h2 class="font-display text-2xl text-ink">Si cambiaste de opinión</h2>
+        <p class="mt-4 text-sand">
+          Tienes <strong class="text-ink"><%= site.returnDays %> días hábiles</strong> desde la entrega
+          para retractarte de la compra, tal como lo reconoce el artículo 47 de la Ley 1480 de 2011
+          para las ventas hechas por internet. La planta debe volver en las mismas condiciones en
+          que llegó y el costo del transporte de regreso corre por tu cuenta. Cuando la recibimos y
+          confirmamos su estado, devolvemos el dinero dentro de los 30 días calendario siguientes.
+        </p>
+        <p class="mt-4 text-sand">
+          El retracto no aplica sobre plantas que ya fueron trasplantadas, podadas o intervenidas:
+          a partir de ahí dejan de ser el producto que despachamos.
+        </p>
+      </div>
+
+      <div>
+        <h2 class="font-display text-2xl text-ink">Garantía</h2>
+        <p class="mt-4 text-sand">
+          Respondemos porque la planta llegue sana, identificada correctamente y en la
+          presentación anunciada. No cubrimos lo que pase después por riego, luz o temperatura
+          en tu casa — para eso están las
+          <a href="/guias" class="text-gold hover:underline">guías de cuidado</a>, y el
+          <a href="/asistente" class="text-gold hover:underline">asistente</a> para no llevarte
+          una planta que tu espacio no puede sostener.
+        </p>
+      </div>
+
+      <div>
+        <h2 class="font-display text-2xl text-ink">Cómo iniciar un reclamo</h2>
+        <p class="mt-4 text-sand">
+          Por cualquiera de los canales de <a href="/contacto" class="text-gold hover:underline">contacto</a>,
+          con el número de pedido a la mano. Respondemos en máximo 15 días hábiles, que es el plazo
+          que fija el Estatuto del Consumidor.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <%- include('partials/footer') %>
+</body>
+</html>

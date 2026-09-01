@@ -4,6 +4,21 @@ const path = require('path');
 const bcrypt = require('bcryptjs');
 const { pool } = require('../src/db');
 
+// `--solo-esquema` deja el script en lo único que es seguro correr contra una
+// base que ya tiene clientes: crear las tablas y columnas que falten. Ni siembra
+// el catálogo de ejemplo ni crea la cuenta de administrador.
+//
+// Existe por lo que pasa si no está. Este archivo empezó siendo el arranque de
+// una tienda vacía, donde ocho plantas de muestra y un admin recién creado son
+// exactamente lo que se quiere. Pero es también el que aplica las migraciones,
+// y ahí el mismo comportamiento es un accidente esperando: apuntarlo a
+// producción para añadir una columna e insertarle de paso un catálogo inventado
+// que un cliente puede ver y hasta pedir.
+//
+// Todo lo que hace en este modo es idempotente —`IF NOT EXISTS` de principio a
+// fin—, así que correrlo dos veces no cambia nada.
+const SOLO_ESQUEMA = process.argv.slice(2).includes('--solo-esquema');
+
 async function run() {
   const schema = fs.readFileSync(path.join(__dirname, 'schema.sql'), 'utf8');
   console.log('→ Creando tablas...');
@@ -11,13 +26,64 @@ async function run() {
 
   // Migración liviana para bases que ya existían antes de esta columna.
   await pool.query('ALTER TABLE users ADD COLUMN IF NOT EXISTS terms_accepted_at TIMESTAMP');
+  await pool.query('ALTER TABLE orders ADD COLUMN IF NOT EXISTS city VARCHAR(120)');
+  await pool.query('ALTER TABLE orders ADD COLUMN IF NOT EXISTS region VARCHAR(120)');
+
+  // Segundo factor del panel. El secreto TOTP se guarda cifrado con
+  // TOTP_ENCRYPTION_KEY (ver src/utils/totp.js): a diferencia de una
+  // contraseña, aquí el servidor necesita el valor original para calcular el
+  // código, así que no puede ser un hash.
+  await pool.query('ALTER TABLE users ADD COLUMN IF NOT EXISTS totp_secret TEXT');
+  await pool.query(
+    'ALTER TABLE users ADD COLUMN IF NOT EXISTS totp_enabled BOOLEAN NOT NULL DEFAULT FALSE'
+  );
+  // Códigos de recuperación, como hashes separados por coma. Son aleatorios y
+  // largos, así que sha256 basta: no hay diccionario que probar contra ellos.
+  await pool.query('ALTER TABLE users ADD COLUMN IF NOT EXISTS totp_recovery TEXT');
+
+  if (SOLO_ESQUEMA) {
+    const { rows } = await pool.query(
+      `SELECT
+         (SELECT COUNT(*) FROM information_schema.tables
+           WHERE table_schema = 'public')::int AS tablas,
+         (SELECT COUNT(*) FROM products)::int   AS productos,
+         (SELECT COUNT(*) FROM users)::int      AS usuarios`
+    );
+    console.log('✔ Esquema al día. No se tocó ningún dato.');
+    console.log(
+      `  ${rows[0].tablas} tablas · ${rows[0].productos} productos · ${rows[0].usuarios} usuarios`
+    );
+    console.log('  (sin --solo-esquema se crearía la cuenta admin y, si el catálogo');
+    console.log('   estuviera vacío, el catálogo de ejemplo)');
+    await pool.end();
+    return;
+  }
 
   const adminEmail = process.env.ADMIN_EMAIL || 'admin@arborea.com';
-  const adminPassword = process.env.ADMIN_PASSWORD || 'CambiaEstaClave123!';
+  const adminPassword = process.env.ADMIN_PASSWORD || '';
 
+  const MIN_ADMIN_PASSWORD = 12;
   const existing = await pool.query('SELECT id FROM users WHERE email = $1', [adminEmail]);
+
+  // La contraseña de ejemplo que había aquí ('CambiaEstaClave123!') estaba en
+  // el repositorio, es decir, era pública. Bastaba con conocer el proyecto para
+  // entrar al panel de cualquier despliegue donde nadie la hubiera cambiado —y
+  // nadie cambia lo que ya funciona. Ahora no hay valor por defecto.
+  //
+  // La exigencia solo aplica al crear la cuenta: si ya existe, este script se
+  // usa para migrar el esquema y no tiene por qué pedir credenciales.
+  if (existing.rows.length === 0 && adminPassword.length < MIN_ADMIN_PASSWORD) {
+    console.error(
+      `\n✖ ADMIN_PASSWORD no está definida o tiene menos de ${MIN_ADMIN_PASSWORD} caracteres.\n` +
+        '  Ponla en el archivo .env antes de crear la cuenta de administrador.\n' +
+        '  Sugerencia: node -e "console.log(require(\'crypto\').randomBytes(18).toString(\'base64url\'))"\n'
+    );
+    await pool.end();
+    process.exit(1);
+  }
+
   if (existing.rows.length === 0) {
-    const hash = await bcrypt.hash(adminPassword, 10);
+    const hash = await bcrypt.hash(adminPassword, 12);
     await pool.query(
       `INSERT INTO users (name, email, password_hash, role) VALUES ($1,$2,$3,'admin')`,
       ['Administrador', adminEmail, hash]

@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="es">
+<head><%- include('../partials/head', { title: 'Verificación' }) %></head>
+<body class="flex min-h-screen items-center justify-center bg-night px-6">
+  <div class="w-full max-w-sm">
+    <div class="flex items-center gap-3">
+      <span class="h-1.5 w-1.5 rounded-full bg-gold" aria-hidden="true"></span>
+      <span class="font-display text-base tracking-[0.32em] text-ink">ARBÓREA</span>
+      <span class="ml-auto text-[10px] uppercase tracking-wander text-sandDim">Admin</span>
+    </div>
+
+    <h1 class="mt-10 font-display text-4xl leading-tight text-ink">El código del teléfono</h1>
+    <p class="mt-4 text-sm leading-relaxed text-sandDim">
+      Abre tu aplicación de autenticación y escribe el número de seis cifras que muestra
+      para Arbórea.
+    </p>
+
+    <% if (error) { %>
+      <p class="admin-note admin-note-danger mt-6" role="alert"><%= error %></p>
+    <% } %>
+
+    <form action="/admin/verificar" method="POST" class="mt-10 space-y-6">
+<%- include('../partials/csrf') %>
+      <div>
+        <label for="code" class="admin-label">Código</label>
+        <input id="code" type="text" name="code" required
+               inputmode="numeric" autocomplete="one-time-code" autofocus
+               pattern="[0-9A-Za-z\-]{6,11}" maxlength="11"
+               class="admin-field text-center font-mono text-2xl tracking-[0.4em]" />
+        <p class="mt-2 text-xs leading-relaxed text-sandDim">
+          ¿Perdiste el teléfono? Escribe aquí uno de tus códigos de recuperación
+          (formato <span class="font-mono">ABCDE-12345</span>). Cada uno sirve una sola vez.
+        </p>
+      </div>
+      <button type="submit" class="admin-btn w-full">Entrar</button>
+    </form>
+
+    <form action="/salir" method="POST" class="mt-10">
+<%- include('../partials/csrf') %>
+      <button class="text-[10px] uppercase tracking-wander text-sandDim transition-colors hover:text-ink">
+        ← Cancelar y salir
+      </button>
+    </form>
+  </div>
+</body>
+</html>
