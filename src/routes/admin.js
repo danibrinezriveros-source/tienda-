@@ -2,14 +2,21 @@ const express = require('express');
 const bcrypt = require('bcryptjs');
 const multer = require('multer');
 const { parse } = require('csv-parse/sync');
+const QRCode = require('qrcode');
 const router = express.Router();
 const { pool } = require('../db');
 const { requireAdmin, regenerateSession } = require('../middleware/auth');
 const { isTwilioConfigured } = require('../config/whatsapp');
 const { uploadProductImage } = require('../config/storage');
-const { adminLoginLimiter, passwordChangeLimiter } = require('../middleware/rateLimit');
+const { adminLoginLimiter, passwordChangeLimiter, totpLimiter } = require('../middleware/rateLimit');
 const { verify: verifyCsrf } = require('../middleware/csrf');
 const { toId } = require('../utils/ids');
+const totp = require('../utils/totp');
+const audit = require('../utils/audit');
+const { revokeOtherSessions } = require('../utils/sessions');
+const site = require('../config/site');
+
+const str = (v) => (typeof v === 'string' ? v : '');
 
 // Estados válidos de un pedido. El panel no puede escribir cualquier string:
 // un estado desconocido queda fuera de los conteos del dashboard y de las
@@ -118,14 +125,111 @@ router.post('/ingresar', adminLoginLimiter, async (req, res, next) => {
     const okPassword = await bcrypt.compare(password, hash);
 
     if (!admin || !okPassword) {
+      audit.record(req, 'ingreso_fallido', email || 'sin correo', 'Contraseña incorrecta');
       return res.status(401).render('admin/login', { error: 'Credenciales incorrectas.' });
     }
 
+    const identity = { id: admin.id, name: admin.name, email: admin.email, role: admin.role };
+
+    // Con segundo factor activo, la contraseña correcta no abre nada todavía:
+    // deja una autorización a medias, guardada aparte de `session.user`. Nada
+    // de lo que hay detrás de `requireAdmin` la reconoce, así que una
+    // contraseña robada por sí sola no llega a ninguna parte.
+    if (admin.totp_enabled) {
+      await regenerateSession(req);
+      req.session.pendingAdmin = { ...identity, since: Date.now() };
+      return res.redirect('/admin/verificar');
+    }
+
     await regenerateSession(req);
-    req.session.user = { id: admin.id, name: admin.name, email: admin.email, role: admin.role };
+    req.session.user = identity;
     // Marca de nacimiento de la sesión de administrador. La usa `requireAdmin`
     // para caducarla por antigüedad, independientemente de la cookie.
     req.session.adminSince = Date.now();
+    audit.record(req, 'ingreso', admin.email, 'Sin segundo factor');
+    res.redirect('/admin');
+  } catch (err) {
+    next(err);
+  }
+});
+
+// --- Segundo paso: el código del teléfono ---
+//
+// Vive antes de `requireAdmin` a propósito: quien llega aquí todavía no es un
+// administrador para la aplicación, solo alguien que acertó una contraseña.
+
+// La autorización a medias caduca rápido. Es el hueco entre los dos factores y
+// no hay ninguna razón para dejarlo abierto más que unos minutos.
+const PENDING_TTL = 1000 * 60 * 10;
+
+function pendingOf(req) {
+  const pending = req.session.pendingAdmin;
+  if (!pending) return null;
+  if (Date.now() - pending.since > PENDING_TTL) {
+    delete req.session.pendingAdmin;
+    return null;
+  }
+  return pending;
+}
+
+router.get('/verificar', (req, res) => {
+  if (!pendingOf(req)) return res.redirect('/admin/ingresar');
+  res.render('admin/verify', { error: null });
+});
+
+router.post('/verificar', totpLimiter, async (req, res, next) => {
+  try {
+    const pending = pendingOf(req);
+    if (!pending) return res.redirect('/admin/ingresar');
+
+    const code = str(req.body.code).trim();
+    const { rows } = await pool.query(
+      'SELECT totp_secret, totp_recovery FROM users WHERE id = $1 AND role = $2',
+      [pending.id, 'admin']
+    );
+    if (!rows[0]) return res.redirect('/admin/ingresar');
+
+    const secret = totp.decryptSecret(rows[0].totp_secret);
+    let entered = secret ? totp.verify(code, secret) : false;
+    let usedRecovery = false;
+
+    // Si no era un código del teléfono, puede ser uno de recuperación. Se
+    // comprueba después y no antes para que el camino normal —el teléfono— no
+    // gaste una consulta de escritura en cada ingreso.
+    if (!entered) {
+      const remaining = totp.consumeRecovery(code, rows[0].totp_recovery);
+      if (remaining !== null) {
+        await pool.query('UPDATE users SET totp_recovery = $1 WHERE id = $2', [
+          remaining,
+          pending.id
+        ]);
+        entered = true;
+        usedRecovery = true;
+      }
+    }
+
+    if (!entered) {
+      req.session.user = null;
+      audit.record(req, 'ingreso_2fa_fallido', pending.email, 'Código incorrecto');
+      return res.status(401).render('admin/verify', { error: 'Ese código no es válido.' });
+    }
+
+    const identity = {
+      id: pending.id,
+      name: pending.name,
+      email: pending.email,
+      role: pending.role
+    };
+    await regenerateSession(req);
+    req.session.user = identity;
+    req.session.adminSince = Date.now();
+
+    audit.record(
+      req,
+      usedRecovery ? 'totp_recuperacion' : 'ingreso',
+      identity.email,
+      usedRecovery ? 'Entró con un código de recuperación' : 'Con segundo factor'
+    );
     res.redirect('/admin');
   } catch (err) {
     next(err);
@@ -190,6 +294,7 @@ router.post('/productos/nuevo', uploadImage.single('image'), verifyCsrf, async (
        VALUES ($1,$2,$3,$4,$5,$6,$7)`,
       [name, description, priceNum, stockNum, category || 'general', tags || '', finalImageUrl]
     );
+    audit.record(req, 'producto_creado', name, `${name} — ${priceNum} · stock ${stockNum}`);
     res.redirect('/admin/productos?ok=creado');
   } catch (err) {
     next(err);
@@ -229,6 +334,7 @@ router.post('/productos/:id/editar', uploadImage.single('image'), verifyCsrf, as
        tags=$6, image_url=$7, active=$8, updated_at=NOW() WHERE id=$9`,
       [name, description, priceNum, stockNum, category, tags || '', finalImageUrl, active === 'on', id]
     );
+    audit.record(req, 'producto_editado', `#${id} ${name}`, `precio ${priceNum} · stock ${stockNum} · ${active === 'on' ? 'activo' : 'oculto'}`);
     res.redirect('/admin/productos?ok=actualizado');
   } catch (err) {
     next(err);
@@ -249,6 +355,7 @@ router.post('/productos/:id/eliminar', async (req, res, next) => {
     const id = toId(req.params.id);
     if (id === null) return res.status(404).render('404');
     await pool.query('UPDATE products SET active = FALSE, updated_at = NOW() WHERE id = $1', [id]);
+    audit.record(req, 'producto_retirado', `#${id}`, null);
     res.redirect('/admin/productos?ok=retirado');
   } catch (err) {
     next(err);
@@ -315,6 +422,7 @@ router.post('/productos/importar', upload.single('csv'), verifyCsrf, async (req,
       client.release();
     }
 
+    audit.record(req, 'catalogo_importado', `${clean.length} filas`, req.file.originalname);
     res.redirect(`/admin/productos?ok=importados_${clean.length}`);
   } catch (err) {
     next(err);
@@ -360,6 +468,7 @@ router.post('/pedidos/:id/estado', async (req, res, next) => {
     // para no dejar el pedido en un estado que ninguna vista sabe mostrar.
     if (!ORDER_STATUSES.includes(status)) return res.redirect(`/admin/pedidos/${id}`);
     await pool.query('UPDATE orders SET status = $1, updated_at = NOW() WHERE id = $2', [status, id]);
+    audit.record(req, 'pedido_estado', `Pedido #${id}`, `Pasó a "${status}"`);
     res.redirect(`/admin/pedidos/${id}`);
   } catch (err) {
     next(err);
@@ -430,14 +539,191 @@ router.post('/contrasena', passwordChangeLimiter, async (req, res, next) => {
     const hash = await bcrypt.hash(next1, 12);
     await pool.query('UPDATE users SET password_hash = $1 WHERE id = $2', [hash, req.session.user.id]);
 
-    // Cambiar la contraseña invalida la sesión y obliga a volver a entrar. Si
-    // el motivo del cambio es que alguien más tenía la anterior, esa persona
-    // conservaría el acceso hasta que su cookie caducara.
+    // Se cierran todas las demás sesiones del panel, no solo esta. Si el motivo
+    // del cambio es que alguien más tenía la contraseña, su cookie deja de
+    // servir ahora y no cuando caduque sola.
     const user = req.session.user;
+    await revokeOtherSessions(user.id, req.sessionID);
     await regenerateSession(req);
     req.session.user = user;
     req.session.adminSince = Date.now();
+    audit.record(req, 'contrasena', user.email, 'Se cerraron las demás sesiones');
     res.redirect('/admin/ajustes?ok=contrasena');
+  } catch (err) {
+    next(err);
+  }
+});
+
+// --- Segundo factor: alta, baja y códigos de recuperación ---
+
+async function adminRow(id) {
+  const { rows } = await pool.query(
+    'SELECT id, email, password_hash, totp_secret, totp_enabled, totp_recovery FROM users WHERE id = $1',
+    [id]
+  );
+  return rows[0] || null;
+}
+
+function recoveryLeft(stored) {
+  return String(stored || '').split(',').filter(Boolean).length;
+}
+
+router.get('/seguridad', async (req, res, next) => {
+  try {
+    const admin = await adminRow(req.session.user.id);
+
+    // Mientras no esté activado se prepara un secreto y se guarda en la sesión,
+    // no en la base de datos. Un secreto a medio registrar no debe poder
+    // bloquear el panel si alguien cierra la pestaña a la mitad.
+    let setup = null;
+    if (!admin.totp_enabled) {
+      if (!req.session.totpSetup) req.session.totpSetup = totp.generateSecret();
+      const uri = totp.otpauthUri(req.session.totpSetup, admin.email, site.name);
+      setup = {
+        secret: req.session.totpSetup,
+        // El QR se dibuja aquí, como SVG en el propio HTML. Pedírselo a un
+        // servicio externo significaría enviarle el secreto del segundo factor
+        // a un tercero.
+        qr: await QRCode.toString(uri, { type: 'svg', margin: 1, width: 200 })
+      };
+    }
+
+    // Los códigos de recuperación se enseñan una sola vez, justo después de
+    // generarlos. De ahí en adelante solo quedan sus hashes y ni siquiera
+    // nosotros podemos volver a mostrarlos.
+    const fresh = req.session.freshRecovery || null;
+    delete req.session.freshRecovery;
+
+    res.render('admin/security', {
+      enabled: admin.totp_enabled,
+      setup,
+      freshCodes: fresh,
+      recoveryLeft: recoveryLeft(admin.totp_recovery),
+      error: null,
+      ok: req.query.ok || null
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
+async function renderSecurity(req, res, error) {
+  const admin = await adminRow(req.session.user.id);
+  let setup = null;
+  if (!admin.totp_enabled && req.session.totpSetup) {
+    const uri = totp.otpauthUri(req.session.totpSetup, admin.email, site.name);
+    setup = {
+      secret: req.session.totpSetup,
+      qr: await QRCode.toString(uri, { type: 'svg', margin: 1, width: 200 })
+    };
+  }
+  return res.status(400).render('admin/security', {
+    enabled: admin.totp_enabled,
+    setup,
+    freshCodes: null,
+    recoveryLeft: recoveryLeft(admin.totp_recovery),
+    error,
+    ok: null
+  });
+}
+
+router.post('/seguridad/activar', totpLimiter, async (req, res, next) => {
+  try {
+    const secret = req.session.totpSetup;
+    if (!secret) return res.redirect('/admin/seguridad');
+
+    // Se exige un código correcto antes de activar. Sin esta comprobación se
+    // podría dejar el panel cerrado con una llave que el teléfono nunca llegó a
+    // guardar bien, y ahí no entra ya nadie.
+    if (!totp.verify(str(req.body.code).trim(), secret)) {
+      return renderSecurity(req, res, 'Ese código no coincide. Revisa que la hora del teléfono esté en automático.');
+    }
+
+    const recovery = totp.generateRecoveryCodes();
+    await pool.query(
+      'UPDATE users SET totp_secret = $1, totp_enabled = TRUE, totp_recovery = $2 WHERE id = $3',
+      [totp.encryptSecret(secret), recovery.hashes, req.session.user.id]
+    );
+
+    delete req.session.totpSetup;
+    req.session.freshRecovery = recovery.plain;
+    audit.record(req, 'totp_activado', req.session.user.email, null);
+    res.redirect('/admin/seguridad?ok=activado');
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.post('/seguridad/desactivar', passwordChangeLimiter, async (req, res, next) => {
+  try {
+    const admin = await adminRow(req.session.user.id);
+    if (!admin.totp_enabled) return res.redirect('/admin/seguridad');
+
+    // Quitar el segundo factor es bajar la defensa del panel, así que cuesta lo
+    // mismo que ponerla: la contraseña y un código vigente. Una sesión olvidada
+    // abierta no basta.
+    const password = str(req.body.password);
+    if (!(await bcrypt.compare(password, admin.password_hash))) {
+      return renderSecurity(req, res, 'La contraseña no es correcta.');
+    }
+    const secret = totp.decryptSecret(admin.totp_secret);
+    if (!secret || !totp.verify(str(req.body.code).trim(), secret)) {
+      return renderSecurity(req, res, 'Ese código no es válido.');
+    }
+
+    await pool.query(
+      'UPDATE users SET totp_secret = NULL, totp_enabled = FALSE, totp_recovery = NULL WHERE id = $1',
+      [admin.id]
+    );
+    delete req.session.totpSetup;
+    audit.record(req, 'totp_desactivado', admin.email, null);
+    res.redirect('/admin/seguridad?ok=desactivado');
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.post('/seguridad/codigos', passwordChangeLimiter, async (req, res, next) => {
+  try {
+    const admin = await adminRow(req.session.user.id);
+    if (!admin.totp_enabled) return res.redirect('/admin/seguridad');
+    if (!(await bcrypt.compare(str(req.body.password), admin.password_hash))) {
+      return renderSecurity(req, res, 'La contraseña no es correcta.');
+    }
+
+    const recovery = totp.generateRecoveryCodes();
+    await pool.query('UPDATE users SET totp_recovery = $1 WHERE id = $2', [
+      recovery.hashes,
+      admin.id
+    ]);
+    req.session.freshRecovery = recovery.plain;
+    audit.record(req, 'totp_activado', admin.email, 'Regeneró los códigos de recuperación');
+    res.redirect('/admin/seguridad?ok=codigos');
+  } catch (err) {
+    next(err);
+  }
+});
+
+// --- Registro de actividad ---
+router.get('/registro', async (req, res, next) => {
+  try {
+    const page = Math.max(1, parseInt(req.query.pagina, 10) || 1);
+    const perPage = 50;
+
+    const { rows: entries } = await pool.query(
+      `SELECT * FROM admin_audit ORDER BY created_at DESC LIMIT $1 OFFSET $2`,
+      [perPage, (page - 1) * perPage]
+    );
+    const { rows: count } = await pool.query('SELECT COUNT(*)::int AS n FROM admin_audit');
+
+    res.render('admin/audit', {
+      entries,
+      labels: audit.ACTIONS,
+      page,
+      perPage,
+      total: count[0].n,
+      retentionDays: audit.RETENTION_DAYS
+    });
   } catch (err) {
     next(err);
   }
@@ -457,6 +743,7 @@ router.post('/ajustes', async (req, res, next) => {
        ON CONFLICT (key) DO UPDATE SET value = $1`,
       [number]
     );
+    audit.record(req, 'ajustes', 'WhatsApp', `envío ${enabled === 'true' ? 'activado' : 'desactivado'}`);
     res.redirect('/admin/ajustes?ok=guardado');
   } catch (err) {
     next(err);

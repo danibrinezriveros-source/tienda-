@@ -68,3 +68,55 @@ ON CONFLICT (key) DO NOTHING;
 CREATE INDEX IF NOT EXISTS idx_products_active ON products(active);
 CREATE INDEX IF NOT EXISTS idx_orders_status ON orders(status);
 CREATE INDEX IF NOT EXISTS idx_order_items_order ON order_items(order_id);
+
+-- ============================================================
+--  Seguridad
+-- ============================================================
+
+-- Contador de peticiones compartido por todas las instancias.
+--
+-- Antes vivía en la memoria del proceso, y en Vercel cada función serverless
+-- llevaba el suyo: diez intentos de ingreso por instancia, no diez en total.
+-- Bastaba con que las peticiones cayeran en instancias distintas para que el
+-- límite no limitara nada. Aquí el conteo es uno solo.
+CREATE TABLE IF NOT EXISTS rate_limits (
+  key        TEXT PRIMARY KEY,
+  hits       INTEGER NOT NULL DEFAULT 0,
+  expires_at TIMESTAMPTZ NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_rate_limits_expires ON rate_limits(expires_at);
+
+-- Recuperación de contraseña.
+--
+-- Solo se guarda el hash del token, nunca el token. Quien lea esta tabla —una
+-- copia de seguridad filtrada, un vistazo a la base— no puede reconstruir el
+-- enlace que se envió, igual que no puede reconstruir una contraseña desde su
+-- hash. `used_at` lo vuelve de un solo uso.
+CREATE TABLE IF NOT EXISTS password_resets (
+  token_hash CHAR(64) PRIMARY KEY,
+  user_id    INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  expires_at TIMESTAMPTZ NOT NULL,
+  used_at    TIMESTAMPTZ,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_password_resets_user ON password_resets(user_id);
+
+-- Registro de lo que hace el administrador.
+--
+-- `actor` guarda el correo copiado, no una referencia: si la cuenta se borra,
+-- el registro tiene que seguir diciendo quién hizo qué. Por eso `user_id` es
+-- ON DELETE SET NULL y el correo va aparte, congelado.
+CREATE TABLE IF NOT EXISTS admin_audit (
+  id         SERIAL PRIMARY KEY,
+  user_id    INTEGER REFERENCES users(id) ON DELETE SET NULL,
+  actor      VARCHAR(150) NOT NULL,
+  action     VARCHAR(60) NOT NULL,
+  target     VARCHAR(160),
+  detail     TEXT,
+  ip         VARCHAR(45),
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_admin_audit_created ON admin_audit(created_at DESC);

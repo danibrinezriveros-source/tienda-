@@ -184,7 +184,10 @@ Lo que ya está puesto, y por qué, para que nadie lo quite por error.
   servidor rechaza con 403 lo que llegue sin él. Los formularios con archivo verifican el
   token justo después de multer, y solo esas tres rutas pueden recibir `multipart/form-data`.
 - Límite de peticiones global, y más estrecho en ingreso (5 intentos / 30 min en el panel),
-  registro, checkout y cambio de contraseña.
+  registro, checkout, segundo factor y cambio de contraseña. **El conteo vive en Postgres**
+  (`src/middleware/rateLimitStore.js`), no en la memoria del proceso: en Vercel cada
+  instancia serverless llevaba el suyo, así que "cinco intentos" eran cinco *por instancia*
+  y en la práctica ninguno.
 - La importación por CSV valida el archivo entero antes de escribir y lo inserta dentro de
   una transacción: o entra completo, o no entra nada.
 - Retirar un producto lo marca inactivo; no borra la fila, para no perder el historial de
@@ -208,10 +211,44 @@ Lo que ya está puesto, y por qué, para que nadie lo quite por error.
 - Las sesiones se guardan en PostgreSQL (`connect-pg-simple`), no en memoria, así que
   sobreviven a reinicios y escalado horizontal.
 
+**Segundo factor del panel (TOTP)**
+- Se activa desde **Admin → Seguridad**: se escanea un QR con Google Authenticator, Authy,
+  1Password o el gestor del teléfono, y se confirma con un código antes de quedar activo —
+  sin esa confirmación se podría cerrar el panel con una llave que el teléfono no guardó.
+- Con el segundo factor activo, la contraseña correcta **no abre nada**: deja una
+  autorización a medias (`session.pendingAdmin`, 10 minutos) que ninguna ruta del panel
+  reconoce. Hacen falta los dos factores.
+- Ocho **códigos de recuperación** de un solo uso para cuando se pierde el teléfono. Se
+  muestran una vez; en la base de datos solo quedan sus hashes.
+- El algoritmo está en `src/utils/totp.js`, escrito sobre `crypto` en vez de traído de una
+  librería: cabe en media página y su corrección se comprueba contra los vectores oficiales
+  del RFC 6238. El secreto se guarda cifrado con AES-256-GCM (`TOTP_ENCRYPTION_KEY`).
+- Desactivarlo cuesta lo mismo que activarlo: contraseña **y** código vigente.
+
+**Recuperación de contraseña**
+- `/recuperar` envía un enlace de un solo uso que vence en una hora. De cada token solo se
+  guarda el hash SHA-256: quien lea la base de datos no puede reconstruir ningún enlace.
+- La respuesta es idéntica exista o no la cuenta, para que el formulario no sirva de censo
+  de clientes.
+- Al restablecer se cierran **todas** las sesiones de esa cuenta. Lo mismo al cambiar la
+  contraseña desde dentro (`src/utils/sessions.js`): antes solo se invalidaba la del
+  navegador que hacía el cambio, y el intruso conservaba la suya durante días.
+- El envío usa SMTP (`SMTP_*` en `.env`). Sin configurar, el correo se imprime en la consola
+  del servidor igual que la confirmación por WhatsApp, así que el flujo se puede probar
+  entero desde el primer día.
+
+**Registro de actividad**
+- Todo lo que se hace en el panel queda anotado en `admin_audit` y se lee en
+  **Admin → Registro**: ingresos, intentos fallidos, códigos de segundo factor incorrectos,
+  altas y bajas de producto, importaciones, cambios de estado de pedidos, cambios de
+  contraseña. Con quién, cuándo, sobre qué y desde qué IP.
+- El correo del actor se copia en la fila, no se referencia: si la cuenta se borra, el
+  registro sigue diciendo quién hizo qué.
+- Se conservan 180 días. Un registro perpetuo deja de ser útil y pasa a ser un archivo de
+  direcciones IP que hay que custodiar sin motivo.
+
 **Lo que todavía no está**
-- No hay recuperación de contraseña por correo: un cliente que la olvide necesita que se la
-  restablezcan a mano. Requiere un servicio de envío de correo.
-- No hay segundo factor en el panel.
-- No hay registro de auditoría de las acciones del administrador.
-- El conteo de los límites de peticiones vive en memoria del proceso; en Vercel cada
-  instancia lleva el suyo. Para un límite global haría falta almacenarlo en Postgres o Redis.
+- No hay bloqueo por cuenta, solo por dirección IP. Un atacante con muchas direcciones
+  diluye el límite. La defensa real ahí es el segundo factor.
+- El registro de actividad no avisa solo: hay que entrar a mirarlo.
+- Los clientes no tienen segundo factor, solo el panel.

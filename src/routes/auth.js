@@ -1,9 +1,19 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
+const crypto = require('crypto');
 const router = express.Router();
 const { pool } = require('../db');
-const { loginLimiter, registerLimiter, passwordChangeLimiter } = require('../middleware/rateLimit');
+const {
+  loginLimiter,
+  registerLimiter,
+  passwordChangeLimiter,
+  passwordResetLimiter
+} = require('../middleware/rateLimit');
 const { regenerateSession, requireLogin } = require('../middleware/auth');
+const { revokeOtherSessions } = require('../utils/sessions');
+const mailer = require('../config/mailer');
+const site = require('../config/site');
+const audit = require('../utils/audit');
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -172,9 +182,11 @@ router.post('/cuenta/contrasena', requireLogin, passwordChangeLimiter, async (re
       req.session.user.id
     ]);
 
-    // Sesión nueva: si el motivo del cambio es que alguien más conocía la
-    // anterior, su cookie deja de servir en este mismo instante.
+    // Se cierran todas las demás sesiones de esta cuenta, no solo la de aquí.
+    // Si el motivo del cambio es que alguien más conocía la contraseña, su
+    // cookie deja de servir en este mismo instante y no dentro de siete días.
     const user = req.session.user;
+    await revokeOtherSessions(user.id, req.sessionID);
     await regenerateSession(req);
     req.session.user = user;
 
@@ -184,7 +196,155 @@ router.post('/cuenta/contrasena', requireLogin, passwordChangeLimiter, async (re
   }
 });
 
+// --- Recuperar la contraseña olvidada ---
+//
+// Antes esto no existía: quien la olvidaba dependía de que alguien la
+// restableciera a mano en la base de datos, lo cual significa que en la
+// práctica perdía la cuenta y su historial de pedidos.
+//
+// El enlace lleva un token aleatorio del que solo se guarda el hash. Quien
+// consiga leer la base de datos —una copia de seguridad extraviada— no puede
+// reconstruir ningún enlace, igual que no puede reconstruir una contraseña.
+
+const RESET_TTL_MINUTES = 60;
+
+const hashToken = (token) => crypto.createHash('sha256').update(token).digest('hex');
+
+router.get('/recuperar', (req, res) => {
+  res.render('password-forgot', { error: null, sent: false });
+});
+
+router.post('/recuperar', passwordResetLimiter, async (req, res, next) => {
+  try {
+    const email = str(req.body.email).trim().toLowerCase();
+    if (!EMAIL_RE.test(email)) {
+      return res.status(400).render('password-forgot', {
+        error: 'Escribe un correo válido.',
+        sent: false
+      });
+    }
+
+    const { rows } = await pool.query(
+      'SELECT id, name FROM users WHERE email = $1 AND role = $2',
+      [email, 'user']
+    );
+    const user = rows[0];
+
+    if (user) {
+      // Los enlaces anteriores de esta cuenta se anulan: pedir uno nuevo tiene
+      // que invalidar el viejo, o un enlace olvidado en una bandeja sigue
+      // sirviendo durante una hora más.
+      await pool.query(
+        'UPDATE password_resets SET used_at = NOW() WHERE user_id = $1 AND used_at IS NULL',
+        [user.id]
+      );
+
+      const token = crypto.randomBytes(32).toString('base64url');
+      await pool.query(
+        `INSERT INTO password_resets (token_hash, user_id, expires_at)
+         VALUES ($1, $2, NOW() + ($3 || ' minutes')::interval)`,
+        [hashToken(token), user.id, String(RESET_TTL_MINUTES)]
+      );
+
+      const link = site.url('/restablecer/' + token);
+      await mailer.send({
+        to: email,
+        subject: `Recuperar tu contraseña de ${site.name}`,
+        text:
+          `Hola${user.name ? ' ' + user.name : ''},\n\n` +
+          `Alguien pidió recuperar la contraseña de tu cuenta en ${site.name}.\n` +
+          `Si fuiste tú, abre este enlace y elige una nueva:\n\n${link}\n\n` +
+          `El enlace vence en ${RESET_TTL_MINUTES} minutos y solo sirve una vez.\n\n` +
+          'Si no fuiste tú, no tienes que hacer nada: tu contraseña sigue siendo la misma\n' +
+          'y este enlace caducará solo.\n'
+      });
+    }
+
+    // La respuesta es la misma exista o no la cuenta. Decir "ese correo no está
+    // registrado" convierte este formulario en una forma cómoda de averiguar
+    // quién compra aquí.
+    res.render('password-forgot', { error: null, sent: true });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// Busca el token y devuelve la fila viva, o null. Un token vencido, ya usado o
+// inventado son el mismo caso: no existe.
+async function liveReset(token) {
+  if (typeof token !== 'string' || token.length < 20 || token.length > 200) return null;
+  const { rows } = await pool.query(
+    `SELECT token_hash, user_id FROM password_resets
+      WHERE token_hash = $1 AND used_at IS NULL AND expires_at > NOW()`,
+    [hashToken(token)]
+  );
+  return rows[0] || null;
+}
+
+router.get('/restablecer/:token', async (req, res, next) => {
+  try {
+    const reset = await liveReset(req.params.token);
+    if (!reset) return res.status(400).render('password-reset', { expired: true, error: null });
+    res.render('password-reset', { expired: false, error: null });
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.post('/restablecer/:token', passwordResetLimiter, async (req, res, next) => {
+  try {
+    const reset = await liveReset(req.params.token);
+    if (!reset) return res.status(400).render('password-reset', { expired: true, error: null });
+
+    const proposed = str(req.body.new_password);
+    const confirmation = str(req.body.confirm_password);
+
+    const fail = (error) => res.status(400).render('password-reset', { expired: false, error });
+
+    if (proposed.length < MIN_PASSWORD) {
+      return fail('La contraseña debe tener al menos ' + MIN_PASSWORD + ' caracteres.');
+    }
+    if (proposed !== confirmation) return fail('Las dos contraseñas no coinciden.');
+
+    const hash = await bcrypt.hash(proposed, BCRYPT_COST);
+
+    // El token se marca usado dentro de la misma transacción que cambia la
+    // contraseña: si algo falla, no queda ni contraseña nueva ni token gastado.
+    const client = await pool.connect();
+    try {
+      await client.query('BEGIN');
+      await client.query('UPDATE users SET password_hash = $1 WHERE id = $2', [hash, reset.user_id]);
+      await client.query('UPDATE password_resets SET used_at = NOW() WHERE token_hash = $1', [
+        reset.token_hash
+      ]);
+      await client.query('COMMIT');
+    } catch (err) {
+      await client.query('ROLLBACK');
+      throw err;
+    } finally {
+      client.release();
+    }
+
+    // Quien recupera la contraseña normalmente lo hace porque sospecha que
+    // alguien más entró. Se cierran todas las sesiones de la cuenta, sin
+    // excepción, y hay que volver a entrar con la contraseña nueva.
+    await revokeOtherSessions(reset.user_id, null);
+
+    res.render('login', {
+      error: null,
+      notice: 'Tu contraseña quedó cambiada. Entra con la nueva.'
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
 router.post('/salir', (req, res) => {
+  // La salida del panel se anota antes de destruir la sesión, que es de donde
+  // sale el nombre de quien se va. Un registro que solo dice cuándo se entró
+  // deja abierta la pregunta de hasta cuándo estuvo abierta la puerta.
+  const user = req.session.user;
+  if (user && user.role === 'admin') audit.record(req, 'salida', user.email, null);
   req.session.destroy(() => res.redirect('/'));
 });
 
